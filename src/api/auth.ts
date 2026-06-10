@@ -4,7 +4,7 @@ import { LoginRequest, RegisterRequest, AuthResponse } from '../types/auth';
 const BASE_URL = 'https://sztufa-server.vercel.app/api/v1';
 
 export const authApi = {
-  login: async (credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
+  login: async (credentials: LoginRequest): Promise<AuthResponse> => {
     const response = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -18,10 +18,16 @@ export const authApi = {
       throw new Error(data.message || '登录失败');
     }
     
-    return response.json();
+    const data = await response.json();
+    
+    if (data.success !== undefined) {
+      return data.data as AuthResponse;
+    }
+    
+    return data as AuthResponse;
   },
 
-  register: async (userData: RegisterRequest): Promise<ApiResponse<{ user: unknown }>> => {
+  register: async (userData: RegisterRequest): Promise<{ user: unknown }> => {
     const { confirmPassword, ...registerData } = userData;
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: 'POST',
@@ -36,7 +42,13 @@ export const authApi = {
       throw new Error(data.message || '注册失败');
     }
     
-    return response.json();
+    const data = await response.json();
+    
+    if (data.success !== undefined) {
+      return data.data as { user: unknown };
+    }
+    
+    return data as { user: unknown };
   },
 };
 

@@ -327,7 +327,7 @@ describe('API Service Tests', () => {
         json: jest.fn().mockResolvedValueOnce(mockRegisterResponse),
       });
 
-      const result = await authApi.register('admin', 'password');
+      const result = await authApi.register('admin', 'password', 'admin@example.com');
 
       expect(fetch).toHaveBeenCalledWith(
         'https://sztufa-server.vercel.app/api/auth/register',

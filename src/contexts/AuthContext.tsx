@@ -78,23 +78,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await authApi.login({ username, password });
       
-      if (response.success && response.data) {
-        const { token, user: userData } = response.data;
+      if (response && response.token) {
+        const { token, user: userData } = response;
         
         setAuthToken(token);
         const expiryTime = Date.now() + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
         setTokenExpiry(expiryTime);
         
         const userInfo: User = {
-          id: (userData as { id: string }).id || '',
-          username: (userData as { username: string }).username || username,
-          email: (userData as { email: string }).email || '',
+          id: (userData as { id: string })?.id || '',
+          username: (userData as { username: string })?.username || username,
+          email: (userData as { email: string })?.email || '',
         };
         
         localStorage.setItem('user', JSON.stringify(userInfo));
         setUser(userInfo);
       } else {
-        throw new Error(response.message || '登录失败');
+        throw new Error('登录失败');
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : '登录失败';
@@ -110,16 +110,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const response = await authApi.register({
+      await authApi.register({
         username,
         email,
         password,
         confirmPassword: password,
       });
-      
-      if (!response.success) {
-        throw new Error(response.message || '注册失败');
-      }
     } catch (err) {
       const message = err instanceof Error ? err.message : '注册失败';
       setError(message);
