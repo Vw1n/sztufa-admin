@@ -1,6 +1,6 @@
 import { getAuthToken, isTokenExpired } from '../api/auth';
 
-const BASE_URL = 'https://sztufa-server.vercel.app/api/v1';
+const BASE_URL = 'https://api.sztufa.xyz/api/v1';
 
 export interface RequestConfig extends RequestInit {
   skipAuth?: boolean;

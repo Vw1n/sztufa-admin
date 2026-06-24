@@ -3,7 +3,7 @@
 > **版本**: v1.0.0  
 > **最后更新**: 2026-06-11  
 > **维护团队**: Vibe Coding  
-> **API 基础地址**: `https://sztufa-server.vercel.app/api/v1`
+> **API 基础地址**: `https://api.sztufa.xyz/api/v1`
 
 ---
 
@@ -54,7 +54,7 @@
 ### 2.1 基础 URL
 
 ```
-开发环境: https://sztufa-server.vercel.app/api/v1
+开发环境: https://api.sztufa.xyz/api/v1
 生产环境: https://your-domain.com/api/v1
 ```
 
@@ -103,7 +103,7 @@
 启动服务后访问在线 API 文档：
 
 ```
-https://sztufa-server.vercel.app/api/docs
+https://api.sztufa.xyz/api/docs
 ```
 
 ---
@@ -1571,7 +1571,7 @@ npm install axios
 ```typescript
 import axios from 'axios';
 
-const API_BASE_URL = 'https://sztufa-server.vercel.app/api/v1';
+const API_BASE_URL = 'https://api.sztufa.xyz/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -2048,7 +2048,7 @@ async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
 
 | 环境 | 地址 | 用途 |
 |------|------|------|
-| 开发环境 | `https://sztufa-server.vercel.app/api/v1` | 本地开发调试 |
+| 开发环境 | `https://api.sztufa.xyz/api/v1` | 本地开发调试 |
 | 测试环境 | `https://test-api.example.com/api/v1` | 集成测试 |
 | 生产环境 | `https://api.example.com/api/v1` | 正式上线 |
 
@@ -2164,7 +2164,7 @@ async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
   "variable": [
     {
       "key": "base_url",
-      "value": "https://sztufa-server.vercel.app/api/v1"
+      "value": "https://api.sztufa.xyz/api/v1"
     },
     {
       "key": "token",

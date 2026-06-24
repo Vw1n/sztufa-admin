@@ -60,7 +60,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.create(mockTeamDTO);
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/teams',
+        'https://api.sztufa.xyz/api/v1/teams',
         {
           method: 'POST',
           headers: expect.any(Headers),
@@ -99,7 +99,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.getAll(1, 10);
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/teams?page=1&limit=10',
+        'https://api.sztufa.xyz/api/v1/teams?page=1&limit=10',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -117,7 +117,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.search('测试');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/teams/search?name=%E6%B5%8B%E8%AF%95',
+        'https://api.sztufa.xyz/api/v1/teams/search?name=%E6%B5%8B%E8%AF%95',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -135,7 +135,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.getById('clx1234567890');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/teams/clx1234567890',
+        'https://api.sztufa.xyz/api/v1/teams/clx1234567890',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -155,7 +155,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.update('clx1234567890', { teamName: '更新队名' });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/teams/clx1234567890',
+        'https://api.sztufa.xyz/api/v1/teams/clx1234567890',
         {
           method: 'PATCH',
           headers: expect.any(Headers),
@@ -174,7 +174,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.delete('clx1234567890');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/teams/clx1234567890',
+        'https://api.sztufa.xyz/api/v1/teams/clx1234567890',
         {
           method: 'DELETE',
           headers: expect.any(Headers),
@@ -209,7 +209,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.create(mockPlayerDTO);
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/players',
+        'https://api.sztufa.xyz/api/v1/players',
         {
           method: 'POST',
           headers: expect.any(Headers),
@@ -235,7 +235,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.getAll(1, 10, 'clx1234567890');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/players?page=1&limit=10&teamId=clx1234567890',
+        'https://api.sztufa.xyz/api/v1/players?page=1&limit=10&teamId=clx1234567890',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -253,7 +253,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.search('张');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/players/search?name=%E5%BC%A0',
+        'https://api.sztufa.xyz/api/v1/players/search?name=%E5%BC%A0',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -271,7 +271,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.getById('clxplayer123');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/players/clxplayer123',
+        'https://api.sztufa.xyz/api/v1/players/clxplayer123',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -291,7 +291,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.update('clxplayer123', { name: '李四' });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/players/clxplayer123',
+        'https://api.sztufa.xyz/api/v1/players/clxplayer123',
         {
           method: 'PATCH',
           headers: expect.any(Headers),
@@ -310,7 +310,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.delete('clxplayer123');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/players/clxplayer123',
+        'https://api.sztufa.xyz/api/v1/players/clxplayer123',
         {
           method: 'DELETE',
           headers: expect.any(Headers),
@@ -348,7 +348,7 @@ describe('API Service Tests', () => {
       const result = await matchApi.create(mockMatchDTO);
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/matches',
+        'https://api.sztufa.xyz/api/v1/matches',
         {
           method: 'POST',
           headers: expect.any(Headers),
@@ -374,7 +374,7 @@ describe('API Service Tests', () => {
       const result = await matchApi.getAll(1, 10, 'clx1234567890');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/matches?page=1&limit=10&teamId=clx1234567890',
+        'https://api.sztufa.xyz/api/v1/matches?page=1&limit=10&teamId=clx1234567890',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -392,7 +392,7 @@ describe('API Service Tests', () => {
       const result = await matchApi.getById('clxmatch123');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/matches/clxmatch123',
+        'https://api.sztufa.xyz/api/v1/matches/clxmatch123',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -412,7 +412,7 @@ describe('API Service Tests', () => {
       const result = await matchApi.update('clxmatch123', { homeScore: 3, awayScore: 2, status: 'finished' });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/matches/clxmatch123',
+        'https://api.sztufa.xyz/api/v1/matches/clxmatch123',
         {
           method: 'PATCH',
           headers: expect.any(Headers),
@@ -431,7 +431,7 @@ describe('API Service Tests', () => {
       const result = await matchApi.delete('clxmatch123');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/matches/clxmatch123',
+        'https://api.sztufa.xyz/api/v1/matches/clxmatch123',
         {
           method: 'DELETE',
           headers: expect.any(Headers),
@@ -456,7 +456,7 @@ describe('API Service Tests', () => {
       const result = await authApi.login('admin', 'password123');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/auth/login',
+        'https://api.sztufa.xyz/api/v1/auth/login',
         {
           method: 'POST',
           headers: expect.any(Headers),
@@ -481,7 +481,7 @@ describe('API Service Tests', () => {
       const result = await authApi.register('admin', 'password123', 'admin');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/auth/register',
+        'https://api.sztufa.xyz/api/v1/auth/register',
         {
           method: 'POST',
           headers: expect.any(Headers),
@@ -520,7 +520,7 @@ describe('API Service Tests', () => {
       const result = await importApi.importFromJson('/data/teams.json');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://sztufa-server.vercel.app/api/v1/import/json',
+        'https://api.sztufa.xyz/api/v1/import/json',
         {
           method: 'POST',
           headers: expect.any(Headers),

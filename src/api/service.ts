@@ -1,6 +1,6 @@
 import { ApiResponse, ErrorResponse, TeamDTO, MatchDTO, PlayerDTO, TeamListResponse, MatchListResponse, PlayerListResponse, ImportResult, AuthResponse } from './types';
 
-const BASE_URL = 'https://sztufa-server.vercel.app/api/v1';
+const BASE_URL = 'https://api.sztufa.xyz/api/v1';
 
 const getAuthToken = (): string | null => {
   return localStorage.getItem('token') || null;
