@@ -160,6 +160,56 @@ const MatchViewEditPage: React.FC = () => {
   const handleSaveEdit = async () => {
     if (!editData) return;
 
+    setError(null);
+
+    // 校验事件比分是否对齐
+    const homeScore = editData.homeScore;
+    const awayScore = editData.awayScore;
+
+    // 主队总得分 = 主队普通进球 + 主队点球 + 客队乌龙球
+    const homeGoalsCount = (editData.events || []).filter(e => e.teamType === 'home' && (e.eventType === 'goal' || e.eventType === 'penalty')).length +
+                           (editData.events || []).filter(e => e.teamType === 'away' && e.eventType === 'own_goal').length;
+    // 客队总得分 = 客队普通进球 + 客队点球 + 主队乌龙球
+    const awayGoalsCount = (editData.events || []).filter(e => e.teamType === 'away' && (e.eventType === 'goal' || e.eventType === 'penalty')).length +
+                           (editData.events || []).filter(e => e.teamType === 'home' && e.eventType === 'own_goal').length;
+
+    if (homeScore !== homeGoalsCount) {
+      setError(`主队进球/点球/对方乌龙数(${homeGoalsCount})与主队得分(${homeScore})不一致`);
+      return;
+    }
+    if (awayScore !== awayGoalsCount) {
+      setError(`客队进球/点球/对方乌龙数(${awayGoalsCount})与客队得分(${awayScore})不一致`);
+      return;
+    }
+
+    if (editData.events) {
+      for (const event of editData.events) {
+        if (!event.eventTime || !event.eventTime.trim()) {
+          setError('请填写所有事件的时间');
+          return;
+        }
+        if (event.eventType === 'substitution') {
+          if (!event.playerId) {
+            setError('请选择换人事件的换上球员');
+            return;
+          }
+          if (!event.subPlayerId) {
+            setError('请选择换人事件的换下球员');
+            return;
+          }
+          if (event.playerId === event.subPlayerId) {
+            setError('换上球员与换下球员不能相同');
+            return;
+          }
+        } else {
+          if (!event.playerId) {
+            setError('请选择事件关联的球员');
+            return;
+          }
+        }
+      }
+    }
+
     setIsLoading(true);
     try {
       // 映射事件数据
@@ -195,10 +245,24 @@ const MatchViewEditPage: React.FC = () => {
           playerId: e.playerId || null
         }));
 
+      // 转换比赛日期格式为 ISO 字符串以配合后端 @IsDateString 校验
+      let formattedMatchDate = editData.matchTime;
+      if (formattedMatchDate) {
+        try {
+          const cleaned = formattedMatchDate.replace(/\//g, '-');
+          const date = new Date(cleaned);
+          if (!isNaN(date.getTime())) {
+            formattedMatchDate = date.toISOString();
+          }
+        } catch (e) {
+          console.error('格式化比赛日期失败:', e);
+        }
+      }
+
       await matchApi.update(editData.id, {
         homeScore: editData.homeScore,
         awayScore: editData.awayScore,
-        matchDate: editData.matchTime,
+        matchDate: formattedMatchDate,
         location: editData.location,
         goals: goals,
         events: events,
@@ -214,7 +278,7 @@ const MatchViewEditPage: React.FC = () => {
       }, 2000);
     } catch (err) {
       console.error('更新比赛信息失败:', err);
-      setError('网络连接失败，请稍后重试');
+      setError(err instanceof Error ? err.message : '网络连接失败，请稍后重试');
     } finally {
       setIsLoading(false);
     }
@@ -233,7 +297,7 @@ const MatchViewEditPage: React.FC = () => {
       }
     } catch (err) {
       console.error('删除比赛失败:', err);
-      setError('网络连接失败，请稍后重试');
+      setError(err instanceof Error ? err.message : '网络连接失败，请稍后重试');
     } finally {
       setIsLoading(false);
     }
@@ -272,6 +336,26 @@ const MatchViewEditPage: React.FC = () => {
       });
     } catch {
       return time;
+    }
+  };
+
+  const formatForDateTimeLocal = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      const cleaned = dateStr.replace(/\//g, '-');
+      const date = new Date(cleaned);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      const pad = (num: number) => String(num).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      const mm = pad(date.getMonth() + 1);
+      const dd = pad(date.getDate());
+      const hh = pad(date.getHours());
+      const min = pad(date.getMinutes());
+      return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+    } catch {
+      return '';
     }
   };
 
@@ -438,7 +522,7 @@ const MatchViewEditPage: React.FC = () => {
                 {isEditing ? (
                   <input
                     type="datetime-local"
-                    value={editData?.matchTime || ''}
+                    value={formatForDateTimeLocal(editData?.matchTime || '')}
                     onChange={(e) => handleFieldChange('matchTime', e.target.value)}
                     className="form-input"
                   />
