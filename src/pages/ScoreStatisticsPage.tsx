@@ -4,8 +4,11 @@ import { matchApi, playerApi, seasonApi } from '../api/service';
 import { MatchDTO, PlayerDTO } from '../api/types';
 import { Match, Goal, MatchEvent } from '../types';
 import { generateId } from '../utils';
+import { useAuth } from '../contexts/AuthContext';
 
 const MatchViewEditPage: React.FC = () => {
+  const { user } = useAuth();
+  const canEdit = user?.role === 'super_admin' || user?.role === 'match_scorer';
   const [matches, setMatches] = useState<Match[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -540,20 +543,26 @@ const MatchViewEditPage: React.FC = () => {
                           >
                             <Eye size={14} />
                           </button>
-                          <button
-                            onClick={() => handleEditMatch(match)}
-                            className="action-btn edit-btn"
-                            title="编辑"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteMatch(match.id)}
-                            className="delete-btn small"
-                            title="删除"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {canEdit && (
+                            <>
+                              <button
+                                onClick={() => handleEditMatch(match)}
+                                className="action-btn edit-btn"
+                                title="编辑"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              {user?.role === 'super_admin' && (
+                                <button
+                                  onClick={() => handleDeleteMatch(match.id)}
+                                  className="delete-btn small"
+                                  title="删除"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </>
+                          )}
                         </td>
                       </tr>
                     );

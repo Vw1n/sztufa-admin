@@ -64,6 +64,20 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (!user) return false;
+    if (user.role === 'super_admin') {
+      return true;
+    }
+    if (user.role === 'match_scorer') {
+      return item.path === '/teams' || item.path === '/statistics';
+    }
+    if (user.role === 'coach') {
+      return item.path === '/' || item.path === '/schedule';
+    }
+    return item.path === '/' || item.path === '/schedule';
+  });
   
   return (
     <nav className="main-nav">
@@ -73,7 +87,7 @@ const Navigation: React.FC = () => {
           <span>校园足球赛事系统</span>
         </div>
         <ul className="nav-links">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <li key={item.path}>
@@ -86,7 +100,12 @@ const Navigation: React.FC = () => {
           })}
         </ul>
         <div className="nav-user">
-          <span className="user-name">{user?.username || '用户'}</span>
+          <span className="user-name">
+            {user?.username || '用户'} 
+            <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '5px', padding: '2px 6px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px' }}>
+              {user?.role === 'super_admin' ? '超管' : user?.role === 'match_scorer' ? '记录员' : '教练'}
+            </span>
+          </span>
           <button className="logout-btn" onClick={logout}>
             <LogOut size={18} />
             退出
@@ -95,6 +114,24 @@ const Navigation: React.FC = () => {
       </div>
     </nav>
   );
+};
+
+const RoleGuardRoute: React.FC<{ allowedRoles: string[]; children: React.ReactNode }> = ({ allowedRoles, children }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+        正在验证访问权限...
+      </div>
+    );
+  }
+  
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
 };
 
 const AppContent: React.FC = () => {
@@ -117,11 +154,11 @@ const AppContent: React.FC = () => {
               <Navigation />
               <Routes>
                  <Route path="/" element={<TeamInfoPage />} />
-                 <Route path="/teams" element={<TeamManagementPage />} />
+                 <Route path="/teams" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><TeamManagementPage /></RoleGuardRoute>} />
                  <Route path="/schedule" element={<MatchSchedulePage />} />
-                 <Route path="/statistics" element={<ScoreStatisticsPage />} />
-                 <Route path="/audit-logs" element={<AuditLogPage />} />
-                 <Route path="/settings" element={<SystemSettingsPage />} />
+                 <Route path="/statistics" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><ScoreStatisticsPage /></RoleGuardRoute>} />
+                 <Route path="/audit-logs" element={<RoleGuardRoute allowedRoles={['super_admin']}><AuditLogPage /></RoleGuardRoute>} />
+                 <Route path="/settings" element={<RoleGuardRoute allowedRoles={['super_admin']}><SystemSettingsPage /></RoleGuardRoute>} />
               </Routes>
             </div>
           </ProtectedRoute>

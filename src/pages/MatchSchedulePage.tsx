@@ -6,8 +6,10 @@ import { teamApi, playerApi, matchApi } from '../api/service';
 import { TeamDTO, PlayerDTO } from '../api/types';
 import { Team, Player } from '../types';
 import { generateId } from '../utils';
+import { useAuth } from '../contexts/AuthContext';
 
 const TeamViewEditPage: React.FC = () => {
+  const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -93,7 +95,16 @@ const TeamViewEditPage: React.FC = () => {
           teamId: p.teamId || '',
         })) || [],
       }));
-      setTeams(teamList);
+      if (user && user.role === 'coach') {
+        const coachTeamId = user.teamId;
+        const filteredTeams = teamList.filter(t => t.id === coachTeamId);
+        setTeams(filteredTeams);
+        if (filteredTeams.length > 0) {
+          setSelectedTeam(filteredTeams[0]);
+        }
+      } else {
+        setTeams(teamList);
+      }
     } catch (err) {
       console.error('加载球队列表失败:', err);
       if (err instanceof Error && err.message === 'Unauthorized') {
@@ -403,13 +414,15 @@ const TeamViewEditPage: React.FC = () => {
                         >
                           <Edit2 size={14} />
                         </button>
-                        <button
-                          onClick={() => handleDeleteTeam(team.id)}
-                          className="delete-btn small"
-                          title="删除"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {user?.role === 'super_admin' && (
+                          <button
+                            onClick={() => handleDeleteTeam(team.id)}
+                            className="delete-btn small"
+                            title="删除"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -454,6 +467,8 @@ const TeamViewEditPage: React.FC = () => {
                     value={editData?.teamName || ''}
                     onChange={(e) => handleFieldChange('teamName', e.target.value)}
                     className="form-input"
+                    disabled={user?.role !== 'super_admin'}
+                    title={user?.role !== 'super_admin' ? '仅超级管理员可修改球队名称' : ''}
                   />
                 ) : (
                   <div className="form-value">{selectedTeam.teamName}</div>
