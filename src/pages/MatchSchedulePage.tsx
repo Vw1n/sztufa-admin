@@ -407,13 +407,15 @@ const TeamViewEditPage: React.FC = () => {
                         >
                           <Eye size={14} />
                         </button>
-                        <button
-                          onClick={() => handleEditTeam(team)}
-                          className="action-btn edit-btn"
-                          title="编辑"
-                        >
-                          <Edit2 size={14} />
-                        </button>
+                        {(user?.role === 'super_admin' || (user?.role === 'coach' && user?.teamId === team.id)) && (
+                          <button
+                            onClick={() => handleEditTeam(team)}
+                            className="action-btn edit-btn"
+                            title="编辑"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        )}
                         {user?.role === 'super_admin' && (
                           <button
                             onClick={() => handleDeleteTeam(team.id)}
