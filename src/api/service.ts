@@ -237,7 +237,7 @@ export const authApi = {
     return handleResponse<AuthResponse>(response);
   },
 
-  register: async (credentials: { username: string; password: string; role?: string }): Promise<AuthResponse> => {
+  register: async (credentials: { username: string; password: string; role?: string; teamId?: string }): Promise<AuthResponse> => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
     
@@ -247,6 +247,33 @@ export const authApi = {
       body: JSON.stringify(credentials),
     });
     return handleResponse<AuthResponse>(response);
+  },
+};
+
+export const userApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await fetch(`${BASE_URL}/auth/users`, {
+      method: 'GET',
+      headers: createHeaders(),
+    });
+    return handleResponse<any[]>(response);
+  },
+
+  updateRole: async (id: string, role: string, teamId: string | null): Promise<any> => {
+    const response = await fetch(`${BASE_URL}/auth/users/${id}/role`, {
+      method: 'PATCH',
+      headers: createHeaders(),
+      body: JSON.stringify({ role, teamId }),
+    });
+    return handleResponse<any>(response);
+  },
+
+  delete: async (id: string): Promise<any> => {
+    const response = await fetch(`${BASE_URL}/auth/users/${id}`, {
+      method: 'DELETE',
+      headers: createHeaders(),
+    });
+    return handleResponse<any>(response);
   },
 };
 
