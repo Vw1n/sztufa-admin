@@ -183,10 +183,13 @@ export const matchApi = {
     return handleResponse<MatchDTO>(response);
   },
 
-  getAll: async (page = 1, limit = 10, teamId?: string): Promise<MatchListResponse> => {
+  getAll: async (page = 1, limit = 100, teamId?: string, seasonId?: string): Promise<MatchListResponse> => {
     let url = `${BASE_URL}/matches?page=${page}&limit=${limit}`;
     if (teamId) {
       url += `&teamId=${teamId}`;
+    }
+    if (seasonId) {
+      url += `&seasonId=${seasonId}`;
     }
     const response = await fetch(url, {
       method: 'GET',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Edit2, Trash2, Eye, RefreshCw, AlertCircle, CheckCircle, MapPin, Plus, X } from 'lucide-react';
-import { matchApi, playerApi } from '../api/service';
+import { matchApi, playerApi, seasonApi } from '../api/service';
 import { MatchDTO, PlayerDTO } from '../api/types';
 import { Match, Goal, MatchEvent } from '../types';
 import { generateId } from '../utils';
@@ -17,9 +17,29 @@ const MatchViewEditPage: React.FC = () => {
   const [homeTeamPlayers, setHomeTeamPlayers] = useState<PlayerDTO[]>([]);
   const [awayTeamPlayers, setAwayTeamPlayers] = useState<PlayerDTO[]>([]);
 
+  const [seasons, setSeasons] = useState<any[]>([]);
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('all');
+
+  useEffect(() => {
+    loadSeasons();
+  }, []);
+
   useEffect(() => {
     loadMatches();
-  }, []);
+  }, [selectedSeasonId]);
+
+  const loadSeasons = async () => {
+    try {
+      const data = await seasonApi.getAll();
+      setSeasons(data || []);
+      const active = data.find((s: any) => s.status === 'active');
+      if (active) {
+        setSelectedSeasonId(active.id);
+      }
+    } catch (err) {
+      console.error('加载赛季列表失败:', err);
+    }
+  };
 
   const loadTeamPlayers = async (homeTeamId: string, awayTeamId: string) => {
     try {
@@ -37,7 +57,7 @@ const MatchViewEditPage: React.FC = () => {
   const loadMatches = async () => {
     setIsLoading(true);
     try {
-      const response = await matchApi.getAll();
+      const response = await matchApi.getAll(1, 100, undefined, selectedSeasonId);
       const matchList: Match[] = response.data.map((m: MatchDTO) => {
         const homeGoals = (m.goals || []).filter(g => g.teamType === 'home');
         const awayGoals = (m.goals || []).filter(g => g.teamType === 'away');
@@ -450,10 +470,28 @@ const MatchViewEditPage: React.FC = () => {
               <span className="icon">⚽</span>
               比赛列表
             </h2>
-            <button onClick={loadMatches} className="add-btn refresh-btn" disabled={isLoading}>
-              <RefreshCw size={16} className={isLoading ? 'spinning' : ''} />
-              刷新列表
-            </button>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#666', fontWeight: 500 }}>选择赛季:</span>
+                <select
+                  value={selectedSeasonId}
+                  onChange={(e) => setSelectedSeasonId(e.target.value)}
+                  className="form-select inline"
+                  style={{ width: '180px', padding: '6px 12px', height: 'auto', margin: 0 }}
+                >
+                  <option value="all">显示全部赛季</option>
+                  {seasons.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} {s.status === 'active' ? '(当前赛季)' : '(已归档)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button onClick={loadMatches} className="add-btn refresh-btn" disabled={isLoading} style={{ margin: 0 }}>
+                <RefreshCw size={16} className={isLoading ? 'spinning' : ''} />
+                刷新列表
+              </button>
+            </div>
           </div>
 
           {isLoading ? (
