@@ -726,7 +726,7 @@ const TeamManagementPage: React.FC = () => {
                                   <option value="">请选择换上球员</option>
                                   {homeTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id}>
-                                      换上: {player.name}
+                                      换上: {player.name} ({player.jerseyNumber}号)
                                     </option>
                                   ))}
                                 </select>
@@ -739,7 +739,7 @@ const TeamManagementPage: React.FC = () => {
                                   <option value="">请选择换下球员</option>
                                   {homeTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id}>
-                                      换下: {player.name}
+                                      换下: {player.name} ({player.jerseyNumber}号)
                                     </option>
                                   ))}
                                 </select>
@@ -755,7 +755,7 @@ const TeamManagementPage: React.FC = () => {
                                   <option value="">请选择进球/得牌球员</option>
                                   {homeTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id}>
-                                      {player.name}
+                                      {player.name} ({player.jerseyNumber}号)
                                     </option>
                                   ))}
                                 </select>
@@ -771,7 +771,7 @@ const TeamManagementPage: React.FC = () => {
                                       .filter(p => p.id !== event.playerId)
                                       .map((player) => (
                                         <option key={player.id} value={player.id}>
-                                          助攻: {player.name}
+                                          助攻: {player.name} ({player.jerseyNumber}号)
                                         </option>
                                       ))}
                                   </select>
@@ -894,7 +894,7 @@ const TeamManagementPage: React.FC = () => {
                                   <option value="">请选择换上球员</option>
                                   {awayTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id}>
-                                      换上: {player.name}
+                                      换上: {player.name} ({player.jerseyNumber}号)
                                     </option>
                                   ))}
                                 </select>
@@ -907,7 +907,7 @@ const TeamManagementPage: React.FC = () => {
                                   <option value="">请选择换下球员</option>
                                   {awayTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id}>
-                                      换下: {player.name}
+                                      换下: {player.name} ({player.jerseyNumber}号)
                                     </option>
                                   ))}
                                 </select>
@@ -923,7 +923,7 @@ const TeamManagementPage: React.FC = () => {
                                   <option value="">请选择进球/得牌球员</option>
                                   {awayTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id}>
-                                      {player.name}
+                                      {player.name} ({player.jerseyNumber}号)
                                     </option>
                                   ))}
                                 </select>
@@ -939,7 +939,7 @@ const TeamManagementPage: React.FC = () => {
                                       .filter(p => p.id !== event.playerId)
                                       .map((player) => (
                                         <option key={player.id} value={player.id}>
-                                          助攻: {player.name}
+                                          助攻: {player.name} ({player.jerseyNumber}号)
                                         </option>
                                       ))}
                                   </select>

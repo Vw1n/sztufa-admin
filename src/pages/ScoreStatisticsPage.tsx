@@ -898,7 +898,7 @@ const MatchViewEditPage: React.FC = () => {
                                   <option value="">请选择换上球员</option>
                                   {homeTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                      换上: {player.name} {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
+                                      换上: {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
                                     </option>
                                   ))}
                                 </select>
@@ -911,7 +911,7 @@ const MatchViewEditPage: React.FC = () => {
                                   <option value="">请选择换下球员</option>
                                   {homeTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                      换下: {player.name} {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
+                                      换下: {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
                                     </option>
                                   ))}
                                 </select>
@@ -927,7 +927,7 @@ const MatchViewEditPage: React.FC = () => {
                                   <option value="">请选择球员</option>
                                   {homeTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                      {player.name} {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
+                                      {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
                                     </option>
                                   ))}
                                 </select>
@@ -943,7 +943,7 @@ const MatchViewEditPage: React.FC = () => {
                                       .filter(p => p.id !== event.playerId)
                                       .map((player) => (
                                         <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                          助攻: {player.name} {player.status === 'suspended' ? `(🛑 停赛)` : ''}
+                                          助攻: {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛)` : ''}
                                         </option>
                                       ))}
                                   </select>
@@ -1113,7 +1113,7 @@ const MatchViewEditPage: React.FC = () => {
                                   <option value="">请选择换上球员</option>
                                   {awayTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                      换上: {player.name} {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
+                                      换上: {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
                                     </option>
                                   ))}
                                 </select>
@@ -1126,7 +1126,7 @@ const MatchViewEditPage: React.FC = () => {
                                   <option value="">请选择换下球员</option>
                                   {awayTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                      换下: {player.name} {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
+                                      换下: {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
                                     </option>
                                   ))}
                                 </select>
@@ -1142,7 +1142,7 @@ const MatchViewEditPage: React.FC = () => {
                                   <option value="">请选择球员</option>
                                   {awayTeamPlayers.map((player) => (
                                     <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                      {player.name} {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
+                                      {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛 - 🟨${player.yellowCards} 🟥${player.redCards})` : ''}
                                     </option>
                                   ))}
                                 </select>
@@ -1158,7 +1158,7 @@ const MatchViewEditPage: React.FC = () => {
                                       .filter(p => p.id !== event.playerId)
                                       .map((player) => (
                                         <option key={player.id} value={player.id} style={player.status === 'suspended' ? { color: '#fa5252', fontWeight: 'bold' } : undefined}>
-                                          助攻: {player.name} {player.status === 'suspended' ? `(🛑 停赛)` : ''}
+                                          助攻: {player.name} ({player.jerseyNumber}号) {player.status === 'suspended' ? `(🛑 停赛)` : ''}
                                         </option>
                                       ))}
                                   </select>
