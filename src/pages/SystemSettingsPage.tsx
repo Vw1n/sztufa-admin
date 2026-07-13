@@ -560,7 +560,7 @@ const SystemSettingsPage: React.FC = () => {
                 </h2>
               </div>
               <div style={{ background: '#fcfcfc', border: '1px solid #eee', padding: '20px', borderRadius: '8px' }}>
-                <form onSubmit={handleCreateUser} style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}>
+                <form onSubmit={handleCreateUser} className="create-user-form" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '8px' }}>用户名</label>
                     <input
@@ -653,7 +653,7 @@ const SystemSettingsPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="player-table-wrapper">
-                  <table className="player-table">
+                  <table className="player-table users-input-table">
                     <thead>
                       <tr>
                         <th>用户名</th>
@@ -672,7 +672,7 @@ const SystemSettingsPage: React.FC = () => {
 
                         return (
                           <tr key={u.id}>
-                            <td style={{ fontWeight: 500, color: '#333' }}>
+                            <td data-label="用户名" style={{ fontWeight: 500, color: '#333' }}>
                               {u.username}
                               {u.username === 'admin' && (
                                 <span style={{ background: '#fff3cd', color: '#856404', fontSize: '11px', padding: '2px 6px', borderRadius: '10px', marginLeft: '8px' }}>
@@ -680,7 +680,7 @@ const SystemSettingsPage: React.FC = () => {
                                 </span>
                               )}
                             </td>
-                            <td>
+                            <td data-label="角色权限">
                               <select
                                 value={activeRole}
                                 onChange={(e) => handleRoleChangeInRow(u.id, u.role, u.teamId, e.target.value)}
@@ -694,7 +694,7 @@ const SystemSettingsPage: React.FC = () => {
                                 <option value="super_admin">超级管理员</option>
                               </select>
                             </td>
-                            <td>
+                            <td data-label="绑定球队">
                               {activeRole === 'coach' ? (
                                 <select
                                   value={activeTeamId || ''}
@@ -714,8 +714,8 @@ const SystemSettingsPage: React.FC = () => {
                                 <span style={{ color: '#aaa', fontSize: '13px' }}>--</span>
                               )}
                             </td>
-                            <td style={{ color: '#666' }}>{formatDate(u.createdAt)}</td>
-                            <td>
+                            <td data-label="注册时间" style={{ color: '#666' }}>{formatDate(u.createdAt)}</td>
+                            <td data-label="操作">
                               <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                 <button
                                   onClick={() => handleUpdateUserRole(u.id, activeRole, activeTeamId)}
