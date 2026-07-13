@@ -201,6 +201,49 @@ const LoginPage: React.FC = () => {
               <Link to="/register" className="auth-link">立即注册</Link>
             </p>
           </div>
+
+          {/* API 联调诊断面板 (仅在局域网/本地环境展示) */}
+          {!window.location.hostname.endsWith('sztufa.xyz') && (
+            <div style={{ marginTop: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef', fontSize: '12px' }}>
+              <div style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                🔧 局域网 API 联调诊断面板
+              </div>
+              <div style={{ color: '#6c757d', marginBottom: '4px' }}>
+                当前 Host: <code style={{ background: '#e9ecef', padding: '2px 4px', borderRadius: '3px' }}>{window.location.host}</code>
+              </div>
+              <div style={{ color: '#6c757d', marginBottom: '8px' }}>
+                API BASE_URL: <code style={{ background: '#e9ecef', padding: '2px 4px', borderRadius: '3px' }}>/api/v1</code>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const btn = document.getElementById('diagnose-btn');
+                  const resultDiv = document.getElementById('diagnose-result');
+                  if (btn && resultDiv) {
+                    btn.innerText = '诊断中...';
+                    resultDiv.innerText = '';
+                    try {
+                      const start = Date.now();
+                      const res = await fetch('/api/v1/seasons/active');
+                      const data = await res.json();
+                      const latency = Date.now() - start;
+                      resultDiv.style.color = '#2b8a3e';
+                      resultDiv.innerHTML = `✅ 连通成功! 响应时长: ${latency}ms<br/>当前活动赛季: <strong>${data?.name || '未命名'}</strong>`;
+                    } catch (e) {
+                      resultDiv.style.color = '#c92a2a';
+                      resultDiv.innerText = `❌ 连通失败! 错误: ${e instanceof Error ? e.message : String(e)}`;
+                    }
+                    btn.innerText = '一键测试 API 连通性';
+                  }
+                }}
+                id="diagnose-btn"
+                style={{ width: '100%', padding: '8px', background: '#667eea', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+              >
+                一键测试 API 连通性
+              </button>
+              <div id="diagnose-result" style={{ marginTop: '8px', padding: '6px', borderRadius: '4px', background: '#fff', border: '1px dashed #ced4da', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}></div>
+            </div>
+          )}
         </div>
 
         <div className="auth-decoration">

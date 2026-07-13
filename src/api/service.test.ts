@@ -453,7 +453,7 @@ describe('API Service Tests', () => {
         json: jest.fn().mockResolvedValueOnce(mockLoginResponse),
       });
 
-      const result = await authApi.login('admin', 'password123');
+      const result = await authApi.login({ username: 'admin', password: 'password123' });
 
       expect(fetch).toHaveBeenCalledWith(
         'https://api.sztufa.xyz/api/v1/auth/login',
@@ -478,7 +478,7 @@ describe('API Service Tests', () => {
         json: jest.fn().mockResolvedValueOnce(mockRegisterResponse),
       });
 
-      const result = await authApi.register('admin', 'password123', 'admin');
+      const result = await authApi.register({ username: 'admin', password: 'password123', role: 'admin' });
 
       expect(fetch).toHaveBeenCalledWith(
         'https://api.sztufa.xyz/api/v1/auth/register',
@@ -501,7 +501,7 @@ describe('API Service Tests', () => {
         }),
       });
 
-      await expect(authApi.login('admin', 'wrongpassword')).rejects.toThrow('用户名或密码错误');
+      await expect(authApi.login({ username: 'admin', password: 'wrongpassword' })).rejects.toThrow('用户名或密码错误');
     });
   });
 

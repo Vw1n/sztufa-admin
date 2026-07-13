@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Trophy, Calendar, BarChart3, Users, LogOut, ShieldAlert, Database } from 'lucide-react';
+import { Trophy, Calendar, BarChart3, Users, LogOut, ShieldAlert, Database, Menu, X } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import TeamInfoPage from './pages/TeamInfoPage';
 import MatchSchedulePage from './pages/MatchSchedulePage';
@@ -60,10 +60,9 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
   
   return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
-};
-
-const Navigation: React.FC = () => {
+};const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const filteredNavItems = navItems.filter((item) => {
     if (!user) return false;
@@ -87,30 +86,42 @@ const Navigation: React.FC = () => {
           <Trophy size={24} />
           <span>校园足球赛事系统</span>
         </div>
-        <ul className="nav-links">
-          {filteredNavItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.path}>
-                <Link to={item.path}>
-                  <Icon size={18} />
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="nav-user">
-          <span className="user-name">
-            {user?.username || '用户'} 
-            <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '5px', padding: '2px 6px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px' }}>
-              {user?.role === 'super_admin' ? '超管' : user?.role === 'match_scorer' ? '记录员' : user?.role === 'coach' ? '教练' : '普通用户'}
+        
+        {/* 移动端汉堡包切换按钮 */}
+        <button 
+          className="menu-toggle-btn" 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="切换菜单"
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        <div className={`nav-menu-wrapper ${isMenuOpen ? 'active' : ''}`}>
+          <ul className="nav-links">
+            {filteredNavItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.path}>
+                  <Link to={item.path} onClick={() => setIsMenuOpen(false)}>
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="nav-user">
+            <span className="user-name">
+              {user?.username || '用户'} 
+              <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '5px', padding: '2px 6px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px' }}>
+                {user?.role === 'super_admin' ? '超管' : user?.role === 'match_scorer' ? '记录员' : user?.role === 'coach' ? '教练' : '普通用户'}
+              </span>
             </span>
-          </span>
-          <button className="logout-btn" onClick={logout}>
-            <LogOut size={18} />
-            退出
-          </button>
+            <button className="logout-btn" onClick={() => { logout(); setIsMenuOpen(false); }}>
+              <LogOut size={18} />
+              退出
+            </button>
+          </div>
         </div>
       </div>
     </nav>

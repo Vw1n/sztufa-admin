@@ -1,6 +1,6 @@
 import { ApiResponse, ErrorResponse, TeamDTO, MatchDTO, PlayerDTO, TeamListResponse, MatchListResponse, PlayerListResponse, ImportResult, AuthResponse, AuditLogDTO, BackupDTO } from './types';
 
-const BASE_URL = !window.location.hostname.endsWith('sztufa.xyz') ? 'http://localhost:3001/api/v1' : 'https://api.sztufa.xyz/api/v1';
+const BASE_URL = typeof window !== 'undefined' && !window.location.hostname.endsWith('sztufa.xyz') ? '/api/v1' : 'https://api.sztufa.xyz/api/v1';
 
 const getAuthToken = (): string | null => {
   return localStorage.getItem('token') || null;

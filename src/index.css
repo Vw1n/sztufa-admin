@@ -1921,6 +1921,117 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* 导航栏汉堡包菜单移动端重构 */
+  .menu-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+  }
+
+  .menu-toggle-btn:hover {
+    background-color: rgba(102, 126, 234, 0.08);
+  }
+
+  .nav-menu-wrapper {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #f1f3f5;
+    flex-direction: column;
+    padding: 16px 24px;
+    gap: 16px;
+    z-index: 999;
+    animation: slideDown 0.3s ease forwards;
+  }
+
+  .nav-menu-wrapper.active {
+    display: flex;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+
+  .nav-user {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+    gap: 12px;
+    margin-left: 0;
+  }
+
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 页面容器与间距微调 */
+  .page-content {
+    padding: 20px 12px;
+  }
+
+  .form-section,
+  .player-section,
+  .importer-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  /* 表格自适应横向溢出 */
+  .player-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-top: 12px;
+  }
+
+  .player-table th,
+  .player-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+    white-space: nowrap; /* 表格列在手机上横向撑开，避免换行挤压变形 */
+  }
+
+  /* 对阵比分录入面板自适应 */
   .match-score-container {
     flex-direction: column;
     gap: 16px;
@@ -1953,6 +2064,20 @@ body {
     height: 48px;
   }
 
+  /* 首发与替补名单配置：两列强转为单列垂直堆叠 */
+  .lineups-admin-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  /* 事件配置下拉框及输入框在小屏下高度与尺寸优化 */
+  .form-select.inline,
+  .form-input.inline {
+    min-height: 38px;
+    font-size: 14px;
+  }
+
+  /* 页脚与通用动作按钮 */
   .form-row {
     grid-template-columns: 1fr;
   }
@@ -1965,11 +2090,28 @@ body {
 
   .footer-actions {
     flex-direction: column;
+    gap: 8px;
   }
 
   .export-btn,
-  .save-btn {
+  .save-btn,
+  .add-btn {
     width: 100%;
     justify-content: center;
   }
 }
+
+/* 默认在宽屏下隐藏手机端汉堡包菜单按钮 */
+@media (min-width: 769px) {
+  .menu-toggle-btn {
+    display: none;
+  }
+  .nav-menu-wrapper {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 40px;
+  }
+}
+
