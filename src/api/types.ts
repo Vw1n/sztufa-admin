@@ -121,6 +121,7 @@ export interface AuditLogDTO {
   action: string;
   details: string;
   createdAt: string;
+  subLogs?: { id: string; details: string; createdAt: string }[];
 }
 
 export interface BackupDTO {

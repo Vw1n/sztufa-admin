@@ -86,23 +86,92 @@ const AuditLogPage: React.FC = () => {
       [id]: !prev[id]
     }));
   };
-
   const renderDetails = (log: AuditLogDTO) => {
     const details = log.details || '';
-    
-    // 按信息切分出主干简述和差异列表
+    const isExpanded = !!expandedLogs[log.id];
+
+    // 如果该日志是后端合并的批量操作记录
+    if (log.subLogs && log.subLogs.length > 0) {
+      return (
+        <div>
+          <span style={{ fontWeight: 500, color: '#2d3748' }}>{details}</span>
+          <button
+            onClick={() => toggleExpand(log.id)}
+            className="text-btn"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#3182ce',
+              cursor: 'pointer',
+              padding: '0 6px',
+              fontSize: '12px',
+              fontWeight: 500,
+              textDecoration: 'underline'
+            }}
+          >
+            {isExpanded ? '收起明细 ▴' : '展开合并的全部明细 ▾'}
+          </button>
+          {isExpanded && (
+            <div style={{ marginTop: '6px', padding: '8px 12px', background: '#f7fafc', borderRadius: '6px', borderLeft: '3px solid #3182ce', fontSize: '13px', color: '#4a5568', lineHeight: '1.5' }}>
+              {log.subLogs.map((sub, idx) => {
+                const subDetails = sub.details || '';
+                const subSplit = subDetails.indexOf(' 的信息: ');
+                const subSplit2 = subDetails.indexOf(' 的权限设置: ');
+                const subSplit3 = subDetails.indexOf(' 比分/信息: ');
+
+                let mainText = subDetails;
+                let diffText = '';
+
+                if (subSplit !== -1) {
+                  mainText = subDetails.substring(0, subSplit + 5);
+                  diffText = subDetails.substring(subSplit + 8);
+                } else if (subSplit2 !== -1) {
+                  mainText = subDetails.substring(0, subSplit2 + 7);
+                  diffText = subDetails.substring(subSplit2 + 10);
+                } else if (subSplit3 !== -1) {
+                  mainText = subDetails.substring(0, subSplit3 + 8);
+                  diffText = subDetails.substring(subSplit3 + 11);
+                }
+
+                return (
+                  <div key={sub.id || idx} style={{ borderBottom: idx < (log.subLogs?.length || 0) - 1 ? '1px dashed #e2e8f0' : 'none', padding: '6px 0' }}>
+                    <div style={{ fontSize: '11px', color: '#a0aec0', marginBottom: '2px' }}>
+                      ⏱️ {new Date(sub.createdAt).toLocaleTimeString()}
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: 500 }}>{mainText}</span>
+                      {diffText && (
+                        <span style={{ color: '#718096', fontSize: '12px', marginLeft: '5px' }}>
+                          ({diffText})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 否则是单条普通操作，按信息/比分切分出主干和差异
     const splitIndex = details.indexOf(' 的信息: ');
     const splitIndex2 = details.indexOf(' 的权限设置: ');
+    const splitIndex3 = details.indexOf(' 比分/信息: ');
     
     let summary = details;
     let diff = '';
     
     if (splitIndex !== -1) {
       summary = details.substring(0, splitIndex + 5);
-      diff = details.substring(splitIndex + 5 + 3); // 剔除 "的信息: "
+      diff = details.substring(splitIndex + 8);
     } else if (splitIndex2 !== -1) {
       summary = details.substring(0, splitIndex2 + 7);
-      diff = details.substring(splitIndex2 + 7 + 3); // 剔除 "的权限设置: "
+      diff = details.substring(splitIndex2 + 10);
+    } else if (splitIndex3 !== -1) {
+      summary = details.substring(0, splitIndex3 + 8);
+      diff = details.substring(splitIndex3 + 11);
     }
     
     // 如果没有明显的键值对差异，直接展示完整描述
@@ -110,7 +179,6 @@ const AuditLogPage: React.FC = () => {
       return <span>{details}</span>;
     }
     
-    const isExpanded = !!expandedLogs[log.id];
     return (
       <div>
         <span style={{ fontWeight: 500, color: '#2d3748' }}>{summary}</span>
@@ -140,7 +208,6 @@ const AuditLogPage: React.FC = () => {
       </div>
     );
   };
-
   return (
     <div className="team-info-page">
       <header className="page-header">
