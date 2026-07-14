@@ -39,6 +39,7 @@ module.exports = {
     },
     compress: true,
     port: 3002,
+    host: '0.0.0.0',
     open: true,
     hot: true,
     historyApiFallback: true,
