@@ -188,9 +188,9 @@ const TeamViewEditPage: React.FC = () => {
         original.name !== p.name ||
         original.studentId !== p.studentId ||
         original.jerseyNumber !== p.jerseyNumber ||
-        original.status !== p.status ||
-        Number(original.yellowCards) !== Number(p.yellowCards) ||
-        Number(original.redCards) !== Number(p.redCards)
+        (original.status || 'active') !== (p.status || 'active') ||
+        Number(original.yellowCards || 0) !== Number(p.yellowCards || 0) ||
+        Number(original.redCards || 0) !== Number(p.redCards || 0)
       ) {
         playersToUpdate.push(p);
       }
