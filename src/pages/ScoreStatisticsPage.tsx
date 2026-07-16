@@ -809,7 +809,12 @@ const MatchViewEditPage: React.FC = () => {
                     <input
                       type="number"
                       value={editData?.homeTeamScore || 0}
-                      onChange={(e) => handleFieldChange('homeTeamScore', parseInt(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        if (editData) {
+                          setEditData({ ...editData, homeTeamScore: val, homeScore: val });
+                        }
+                      }}
                       className="form-input score-input"
                       min="0"
                     />
@@ -861,7 +866,12 @@ const MatchViewEditPage: React.FC = () => {
                     <input
                       type="number"
                       value={editData?.awayTeamScore || 0}
-                      onChange={(e) => handleFieldChange('awayTeamScore', parseInt(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        if (editData) {
+                          setEditData({ ...editData, awayTeamScore: val, awayScore: val });
+                        }
+                      }}
                       className="form-input score-input"
                       min="0"
                     />

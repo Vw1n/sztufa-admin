@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Edit2, Trash2, Eye, RefreshCw, AlertCircle, CheckCircle, Plus, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ExcelImporter from '../components/ExcelImporter';
-import { teamApi, playerApi, matchApi, seasonApi } from '../api/service';
+import { teamApi, playerApi, matchApi, seasonApi, uploadApi } from '../api/service';
 import { TeamDTO, PlayerDTO, MatchDTO } from '../api/types';
 import { Team, Player, Match } from '../types';
 import { generateId } from '../utils';
@@ -255,7 +255,8 @@ const TeamViewEditPage: React.FC = () => {
         original.jerseyNumber !== p.jerseyNumber ||
         (original.status || 'active') !== (p.status || 'active') ||
         Number(original.yellowCards || 0) !== Number(p.yellowCards || 0) ||
-        Number(original.redCards || 0) !== Number(p.redCards || 0)
+        Number(original.redCards || 0) !== Number(p.redCards || 0) ||
+        original.photo !== p.photo
       ) {
         playersToUpdate.push(p);
       }
@@ -276,6 +277,9 @@ const TeamViewEditPage: React.FC = () => {
         leaderPhone: editData.leaderPhone,
         homeJerseyColor: editData.homeJerseyColor,
         awayJerseyColor: editData.awayJerseyColor,
+        teamLogo: editData.teamLogo || null,
+        homeJersey: editData.homeJersey || null,
+        awayJersey: editData.awayJersey || null,
       };
 
       // 1. 保存球队基本信息
@@ -308,6 +312,7 @@ const TeamViewEditPage: React.FC = () => {
           status: p.status || 'active',
           yellowCards: Number(p.yellowCards) || 0,
           redCards: Number(p.redCards) || 0,
+          photo: p.photo || null,
           teamId: editData.id,
         };
         await playerApi.create(playerDTO);
@@ -328,6 +333,7 @@ const TeamViewEditPage: React.FC = () => {
           status: p.status || 'active',
           yellowCards: Number(p.yellowCards) || 0,
           redCards: Number(p.redCards) || 0,
+          photo: p.photo || null,
           teamId: editData.id,
         };
         await playerApi.update(p.id, playerDTO);
@@ -711,6 +717,140 @@ const TeamViewEditPage: React.FC = () => {
                   <div className="form-value">{selectedTeam.awayJerseyColor}</div>
                 )}
               </div>
+
+              <div className="form-row" style={{ gridColumn: 'span 3', display: 'flex', gap: '20px', marginTop: '15px' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>队徽</label>
+                  {isEditing ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
+                      {editData?.teamLogo ? (
+                        <img src={editData.teamLogo} alt="队徽" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
+                      ) : (
+                        <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: '#f1f3f5', border: '1px dashed #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#868e96' }}>无队徽</div>
+                      )}
+                      <label className="add-btn small" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 12px', background: '#3b5bdb', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', border: 'none', fontWeight: 500 }}>
+                        上传新队徽
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const res = await uploadApi.upload(file);
+                                if (res.data && res.data.url) {
+                                  handleFieldChange('teamLogo', res.data.url);
+                                } else {
+                                  alert('上传失败');
+                                }
+                              } catch (err: any) {
+                                alert('上传错误: ' + (err?.message || String(err)));
+                              }
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '5px' }}>
+                      {selectedTeam.teamLogo ? (
+                        <img src={selectedTeam.teamLogo} alt="队徽" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
+                      ) : (
+                        <div className="form-value">未上传队徽</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>主场球衣</label>
+                  {isEditing ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
+                      {editData?.homeJersey ? (
+                        <img src={editData.homeJersey} alt="主场球衣" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
+                      ) : (
+                        <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: '#f1f3f5', border: '1px dashed #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#868e96' }}>无球衣</div>
+                      )}
+                      <label className="add-btn small" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 12px', background: '#3b5bdb', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', border: 'none', fontWeight: 500 }}>
+                        上传新球衣
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const res = await uploadApi.upload(file);
+                                if (res.data && res.data.url) {
+                                  handleFieldChange('homeJersey', res.data.url);
+                                } else {
+                                  alert('上传失败');
+                                }
+                              } catch (err: any) {
+                                alert('上传错误: ' + (err?.message || String(err)));
+                              }
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '5px' }}>
+                      {selectedTeam.homeJersey ? (
+                        <img src={selectedTeam.homeJersey} alt="主场球衣" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
+                      ) : (
+                        <div className="form-value">未上传球衣</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>客场球衣</label>
+                  {isEditing ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
+                      {editData?.awayJersey ? (
+                        <img src={editData.awayJersey} alt="客场球衣" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
+                      ) : (
+                        <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: '#f1f3f5', border: '1px dashed #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#868e96' }}>无球衣</div>
+                      )}
+                      <label className="add-btn small" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 12px', background: '#3b5bdb', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', border: 'none', fontWeight: 500 }}>
+                        上传新球衣
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const res = await uploadApi.upload(file);
+                                if (res.data && res.data.url) {
+                                  handleFieldChange('awayJersey', res.data.url);
+                                } else {
+                                  alert('上传失败');
+                                }
+                              } catch (err: any) {
+                                alert('上传错误: ' + (err?.message || String(err)));
+                              }
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '5px' }}>
+                      {selectedTeam.awayJersey ? (
+                        <img src={selectedTeam.awayJersey} alt="客场球衣" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
+                      ) : (
+                        <div className="form-value">未上传球衣</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
               
               {!isEditing && (
                 <div className="form-group" style={{ gridColumn: 'span 3', marginTop: '10px' }}>
@@ -781,6 +921,7 @@ const TeamViewEditPage: React.FC = () => {
                 <thead>
                   <tr>
                     <th style={{ width: '120px', minWidth: '120px' }}>姓名</th>
+                    <th style={{ width: '120px', minWidth: '120px' }}>照片</th>
                     <th style={{ width: '160px', minWidth: '160px' }}>学号</th>
                     <th style={{ width: '100px', minWidth: '100px' }}>球衣号码</th>
                     <th style={{ width: '90px', minWidth: '90px' }}>黄牌数</th>
@@ -802,6 +943,39 @@ const TeamViewEditPage: React.FC = () => {
                             placeholder="姓名"
                             style={{ margin: 0, padding: '4px 8px', fontSize: '14px', height: '32px', width: '100%', boxSizing: 'border-box' }}
                           />
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {player.photo ? (
+                              <img src={player.photo} alt="头像" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#666' }}>无</div>
+                            )}
+                            <label style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 6px', background: '#e9ecef', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', border: '1px solid #ced4da' }}>
+                              上传
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    try {
+                                      const res = await uploadApi.upload(file);
+                                      if (res.data && res.data.url) {
+                                        handlePlayerFieldChange(index, 'photo', res.data.url);
+                                      } else {
+                                        alert('上传失败');
+                                      }
+                                    } catch (err: any) {
+                                      console.error(err);
+                                      alert('上传出错: ' + (err?.message || String(err)));
+                                    }
+                                  }
+                                }}
+                                style={{ display: 'none' }}
+                              />
+                            </label>
+                          </div>
                         </td>
                         <td>
                           <input
@@ -875,6 +1049,13 @@ const TeamViewEditPage: React.FC = () => {
                             <span style={{ marginLeft: '8px', color: '#fa5252', fontSize: '11px', fontWeight: 'normal', background: '#ffe3e3', padding: '2px 6px', borderRadius: '4px' }}>
                               🛑 停赛
                             </span>
+                          )}
+                        </td>
+                        <td>
+                          {player.photo ? (
+                            <img src={player.photo} alt="头像" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#666' }}>无</div>
                           )}
                         </td>
                         <td>{player.studentId}</td>
