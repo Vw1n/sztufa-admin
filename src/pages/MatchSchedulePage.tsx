@@ -561,18 +561,6 @@ const TeamViewEditPage: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div className="form-group" style={{ margin: 0, width: '160px' }}>
-              <label style={{ fontSize: '13px', fontWeight: 600, color: '#666', marginBottom: '4px', display: 'block' }}>性别组别筛选</label>
-              <select
-                value={filterGender}
-                onChange={(e) => setFilterGender(e.target.value)}
-                style={{ width: '100%', padding: '6px 10px', border: '1px solid #ddd', borderRadius: '4px', height: '36px', backgroundColor: '#fff' }}
-              >
-                <option value="all">全部组别</option>
-                <option value="MALE">男子组 (Men's)</option>
-                <option value="FEMALE">女子组 (Women's)</option>
-              </select>
-            </div>
           </div>
 
           <div className="section-header" style={{ marginTop: '10px' }}>
