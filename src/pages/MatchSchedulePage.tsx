@@ -48,13 +48,13 @@ const TeamViewEditPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    loadTeams(filterSeasonId, filterGender);
+    loadTeams(filterSeasonId);
     if (filterSeasonId !== 'all') {
       loadActiveSeasonAndMatchesForSeason(filterSeasonId);
     } else {
       setAllMatches([]);
     }
-  }, [filterSeasonId, filterGender]);
+  }, [filterSeasonId, seasons]);
 
   const loadActiveSeasonAndMatchesForSeason = async (seasonId: string) => {
     try {
@@ -102,9 +102,20 @@ const TeamViewEditPage: React.FC = () => {
     return { cleanSheets, form };
   };
 
-  const loadTeams = async (seasonId = filterSeasonId, gender = filterGender) => {
+  const loadTeams = async (seasonId = filterSeasonId) => {
     setIsLoading(true);
     try {
+      // 自动根据所选赛季名称推断性别：包含 “女/女子” 设为 FEMALE，否则为 MALE
+      let gender = 'MALE';
+      if (seasonId !== 'all') {
+        const currentSeason = seasons.find(s => s.id === seasonId);
+        if (currentSeason && (currentSeason.name.includes('女') || currentSeason.name.includes('女子'))) {
+          gender = 'FEMALE';
+        }
+      } else {
+        gender = 'all';
+      }
+
       const response = await teamApi.getAll(
         1, 
         200, 
@@ -568,7 +579,7 @@ const TeamViewEditPage: React.FC = () => {
               <span className="icon">🏆</span>
               球队列表
             </h2>
-            <button onClick={() => loadTeams(filterSeasonId, filterGender)} className="add-btn refresh-btn" disabled={isLoading}>
+            <button onClick={() => loadTeams(filterSeasonId)} className="add-btn refresh-btn" disabled={isLoading}>
               <RefreshCw size={16} className={isLoading ? 'spinning' : ''} />
               刷新列表
             </button>
