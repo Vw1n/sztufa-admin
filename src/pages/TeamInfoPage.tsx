@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Download, CheckCircle, Trophy, FileJson, Loader2, AlertCircle } from 'lucide-react';
+import { Save, Download, Trophy, FileJson, Loader2, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import TeamForm from '../components/TeamForm';
 import PlayerList from '../components/PlayerList';
 import ExcelImporter from '../components/ExcelImporter';
+import SuccessToast from '../components/SuccessToast';
 import { Team, TeamFormData, Player } from '../types';
 import { generateId } from '../utils';
 import { seasonApi } from '../api/service';
@@ -272,6 +273,8 @@ const TeamInfoPage: React.FC = () => {
       </header>
 
       <main className="page-content">
+        {isSaved && <SuccessToast message="球队信息录入成功！" />}
+
         {error && (
           <div className="error-message">
             <AlertCircle size={18} />
@@ -329,12 +332,6 @@ const TeamInfoPage: React.FC = () => {
             )}
           </button>
         </div>
-        {isSaved && (
-          <div className="save-success">
-            <CheckCircle size={20} />
-            保存成功！数据已持久化到数据库
-          </div>
-        )}
       </footer>
 
       {saveProgress && (
