@@ -37,8 +37,18 @@ export type CreateTeamPlayerDTO = Omit<
 >;
 
 export type CreateTeamWithPlayersDTO = Omit<TeamDTO, 'id' | 'players' | 'createdAt' | 'updatedAt'> & {
+  seasonId: string;
   players: CreateTeamPlayerDTO[];
 };
+
+export interface SeasonDTO {
+  id: string;
+  name: string;
+  status: string;
+  type: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface TeamDTO {
   id?: string;

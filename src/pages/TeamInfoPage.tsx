@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Save, Download, CheckCircle, Trophy, FileJson, Loader2, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import TeamForm from '../components/TeamForm';
@@ -6,10 +6,16 @@ import PlayerList from '../components/PlayerList';
 import ExcelImporter from '../components/ExcelImporter';
 import { Team, TeamFormData, Player } from '../types';
 import { generateId, fileToBase64 } from '../utils';
-import { teamApi } from '../api/service';
-import { CreateTeamPlayerDTO, CreateTeamWithPlayersDTO } from '../api/types';
+import { seasonApi, teamApi } from '../api/service';
+import { CreateTeamPlayerDTO, CreateTeamWithPlayersDTO, SeasonDTO } from '../api/types';
 import { uploadImageFile } from '../utils/imageUpload';
 import { useAuth } from '../contexts/AuthContext';
+
+const getSeasonGender = (seasonName: string): 'MALE' | 'FEMALE' | null => {
+  if (seasonName.includes('女')) return 'FEMALE';
+  if (seasonName.includes('男')) return 'MALE';
+  return null;
+};
 
 const TeamInfoPage: React.FC = () => {
   const { user } = useAuth();
@@ -26,14 +32,60 @@ const TeamInfoPage: React.FC = () => {
     homeJersey: null,
     awayJersey: null,
     gender: 'MALE',
+    seasonId: '',
   });
 
   const [players, setPlayers] = useState<Player[]>([]);
+  const [activeSeasons, setActiveSeasons] = useState<SeasonDTO[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedTeam, setSavedTeam] = useState<Team | null>(null);
   const [saveProgress, setSaveProgress] = useState<{ current: number; total: number; message: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    seasonApi.getAll()
+      .then((seasons) => {
+        if (!cancelled) {
+          setActiveSeasons(seasons.filter((season) => season.status === 'active'));
+        }
+      })
+      .catch((loadError) => {
+        if (!cancelled) {
+          const message = loadError instanceof Error ? loadError.message : '未知错误';
+          setError(`加载活跃赛季失败：${message}`);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const compatibleActiveSeasons = activeSeasons.filter((season) => {
+    const seasonGender = getSeasonGender(season.name);
+    return seasonGender === null || seasonGender === teamFormData.gender;
+  });
+
+  useEffect(() => {
+    if (compatibleActiveSeasons.length === 0) {
+      setTeamFormData((previous) => previous.seasonId ? { ...previous, seasonId: '' } : previous);
+      return;
+    }
+
+    setTeamFormData((previous) => {
+      if (compatibleActiveSeasons.some((season) => season.id === previous.seasonId)) {
+        return previous;
+      }
+      const exactGenderSeason = compatibleActiveSeasons.find(
+        (season) => getSeasonGender(season.name) === previous.gender,
+      );
+      return {
+        ...previous,
+        seasonId: (exactGenderSeason || compatibleActiveSeasons[0]).id,
+      };
+    });
+  }, [activeSeasons, teamFormData.gender]);
 
   const handleAddPlayer = (player: Omit<Player, 'id'>) => {
     const sId = String(player.studentId).trim();
@@ -147,6 +199,16 @@ const TeamInfoPage: React.FC = () => {
     }
     if (!teamFormData.awayJerseyColor.trim()) {
       setError('请输入客队球衣颜色');
+      return false;
+    }
+
+    if (!teamFormData.seasonId) {
+      setError('请选择所属活跃赛季');
+      return false;
+    }
+
+    if (players.length === 0) {
+      setError('请至少添加一名球员；填写球员资料后请点击“确认添加”');
       return false;
     }
     
@@ -268,6 +330,7 @@ const TeamInfoPage: React.FC = () => {
         homeJersey: homeJerseyUrl,
         awayJersey: awayJerseyUrl,
         gender: teamFormData.gender,
+        seasonId: teamFormData.seasonId,
         players: playerPayloads,
       };
 
@@ -431,7 +494,11 @@ const TeamInfoPage: React.FC = () => {
         )}
 
         <div className="form-section">
-          <TeamForm data={teamFormData} onChange={setTeamFormData} />
+          <TeamForm
+            data={teamFormData}
+            onChange={setTeamFormData}
+            activeSeasons={compatibleActiveSeasons}
+          />
         </div>
 
         <div className="player-section">

@@ -1,12 +1,13 @@
 import { BASE_URL, createHeaders, handleResponse } from './http';
+import { SeasonDTO } from './types';
 
 export const seasonApi = {
-  getAll: async (): Promise<any[]> => {
+  getAll: async (): Promise<SeasonDTO[]> => {
     const response = await fetch(`${BASE_URL}/seasons`, {
       method: 'GET',
       headers: createHeaders(),
     });
-    return handleResponse<any[]>(response);
+    return handleResponse<SeasonDTO[]>(response);
   },
   getActive: async (): Promise<any> => {
     const response = await fetch(`${BASE_URL}/seasons/active`, {

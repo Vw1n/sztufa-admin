@@ -47,6 +47,7 @@ export interface TeamFormData {
   homeJersey: File | null;
   awayJersey: File | null;
   gender: string;
+  seasonId: string;
 }
 
 export interface PlayerFormData {

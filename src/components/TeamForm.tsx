@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Upload, Image } from 'lucide-react';
 import { TeamFormData } from '../types';
+import { SeasonDTO } from '../api/types';
 import { validateImageFile } from '../utils/imageUpload';
 
 interface TeamFormProps {
   data: TeamFormData;
   onChange: (data: TeamFormData) => void;
+  activeSeasons: SeasonDTO[];
 }
 
-const TeamForm: React.FC<TeamFormProps> = ({ data, onChange }) => {
+const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) => {
   const [preview, setPreview] = useState<{ [key: string]: string }>({});
 
   const handleFieldChange = (field: keyof TeamFormData, value: string) => {
@@ -100,6 +102,25 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange }) => {
           >
             <option value="MALE">男子组 (Men's)</option>
             <option value="FEMALE">女子组 (Women's)</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>所属活跃赛季 *</label>
+          <select
+            value={data.seasonId}
+            onChange={(e) => handleFieldChange('seasonId', e.target.value)}
+            style={{ width: '100%', height: '42px', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#fff' }}
+            required
+          >
+            {activeSeasons.length === 0 ? (
+              <option value="">没有匹配的活跃赛季</option>
+            ) : (
+              activeSeasons.map((season) => (
+                <option key={season.id} value={season.id}>
+                  {season.name}（当前活跃）
+                </option>
+              ))
+            )}
           </select>
         </div>
       </div>
