@@ -5,17 +5,16 @@ import TeamForm from '../components/TeamForm';
 import PlayerList from '../components/PlayerList';
 import ExcelImporter from '../components/ExcelImporter';
 import { Team, TeamFormData, Player } from '../types';
-import { generateId, fileToBase64 } from '../utils';
-import { seasonApi, teamApi } from '../api/service';
-import { CreateTeamPlayerDTO, CreateTeamWithPlayersDTO, SeasonDTO } from '../api/types';
-import { uploadImageFile } from '../utils/imageUpload';
+import { generateId } from '../utils';
+import { seasonApi } from '../api/service';
+import { SeasonDTO } from '../api/types';
 import { useAuth } from '../contexts/AuthContext';
-
-const getSeasonGender = (seasonName: string): 'MALE' | 'FEMALE' | null => {
-  if (seasonName.includes('女')) return 'FEMALE';
-  if (seasonName.includes('男')) return 'MALE';
-  return null;
-};
+import {
+  createTeam,
+  getCompatibleActiveSeasons,
+  selectActiveSeasonId,
+  validateTeamCreation,
+} from '../features/team-create';
 
 const TeamInfoPage: React.FC = () => {
   const { user } = useAuth();
@@ -62,28 +61,22 @@ const TeamInfoPage: React.FC = () => {
     };
   }, []);
 
-  const compatibleActiveSeasons = activeSeasons.filter((season) => {
-    const seasonGender = getSeasonGender(season.name);
-    return seasonGender === null || seasonGender === teamFormData.gender;
-  });
+  const compatibleActiveSeasons = getCompatibleActiveSeasons(
+    activeSeasons,
+    teamFormData.gender,
+  );
 
   useEffect(() => {
-    if (compatibleActiveSeasons.length === 0) {
-      setTeamFormData((previous) => previous.seasonId ? { ...previous, seasonId: '' } : previous);
-      return;
-    }
-
     setTeamFormData((previous) => {
-      if (compatibleActiveSeasons.some((season) => season.id === previous.seasonId)) {
+      const seasonId = selectActiveSeasonId(
+        activeSeasons,
+        previous.gender,
+        previous.seasonId,
+      );
+      if (seasonId === previous.seasonId) {
         return previous;
       }
-      const exactGenderSeason = compatibleActiveSeasons.find(
-        (season) => getSeasonGender(season.name) === previous.gender,
-      );
-      return {
-        ...previous,
-        seasonId: (exactGenderSeason || compatibleActiveSeasons[0]).id,
-      };
+      return { ...previous, seasonId };
     });
   }, [activeSeasons, teamFormData.gender]);
 
@@ -151,100 +144,10 @@ const TeamInfoPage: React.FC = () => {
     }
   };
 
-  const validatePhone = (phone: string): boolean => {
-    const phoneRegex = /^1[3-9]\d{9}$/;
-    return phoneRegex.test(phone);
-  };
-
   const validateForm = (): boolean => {
-    if (!teamFormData.teamName.trim()) {
-      setError('请输入队伍名称');
-      return false;
-    }
-    if (teamFormData.teamName.trim().length > 100) {
-      setError('球队名称长度不能超过100个字符');
-      return false;
-    }
-    if (!teamFormData.headCoach.trim()) {
-      setError('请输入主教练姓名');
-      return false;
-    }
-    if (!teamFormData.teamLeader.trim()) {
-      setError('请输入领队姓名');
-      return false;
-    }
-    if (!teamFormData.teamDoctor.trim()) {
-      setError('请输入队医姓名');
-      return false;
-    }
-    if (!teamFormData.coachPhone.trim()) {
-      setError('请输入主教练联系方式');
-      return false;
-    }
-    if (!validatePhone(teamFormData.coachPhone)) {
-      setError('主教练联系方式格式不正确，请输入11位手机号');
-      return false;
-    }
-    if (!teamFormData.leaderPhone.trim()) {
-      setError('请输入领队联系方式');
-      return false;
-    }
-    if (!validatePhone(teamFormData.leaderPhone)) {
-      setError('领队联系方式格式不正确，请输入11位手机号');
-      return false;
-    }
-    if (!teamFormData.homeJerseyColor.trim()) {
-      setError('请输入主队球衣颜色');
-      return false;
-    }
-    if (!teamFormData.awayJerseyColor.trim()) {
-      setError('请输入客队球衣颜色');
-      return false;
-    }
-
-    if (!teamFormData.seasonId) {
-      setError('请选择所属活跃赛季');
-      return false;
-    }
-
-    if (players.length === 0) {
-      setError('请至少添加一名球员；填写球员资料后请点击“确认添加”');
-      return false;
-    }
-    
-    if (players.length > 0) {
-      const studentIds = new Set<string>();
-      const jerseyNumbers = new Set<string>();
-      for (let i = 0; i < players.length; i++) {
-        const p = players[i];
-        if (!p.name.trim()) {
-          setError(`第 ${i + 1} 个球员的姓名不能为空`);
-          return false;
-        }
-        const sId = p.studentId.trim();
-        const jNum = String(p.jerseyNumber || '').trim();
-        if (!sId) {
-          setError(`第 ${i + 1} 个球员的学号不能为空`);
-          return false;
-        }
-        if (!jNum) {
-          setError(`第 ${i + 1} 个球员的球衣号码不能为空`);
-          return false;
-        }
-        if (studentIds.has(sId)) {
-          setError(`球员列表中存在重复的学号: ${sId}`);
-          return false;
-        }
-        if (jerseyNumbers.has(jNum)) {
-          setError(`球员列表中存在重复的球衣号码: ${jNum}`);
-          return false;
-        }
-        studentIds.add(sId);
-        jerseyNumbers.add(jNum);
-      }
-    }
-    
-    return true;
+    const validationError = validateTeamCreation(teamFormData, players);
+    setError(validationError);
+    return validationError === null;
   };
 
   const handleSave = async () => {
@@ -256,125 +159,8 @@ const TeamInfoPage: React.FC = () => {
 
     setIsLoading(true);
 
-    const imageCount = [
-      teamFormData.teamLogo,
-      teamFormData.homeJersey,
-      teamFormData.awayJersey,
-      ...players.map((player) => player.photoFile),
-    ].filter(Boolean).length;
-    const totalSteps = imageCount + 1;
-    let currentStep = 0;
-
     try {
-      const uploadImage = async (file: File, label: string): Promise<string> => {
-        setSaveProgress({
-          current: currentStep,
-          total: totalSteps,
-          message: `正在上传${label}...`,
-        });
-        try {
-          const url = await uploadImageFile(file, label);
-          currentStep++;
-          return url;
-        } catch (error) {
-          throw error;
-        }
-      };
-
-      const teamLogoUrl = teamFormData.teamLogo
-        ? await uploadImage(teamFormData.teamLogo, '队徽')
-        : null;
-      const homeJerseyUrl = teamFormData.homeJersey
-        ? await uploadImage(teamFormData.homeJersey, '主场球衣')
-        : null;
-      const awayJerseyUrl = teamFormData.awayJersey
-        ? await uploadImage(teamFormData.awayJersey, '客场球衣')
-        : null;
-
-      const playerPayloads: CreateTeamPlayerDTO[] = [];
-      for (const player of players) {
-        let photoUrl = player.photo;
-        if (player.photoFile) {
-          photoUrl = await uploadImage(player.photoFile, `球员 ${player.name} 的照片`);
-        } else if (photoUrl?.startsWith('data:') || photoUrl?.startsWith('blob:')) {
-          photoUrl = null;
-        }
-
-        playerPayloads.push({
-          name: player.name,
-          studentId: player.studentId,
-          jerseyNumber: player.jerseyNumber,
-          photo: photoUrl,
-          status: player.status || 'active',
-          yellowCards: Number(player.yellowCards) || 0,
-          redCards: Number(player.redCards) || 0,
-        });
-      }
-
-      setSaveProgress({
-        current: currentStep,
-        total: totalSteps,
-        message: '正在以事务方式保存球队和全部球员...',
-      });
-
-      const teamDTO: CreateTeamWithPlayersDTO = {
-        teamName: teamFormData.teamName,
-        teamDoctor: teamFormData.teamDoctor,
-        headCoach: teamFormData.headCoach,
-        teamLeader: teamFormData.teamLeader,
-        coachPhone: teamFormData.coachPhone,
-        leaderPhone: teamFormData.leaderPhone,
-        homeJerseyColor: teamFormData.homeJerseyColor,
-        awayJerseyColor: teamFormData.awayJerseyColor,
-        teamLogo: teamLogoUrl,
-        homeJersey: homeJerseyUrl,
-        awayJersey: awayJerseyUrl,
-        gender: teamFormData.gender,
-        seasonId: teamFormData.seasonId,
-        players: playerPayloads,
-      };
-
-      const savedTeamData = await teamApi.createWithPlayers(teamDTO);
-      const teamId = savedTeamData.id;
-      if (!teamId) {
-        throw new Error('服务器保存球队信息失败，未返回有效的球队ID');
-      }
-      currentStep++;
-
-      const savedPlayers: Player[] = (savedTeamData.players || []).map((player) => ({
-        id: player.id || generateId(),
-        name: player.name,
-        studentId: player.studentId,
-        jerseyNumber: player.jerseyNumber,
-        photo: player.photo || null,
-        status: player.status || 'active',
-        yellowCards: player.yellowCards || 0,
-        redCards: player.redCards || 0,
-        teamId: player.teamId || teamId,
-      }));
-
-      setSaveProgress({
-        current: totalSteps,
-        total: totalSteps,
-        message: '同步完成！正在重新渲染...'
-      });
-
-      const team: Team = {
-        id: teamId,
-        teamName: savedTeamData.teamName,
-        teamDoctor: savedTeamData.teamDoctor,
-        headCoach: savedTeamData.headCoach,
-        teamLeader: savedTeamData.teamLeader,
-        coachPhone: savedTeamData.coachPhone,
-        leaderPhone: savedTeamData.leaderPhone,
-        homeJerseyColor: savedTeamData.homeJerseyColor,
-        awayJerseyColor: savedTeamData.awayJerseyColor,
-        teamLogo: savedTeamData.teamLogo || null,
-        homeJersey: savedTeamData.homeJersey || null,
-        awayJersey: savedTeamData.awayJersey || null,
-        gender: savedTeamData.gender || teamFormData.gender,
-        players: savedPlayers,
-      };
+      const team = await createTeam(teamFormData, players, setSaveProgress);
 
       setSavedTeam(team);
       setIsSaved(true);
