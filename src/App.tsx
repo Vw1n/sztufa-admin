@@ -59,6 +59,9 @@ const Navigation: React.FC = () => {
     if (user.role === 'match_scorer') {
       return item.path === '/teams' || item.path === '/statistics' || item.path === '/news';
     }
+    if (user.role === 'news_editor') {
+      return item.path === '/news';
+    }
     if (user.role === 'coach') {
       return item.path === '/schedule';
     }
@@ -112,7 +115,7 @@ const Navigation: React.FC = () => {
             <span className="user-name">
               {user?.username || '用户'} 
               <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '5px', padding: '2px 6px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px' }}>
-                {user?.role === 'super_admin' ? '超管' : user?.role === 'match_scorer' ? '记录员' : user?.role === 'coach' ? '教练' : '普通用户'}
+                {user?.role === 'super_admin' ? '超管' : user?.role === 'match_scorer' ? '记录员' : user?.role === 'coach' ? '教练' : user?.role === 'news_editor' ? '新闻录入员' : '普通用户'}
               </span>
             </span>
             <button 
@@ -158,6 +161,9 @@ const HomeRedirect: React.FC = () => {
   if (user.role === 'match_scorer') {
     return <Navigate to="/teams" replace />;
   }
+  if (user.role === 'news_editor') {
+    return <Navigate to="/news" replace />;
+  }
   return <Navigate to="/schedule" replace />;
 };
 
@@ -187,7 +193,7 @@ const AppContent: React.FC = () => {
                        <Route path="/teams" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><TeamManagementPage /></RoleGuardRoute>} />
                        <Route path="/schedule" element={<MatchSchedulePage />} />
                        <Route path="/statistics" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><ScoreStatisticsPage /></RoleGuardRoute>} />
-                       <Route path="/news" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><NewsManagementPage /></RoleGuardRoute>} />
+                       <Route path="/news" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer', 'news_editor']}><NewsManagementPage /></RoleGuardRoute>} />
                        <Route path="/audit-logs" element={<RoleGuardRoute allowedRoles={['super_admin']}><AuditLogPage /></RoleGuardRoute>} />
                        <Route path="/settings" element={<RoleGuardRoute allowedRoles={['super_admin']}><SystemSettingsPage /></RoleGuardRoute>} />
                        {/* P1-4: 添加通配路由，显示 404 页面 */}

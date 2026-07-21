@@ -97,6 +97,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
               >
                 <option value="user">普通用户 (只读)</option>
                 <option value="match_scorer">赛事记录员</option>
+                <option value="news_editor">新闻录入员</option>
                 <option value="coach">球队教练/领队</option>
                 <option value="super_admin">超级管理员</option>
               </select>
@@ -193,6 +194,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                         >
                           <option value="user">普通用户 (只读)</option>
                           <option value="match_scorer">赛事记录员</option>
+                          <option value="news_editor">新闻录入员</option>
                           <option value="coach">球队教练/领队</option>
                           <option value="super_admin">超级管理员</option>
                         </select>
