@@ -5,10 +5,11 @@ const configuredApiBaseUrl =
 
 export const BASE_URL = (
   configuredApiBaseUrl ||
-  (typeof window !== 'undefined' &&
-  !window.location.hostname.endsWith('sztufa.xyz')
-    ? '/api/v1'
-    : 'https://api.sztufa.xyz/api/v1')
+  (typeof window !== 'undefined' && (window.location.hostname.includes('dev.sztufa.xyz') || window.location.hostname.includes('admin-dev.sztufa.xyz'))
+    ? 'https://api-dev.sztufa.xyz/api/v1'
+    : typeof window !== 'undefined' && window.location.hostname.endsWith('sztufa.xyz')
+      ? 'https://api.sztufa.xyz/api/v1'
+      : '/api/v1')
 ).replace(/\/$/, '');
 
 // P1-3: 统一的 Token 管理函数
