@@ -1,6 +1,9 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    url: 'https://admin.sztufa.xyz',
+  },
   testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
