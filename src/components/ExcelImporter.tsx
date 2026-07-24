@@ -1,6 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, FileSpreadsheet, Check, X, AlertCircle, Download } from 'lucide-react';
 import { Player } from '../types';
+import {
+  MAX_ROWS,
+  validateExcelArchive,
+  validateExcelFile,
+  validateWorksheetData,
+  parsePlayerRows,
+} from '../utils/excelSecurity';
 
 interface ExcelImporterProps {
   onImport: (players: Omit<Player, 'id'>[]) => void;
@@ -16,8 +23,9 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
-        setError('请上传 Excel 文件（.xlsx 或 .xls 格式）');
+      const fileValidation = validateExcelFile(selectedFile);
+      if (!fileValidation.valid) {
+        setError(fileValidation.error || '无效文件');
         return;
       }
       setFile(selectedFile);
@@ -29,6 +37,12 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
 
   const parseExcel = useCallback(async () => {
     if (!file) return;
+
+    const fileValidation = validateExcelFile(file);
+    if (!fileValidation.valid) {
+      setError(fileValidation.error || '文件验证失败');
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -47,36 +61,48 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
             return;
           }
           const data = new Uint8Array(result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          const archiveValidation = validateExcelArchive(data, file.name);
+          if (!archiveValidation.valid) {
+            setError(archiveValidation.error || 'Excel 压缩包验证失败');
+            setIsLoading(false);
+            return;
+          }
 
-          const players: Omit<Player, 'id'>[] = jsonData.map((row: any) => {
-            const rawName = row['姓名'] ?? row['name'] ?? '';
-            const rawStudentId = row['学号'] ?? row['studentId'] ?? row['student_id'] ?? '';
-            // 用 ?? 而非 || ，避免数字 0 被当做假値跳过
-            const rawJerseyNumber =
-              row['球衣号码'] !== undefined && row['球衣号码'] !== null
-                ? row['球衣号码']
-                : row['jerseyNumber'] !== undefined && row['jerseyNumber'] !== null
-                  ? row['jerseyNumber']
-                  : row['jersey_number'] !== undefined && row['jersey_number'] !== null
-                    ? row['jersey_number']
-                    : '';
-
-            return {
-              name: String(rawName).trim(),
-              studentId: String(rawStudentId).trim(),
-              jerseyNumber: String(rawJerseyNumber).trim(),
-              photo: null,
-              teamId: '',
-            };
+          const workbookMetadata = XLSX.read(data, {
+            type: 'array',
+            bookSheets: true,
           });
-
-          const validPlayers = players.filter(
-            (p) => p.name && p.studentId && p.jerseyNumber !== ''
+          const metadataValidation = validateWorksheetData(
+            workbookMetadata.SheetNames || [],
+            [],
           );
+
+          if (!metadataValidation.valid) {
+            setError(metadataValidation.error || '工作簿验证失败');
+            setIsLoading(false);
+            return;
+          }
+
+          const sheetName = workbookMetadata.SheetNames[0];
+          const workbook = XLSX.read(data, {
+            type: 'array',
+            sheets: sheetName,
+            sheetRows: MAX_ROWS + 2,
+          });
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet) as Record<string, any>[];
+          const sheetDataValidation = validateWorksheetData(
+            workbookMetadata.SheetNames,
+            jsonData,
+          );
+
+          if (!sheetDataValidation.valid) {
+            setError(sheetDataValidation.error || '工作表数据验证失败');
+            setIsLoading(false);
+            return;
+          }
+
+          const validPlayers = parsePlayerRows(jsonData);
 
           if (validPlayers.length === 0) {
             setError('未找到有效的球员数据，请检查 Excel 文件格式');
