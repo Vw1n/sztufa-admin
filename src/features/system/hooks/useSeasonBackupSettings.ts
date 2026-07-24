@@ -128,7 +128,15 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     setSuccessMessage(null);
     try {
       const response = await seasonApi.delete(id);
-      setSuccessMessage(`已删除赛季“${name}”及其 ${response.deleted?.matches ?? 0} 场比赛`);
+      if (response.pending) {
+        setSuccessMessage(
+          `已提交删除赛季“${name}”的审批（${response.approval?.approvedCount ?? 0}/${response.approval?.requiredCount ?? 3}），还需其他超级管理员同意`,
+        );
+      } else {
+        setSuccessMessage(
+          `已获三名超级管理员同意，删除赛季“${name}”及其 ${response.deleted?.matches ?? 0} 场比赛`,
+        );
+      }
       await Promise.all([loadActiveSeason(), loadAllSeasons()]);
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (error) {
