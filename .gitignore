@@ -48,8 +48,8 @@ reports/
 # TypeScript
 *.tsbuildinfo
 
-# Node.js
-package-lock.json
+# Node.js package manager state
+# Keep package-lock.json tracked so production and CI install the audited versions.
 yarn.lock
 pnpm-lock.yaml
 
