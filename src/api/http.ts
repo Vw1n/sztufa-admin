@@ -1,33 +1,58 @@
 export const BASE_URL = typeof window !== 'undefined' && !window.location.hostname.endsWith('sztufa.xyz') ? '/api/v1' : 'https://api.sztufa.xyz/api/v1';
 
 // P1-3: 统一的 Token 管理函数
+const safeGetItem = (key: string): string | null => {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const val = localStorage.getItem(key);
+      if (val !== null) return val;
+    } catch {}
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      const val = sessionStorage.getItem(key);
+      if (val !== null) return val;
+    } catch {}
+  }
+  return null;
+};
+
+const safeRemoveItem = (key: string): void => {
+  if (typeof localStorage !== 'undefined') {
+    try { localStorage.removeItem(key); } catch {}
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    try { sessionStorage.removeItem(key); } catch {}
+  }
+};
+
 export const getAuthToken = (): string | null => {
-  // P1-1: 优先从 localStorage 读取，然后从 sessionStorage
-  return localStorage.getItem('token') || sessionStorage.getItem('token');
+  return safeGetItem('token');
 };
 
 export const setAuthToken = (token: string): void => {
-  localStorage.setItem('token', token);
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('token', token);
+  }
 };
 
 export const removeAuthToken = (): void => {
-  localStorage.removeItem('token');
-  sessionStorage.removeItem('token');
+  safeRemoveItem('token');
 };
 
 export const getTokenExpiry = (): number | null => {
-  // P1-1: 优先从 localStorage 读取，然后从 sessionStorage
-  const expiry = localStorage.getItem('tokenExpiry') || sessionStorage.getItem('tokenExpiry');
+  const expiry = safeGetItem('tokenExpiry');
   return expiry ? parseInt(expiry, 10) : null;
 };
 
 export const setTokenExpiry = (expiry: number): void => {
-  localStorage.setItem('tokenExpiry', expiry.toString());
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('tokenExpiry', expiry.toString());
+  }
 };
 
 export const removeTokenExpiry = (): void => {
-  localStorage.removeItem('tokenExpiry');
-  sessionStorage.removeItem('tokenExpiry');
+  safeRemoveItem('tokenExpiry');
 };
 
 export const isTokenExpired = (): boolean => {
@@ -39,12 +64,12 @@ export const isTokenExpired = (): boolean => {
 export const handleAuthError = (response: Response): void => {
   if (response.status === 401) {
     // P1-3: 清理所有可能的存储位置
-    localStorage.removeItem('token');
-    localStorage.removeItem('tokenExpiry');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('tokenExpiry');
-    window.location.href = '/login?expired=true';
+    safeRemoveItem('token');
+    safeRemoveItem('tokenExpiry');
+    safeRemoveItem('user');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login?expired=true';
+    }
   }
 };
 
