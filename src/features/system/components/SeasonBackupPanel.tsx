@@ -278,7 +278,7 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 12px', height: 'auto', background: '#d93838', color: '#fff', borderColor: '#d93838' }}
                       >
                         {isDeletingSeasonId === s.id ? <RefreshCw size={12} className="spinning" /> : <Trash2 size={12} />}
-                        {pendingDeleteSeasonId === s.id ? '确认永久删除' : '删除赛季'}
+                        {pendingDeleteSeasonId === s.id ? '确认同意删除' : '删除赛季'}
                       </button>
                       {pendingDeleteSeasonId === s.id && (
                         <button
@@ -287,7 +287,7 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 12px', height: 'auto' }}
                         >
                           <X size={12} />
-                          取消删除
+                          取消
                         </button>
                       )}
                       </div>
