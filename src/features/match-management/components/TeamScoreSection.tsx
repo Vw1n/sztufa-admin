@@ -93,6 +93,7 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                     <option value="QF">1/4 决赛 (8强)</option>
                     <option value="SF">半决赛 (4强)</option>
                     <option value="F">决赛</option>
+                    <option value="3RD">三四名决赛</option>
                   </select>
                 </div>
 
