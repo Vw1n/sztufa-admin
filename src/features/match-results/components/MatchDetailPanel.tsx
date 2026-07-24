@@ -143,10 +143,11 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
                       <option value="QF">1/4 决赛 (8强)</option>
                       <option value="SF">半决赛 (4强)</option>
                       <option value="F">决赛</option>
+                      <option value="3RD">三四名决赛</option>
                     </select>
                   ) : (
                     <div className="form-value">
-                      {selectedMatch.knockoutRound === 'R16' ? '1/8 决赛' : selectedMatch.knockoutRound === 'QF' ? '1/4 决赛' : selectedMatch.knockoutRound === 'SF' ? '半决赛' : selectedMatch.knockoutRound === 'F' ? '决赛' : '-'}
+                      {selectedMatch.knockoutRound === 'R16' ? '1/8 决赛' : selectedMatch.knockoutRound === 'QF' ? '1/4 决赛' : selectedMatch.knockoutRound === 'SF' ? '半决赛' : selectedMatch.knockoutRound === 'F' ? '决赛' : selectedMatch.knockoutRound === '3RD' ? '三四名决赛' : '-'}
                     </div>
                   )}
                 </div>
