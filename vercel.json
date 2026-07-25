@@ -3,14 +3,14 @@
   "outputDirectory": "build",
   "framework": null,
   "installCommand": "npm install",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*\\.(js|css|png|jpg|svg|ico))$",
-      "dest": "/$1"
+      "source": "/api/v1/:path*",
+      "destination": "https://api.sztufa.xyz/api/v1/:path*"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }
