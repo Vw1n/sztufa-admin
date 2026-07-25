@@ -4,7 +4,10 @@ module.exports = {
   testEnvironmentOptions: {
     url: 'https://admin.sztufa.xyz',
   },
-  testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
+  testMatch: [
+    '**/__tests__/**/*.test.{ts,tsx}',
+    '**/*.test.{ts,tsx}',
+  ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
