@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const apiProxyTarget = process.env.API_PROXY_TARGET || 'http://localhost:3001';
+const apiProxyTarget = process.env.API_PROXY_TARGET || 'http://127.0.0.1:3000';
 
 module.exports = {
   entry: './src/index.tsx',
