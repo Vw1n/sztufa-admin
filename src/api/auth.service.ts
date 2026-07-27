@@ -68,4 +68,13 @@ export const userApi = {
     });
     return handleResponse<any>(response);
   },
+
+  updateStudentId: async (id: string, studentId: string): Promise<any> => {
+    const response = await fetch(`${BASE_URL}/auth/users/${id}/student-id`, {
+      method: 'PATCH',
+      headers: createHeaders(),
+      body: JSON.stringify({ studentId }),
+    });
+    return handleResponse<any>(response);
+  },
 };
