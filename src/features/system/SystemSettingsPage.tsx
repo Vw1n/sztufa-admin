@@ -15,7 +15,7 @@ type SettingsTab = 'backup' | 'groups' | 'users';
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: '8px 18px',
   fontWeight: active ? '600' : '400',
-  color: active ? '#0070f3' : '#fff',
+  color: active ? '#0070f3' : '#666',
   background: active ? '#f0f7ff' : 'none',
   border: 'none',
   borderRadius: '6px',
