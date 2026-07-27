@@ -101,7 +101,7 @@ export const MatchListPanel: React.FC<MatchListPanelProps> = ({
         </div>
       ) : (
         <div className="player-table-wrapper">
-          <table className="player-table">
+          <table className="player-table match-list-table">
             <thead>
               <tr>
                 <th>比赛名称</th>
@@ -109,8 +109,8 @@ export const MatchListPanel: React.FC<MatchListPanelProps> = ({
                 <th>主队</th>
                 <th>客队</th>
                 <th>比分</th>
-                <th>状态</th>
-                <th>操作</th>
+                <th style={{ whiteSpace: 'nowrap' }}>状态</th>
+                <th style={{ whiteSpace: 'nowrap' }}>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -119,11 +119,17 @@ export const MatchListPanel: React.FC<MatchListPanelProps> = ({
                 const penaltyScore = getMatchPenaltyScore(match);
                 return (
                   <tr key={match.id} className={selectedMatch?.id === match.id ? 'selected' : ''}>
-                    <td>{match.matchName}</td>
-                    <td>{formatMatchTime(match.matchTime)}</td>
-                    <td className="team-name-cell home">{match.homeTeamName}</td>
-                    <td className="team-name-cell away">{match.awayTeamName}</td>
-                    <td>
+                    <td data-label="比赛名称">
+                      <div className="match-name-cell">
+                        <span className="match-name-home">{match.homeTeamName}</span>
+                        <span className="match-name-vs">vs</span>
+                        <span className="match-name-away">{match.awayTeamName}</span>
+                      </div>
+                    </td>
+                    <td data-label="比赛时间">{formatMatchTime(match.matchTime)}</td>
+                    <td data-label="主队" className="team-name-cell home">{match.homeTeamName}</td>
+                    <td data-label="客队" className="team-name-cell away">{match.awayTeamName}</td>
+                    <td data-label="比分">
                       <div className="score-cell">
                         <div className="regular-score-line">
                           <span className="score-value home">{match.homeTeamScore}</span>
@@ -137,10 +143,10 @@ export const MatchListPanel: React.FC<MatchListPanelProps> = ({
                         )}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="状态">
                       <span className={`status-badge ${status.color}`}>{status.text}</span>
                     </td>
-                    <td>
+                    <td data-label="操作">
                       <button onClick={() => onViewMatch(match)} className="action-btn view-btn" title="查看详情">
                         <Eye size={14} />
                       </button>
