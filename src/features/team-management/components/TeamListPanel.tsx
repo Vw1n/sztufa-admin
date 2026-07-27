@@ -67,22 +67,22 @@ export const TeamListPanel: React.FC<TeamListPanelProps> = ({
         </div>
       ) : (
         <div className="player-table-wrapper">
-          <table className="player-table team-list-table">
+          <table className="player-table">
             <thead>
               <tr>
                 <th>球队名称</th>
                 <th>主教练</th>
-                <th style={{ width: '100px' }}>领队</th>
-                <th style={{ width: '160px', minWidth: '160px', textAlign: 'center' }}>操作</th>
+                <th>领队</th>
+                <th style={{ width: '120px', minWidth: '120px', textAlign: 'center' }}>操作</th>
               </tr>
             </thead>
             <tbody>
               {teams.map((team) => (
                 <tr key={team.id} className={selectedTeam?.id === team.id ? 'selected' : ''}>
-                  <td data-label="球队名称">{team.teamName}</td>
-                  <td data-label="主教练">{team.headCoach}</td>
-                  <td data-label="领队">{team.teamLeader}</td>
-                  <td data-label="操作">
+                  <td>{team.teamName}</td>
+                  <td>{team.headCoach}</td>
+                  <td>{team.teamLeader}</td>
+                  <td>
                     <button onClick={() => onViewTeam(team)} className="action-btn view-btn" title="查看详情">
                       <Eye size={14} />
                     </button>
