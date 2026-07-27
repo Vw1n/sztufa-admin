@@ -27,6 +27,8 @@ interface MatchDetailPanelProps {
   onAssistPlayerSelect: (index: number, playerId: string) => void;
   onAddEvent: (team: 'home' | 'away') => void;
   onRemoveEvent: (index: number) => void;
+  onRecalculatePredictions?: (matchId: string) => void;
+  onVoidPredictions?: (matchId: string) => void;
 }
 
 const formatMatchTime = (time: string) => {
@@ -57,6 +59,7 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
   onLineupChange, onEventChange,
   onEventPlayerSelect, onSubPlayerSelect, onAssistPlayerSelect,
   onAddEvent, onRemoveEvent,
+  onRecalculatePredictions, onVoidPredictions,
 }) => {
   const currentSeason = seasons.find(s => s.id === (editData?.seasonId || selectedMatch?.seasonId || selectedSeasonId));
   const isCup = currentSeason?.type === 'CUP';
@@ -72,7 +75,7 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
             <span className="icon">📋</span>
             {isEditing ? '编辑比赛信息' : `${selectedMatch.matchName} - 详细信息`}
           </h2>
-          {isEditing && (
+          {isEditing ? (
             <div className="form-actions">
               {isSaved && (
                 <div className="save-success inline">
@@ -85,6 +88,33 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
                 保存
               </button>
               <button onClick={onCancelEdit} className="cancel-btn">取消</button>
+            </div>
+          ) : (
+            <div className="form-actions" style={{ gap: '8px', display: 'flex' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`确认要重新结算比赛 "${selectedMatch.matchName}" 的竞猜得分吗？`)) {
+                    onRecalculatePredictions && onRecalculatePredictions(selectedMatch.id);
+                  }
+                }}
+                className="save-btn small"
+                style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
+              >
+                重算本场竞猜
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`警告：作废竞猜将把比赛 "${selectedMatch.matchName}" 的所有预测设为 VOID 且归零，确认操作吗？`)) {
+                    onVoidPredictions && onVoidPredictions(selectedMatch.id);
+                  }
+                }}
+                className="cancel-btn small"
+                style={{ backgroundColor: '#dc3545', color: '#fff', borderColor: '#dc3545' }}
+              >
+                作废本场竞猜
+              </button>
             </div>
           )}
         </div>

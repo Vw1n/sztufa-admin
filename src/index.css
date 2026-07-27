@@ -25,9 +25,9 @@ body {
 }
 
 .nav-container {
-  max-width: 1400px;
+  max-width: 1500px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -47,6 +47,10 @@ body {
   display: flex;
   gap: 4px;
   list-style: none;
+  width: 80%;       
+  justify-content: center;
+  padding: 0;  
+  margin: 0 auto;      
 }
 
 .nav-links li {
@@ -57,12 +61,13 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 10px 10px;
   text-decoration: none;
   color: #333;
   border-radius: 8px;
   transition: all 0.3s ease;
-  font-size: 14px;
+  font-size: 16px;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {
@@ -294,6 +299,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .add-btn:hover {
@@ -602,6 +608,48 @@ body {
 
 .team-name-cell.away {
   color: #764ba2;
+}
+
+/* 比赛列表 - 比赛名称列堆叠样式 */
+.match-name-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.3;
+}
+
+.match-name-home {
+  font-weight: 500;
+  color: #667eea;
+}
+
+.match-name-vs {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  padding-left: 12px;
+}
+
+.match-name-away {
+  font-weight: 500;
+  color: #764ba2;
+}
+
+/* 比赛列表表格列宽统一 */
+.match-list-table th,
+.match-list-table td {
+  padding: 8px 10px;
+}
+
+.match-list-table th:first-child,
+.match-list-table td:first-child {
+  padding-left: 14px;
+}
+
+.match-list-table th:last-child,
+.match-list-table td:last-child {
+  padding-right: 14px;
 }
 
 .score-cell {
@@ -1332,6 +1380,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .add-btn:hover {
@@ -1565,7 +1614,7 @@ body {
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
   font-weight: 500;
 }
@@ -1965,7 +2014,9 @@ body {
   letter-spacing: 1px;
 }
 
-.team-input-wrapper {
+.team-select-wrapper,
+.team-input-wrapper,
+.team-id-wrapper {
   width: 100%;
   max-width: 280px;
 }
@@ -2002,6 +2053,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0 20px;
+  transform: scale(1.5);
 }
 
 .vs-circle {
@@ -2070,7 +2122,7 @@ body {
   .nav-links a {
     width: 100%;
     padding: 12px 16px;
-    font-size: 15px;
+    font-size: 13px;
   }
 
   .nav-user {
@@ -2148,9 +2200,12 @@ body {
     width: 100%;
   }
 
-  .team-input-wrapper {
-    max-width: 100%;
-  }
+  .team-select-wrapper,
+  .team-input-wrapper,
+  .team-id-wrapper {
+  width: 100%;
+  max-width: 280px;
+}
 
   .score-input-wrapper {
     max-width: 80px;
@@ -2217,7 +2272,7 @@ body {
     flex: 1;
     justify-content: space-between;
     align-items: center;
-    margin-left: 40px;
+    margin-left: 16px;
   }
 }
 
@@ -2958,6 +3013,34 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* 赛季状态徽章 */
+.season-status-badge.active {
+  background: #e6fffa;
+  color: #00a389;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #b2f5ea;
+}
+
+.season-status-badge.archived {
+  background: #f7fafc;
+  color: #718096;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 赛季操作按钮组 */
+.season-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .loading-spinner,
@@ -2965,14 +3048,135 @@ body {
   .error-state {
     padding: 40px 20px;
   }
-  
+
   .empty-state-title,
   .error-state-title {
     font-size: 16px;
   }
-  
+
   .empty-state-message,
   .error-state-message {
     font-size: 13px;
+  }
+
+  /* ---------- 球队列表 & 比赛列表 卡片化 ---------- */
+  .team-list-table,
+  .team-list-table thead,
+  .team-list-table tbody,
+  .team-list-table th,
+  .team-list-table td,
+  .team-list-table tr,
+  .match-list-table,
+  .match-list-table thead,
+  .match-list-table tbody,
+  .match-list-table th,
+  .match-list-table td,
+  .match-list-table tr {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .team-list-table thead,
+  .match-list-table thead {
+    display: none !important;
+  }
+
+  .team-list-table tr,
+  .match-list-table tr {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+    box-sizing: border-box !important;
+  }
+
+  .team-list-table td,
+  .match-list-table td {
+    border: none !important;
+    padding: 6px 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    box-sizing: border-box !important;
+    min-width: auto !important;
+    white-space: normal !important;
+  }
+
+  .team-list-table td::before,
+  .match-list-table td::before {
+    content: attr(data-label) "：";
+    font-weight: 600 !important;
+    width: 80px !important;
+    min-width: 80px !important;
+    color: #4a5568 !important;
+    font-size: 0.85rem !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+  }
+
+  .team-list-table td .action-btn,
+  .match-list-table td .action-btn,
+  .team-list-table td .delete-btn,
+  .match-list-table td .delete-btn {
+    display: inline-flex !important;
+  }
+
+  .team-list-table,
+  .match-list-table {
+    min-width: auto !important;
+  }
+
+  .team-list-table td .team-name-cell,
+  .match-list-table td .team-name-cell {
+    white-space: normal !important;
+  }
+
+  .match-list-table td .score-cell {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+  }
+
+  .match-list-table td .match-name-cell {
+    flex-direction: row !important;
+    gap: 4px !important;
+  }
+
+  .match-list-table td .match-name-vs {
+    padding-left: 0 !important;
+  }
+
+  /* ---------- 赛季管理 状态列竖排 ---------- */
+  .season-table td.season-status-cell {
+    text-align: center !important;
+    vertical-align: middle !important;
+  }
+
+  .season-status-badge {
+    writing-mode: vertical-rl !important;
+    text-orientation: upright !important;
+    display: inline-block !important;
+    padding: 8px 6px !important;
+    letter-spacing: 2px;
+  }
+
+  /* ---------- 赛季管理 操作列纵向堆叠 ---------- */
+  .season-table td.season-actions-cell {
+    padding: 8px !important;
+  }
+
+  .season-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+
+  .season-actions button {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }

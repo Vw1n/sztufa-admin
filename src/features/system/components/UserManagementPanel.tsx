@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, RefreshCw, Users, Key, Trash2 } from 'lucide-react';
 import { TeamDTO } from '../../../api/types';
+import { userApi } from '../../../api/auth.service';
 
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
@@ -161,6 +162,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
               <thead>
                 <tr>
                   <th>用户名</th>
+                  <th>绑定学号</th>
                   <th style={{ width: '180px' }}>角色权限</th>
                   <th style={{ width: '220px' }}>绑定所辖球队 (限教练)</th>
                   <th>注册时间</th>
@@ -183,6 +185,11 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                             主超管
                           </span>
                         )}
+                      </td>
+                      <td data-label="绑定学号">
+                        <span style={{ fontFamily: 'monospace', fontWeight: 600, color: u.studentId ? '#1a56db' : '#999' }}>
+                          {u.studentId || '未绑定'}
+                        </span>
                       </td>
                       <td data-label="角色权限">
                         <select
@@ -237,6 +244,28 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                           >
                             <Key size={12} style={{ marginRight: '3px' }} />
                             重置
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const val = prompt(`修改用户 "${u.username}" 绑定学号:`, u.studentId || '');
+                              if (val === null) return;
+                              const trimmed = val.trim();
+                              if (!trimmed) {
+                                alert('学号不能为空');
+                                return;
+                              }
+                              try {
+                                await userApi.updateStudentId(u.id, trimmed);
+                                alert('修改学号成功！');
+                                onLoadUsers();
+                              } catch (err: any) {
+                                alert(err.message || '修改学号失败');
+                              }
+                            }}
+                            className="add-btn small"
+                            style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', height: 'auto', margin: 0, backgroundColor: '#17a2b8', borderColor: '#17a2b8', color: '#fff' }}
+                          >
+                            学号
                           </button>
                           <button
                             onClick={() => onDeleteUser(u.id, u.username)}

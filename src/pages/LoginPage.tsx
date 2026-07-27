@@ -229,7 +229,7 @@ const LoginPage: React.FC = () => {
 
                       if (!res.ok) {
                         if (res.status === 502 || res.status === 504) {
-                          throw new Error(`本地后端未启动或无法连接（HTTP ${res.status}，请检查 localhost:3001）`);
+                          throw new Error(`本地后端未启动或无法连接（HTTP ${res.status}，请检查 localhost:3000）`);
                         }
                         throw new Error(`API 请求失败（HTTP ${res.status}）${responseText ? `：${responseText.slice(0, 120)}` : ''}`);
                       }

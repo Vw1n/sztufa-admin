@@ -67,4 +67,20 @@ export const matchApi = {
     });
     return handleResponse<MatchDTO>(response);
   },
+
+  recalculatePredictions: async (matchId: string): Promise<any> => {
+    const response = await fetch(`${BASE_URL}/predictions/matches/${matchId}/recalculate`, {
+      method: 'POST',
+      headers: createHeaders(),
+    });
+    return handleResponse<any>(response);
+  },
+
+  voidPredictions: async (matchId: string): Promise<any> => {
+    const response = await fetch(`${BASE_URL}/predictions/matches/${matchId}/void`, {
+      method: 'POST',
+      headers: createHeaders(),
+    });
+    return handleResponse<any>(response);
+  },
 };
