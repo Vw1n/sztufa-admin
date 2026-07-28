@@ -125,9 +125,55 @@ export interface PlayerListResponse {
   limit: number;
 }
 
-export interface ImportResult {
+export interface ImportEntityCounts {
+  seasons: number;
   teams: number;
   players: number;
+  matches: number;
+  events: number;
+}
+
+export interface ImportFileSummary {
+  name: string;
+  type: 'season' | 'supplemental' | 'manifest';
+  season?: string;
+}
+
+export interface ImportPreview {
+  digest: string;
+  canImport: boolean;
+  files: ImportFileSummary[];
+  records: ImportEntityCounts;
+  create: ImportEntityCounts;
+  update: ImportEntityCounts;
+  warnings: string[];
+  errors: string[];
+}
+
+export interface ImportExecutionResult {
+  digest: string;
+  created: ImportEntityCounts;
+  updated: ImportEntityCounts;
+  warnings: string[];
+}
+
+export interface LastImportBatch {
+  id: string;
+  digest: string;
+  username: string;
+  status: string;
+  summary: ImportExecutionResult;
+  createdAt: string;
+}
+
+export interface UndoImportResult {
+  batchId: string;
+  affectedSeasons: number;
+  restoredMatches: number;
+  deletedMatches: number;
+  restoredPlayers: number;
+  deletedPlayers: number;
+  warnings: string[];
 }
 
 export interface AuthUser {

@@ -3,13 +3,18 @@ declare const ADMIN_API_BASE_URL: string;
 const configuredApiBaseUrl =
   typeof ADMIN_API_BASE_URL !== 'undefined' ? ADMIN_API_BASE_URL : '';
 
+const isDevelopmentAdminHost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname.includes('dev.sztufa.xyz') ||
+    window.location.hostname.includes('admin-dev.sztufa.xyz'));
+
 export const BASE_URL = (
-  configuredApiBaseUrl ||
-  (typeof window !== 'undefined' && (window.location.hostname.includes('dev.sztufa.xyz') || window.location.hostname.includes('admin-dev.sztufa.xyz'))
+  isDevelopmentAdminHost
     ? 'https://api-dev.sztufa.xyz/api/v1'
-    : typeof window !== 'undefined' && window.location.hostname.endsWith('sztufa.xyz')
-      ? 'https://api.sztufa.xyz/api/v1'
-      : '/api/v1')
+    : configuredApiBaseUrl ||
+      (typeof window !== 'undefined' && window.location.hostname.endsWith('sztufa.xyz')
+        ? 'https://api.sztufa.xyz/api/v1'
+        : '/api/v1')
 ).replace(/\/$/, '');
 
 // P1-3: 统一的 Token 管理函数

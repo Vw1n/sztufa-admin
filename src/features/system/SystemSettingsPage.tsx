@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { CheckCircle2, Database, FileCheck } from 'lucide-react';
-import { CupGroupPanel, SeasonBackupPanel, UserManagementPanel } from './components';
+import {
+  CupGroupPanel,
+  HistoryImportPanel,
+  SeasonBackupPanel,
+  UserManagementPanel,
+} from './components';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import PasswordDialog from '../../components/PasswordDialog';
 import {
   useCupGroupSettings,
+  useHistoryImport,
   useSeasonBackupSettings,
   useSystemTeams,
   useUserManagement,
 } from './hooks';
 
-type SettingsTab = 'backup' | 'groups' | 'users';
+type SettingsTab = 'backup' | 'groups' | 'history-import' | 'users';
 
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: '8px 18px',
@@ -30,6 +36,12 @@ const SystemSettingsPage: React.FC = () => {
   const feedback = { setError, setSuccessMessage };
 
   const seasonBackup = useSeasonBackupSettings(feedback);
+  const handleHistoryImported = useCallback((message: string) => {
+    setSuccessMessage(message);
+    seasonBackup.loadAllSeasons();
+    setTimeout(() => setSuccessMessage(null), 5000);
+  }, [seasonBackup.loadAllSeasons]);
+  const historyImport = useHistoryImport(handleHistoryImported);
   const { teams } = useSystemTeams();
   const cupGroups = useCupGroupSettings(seasonBackup.activeSeason, feedback);
   const userManagement = useUserManagement(teams, activeTab === 'users');
@@ -108,7 +120,7 @@ const SystemSettingsPage: React.FC = () => {
             <Database className="trophy-icon" />
             系统设置与安全中心
           </h1>
-          <p>管理全站赛季归档重置、灾备数据备份，以及后台管理员与各学院教练的精细化权限分配</p>
+          <p>管理全站赛季、历史数据导入、灾备数据备份，以及后台管理员与各学院教练的精细化权限分配</p>
         </div>
       </header>
 
@@ -119,6 +131,9 @@ const SystemSettingsPage: React.FC = () => {
           </button>
           <button onClick={() => setActiveTab('groups')} style={tabButtonStyle(activeTab === 'groups')}>
             🏆 赛季分组配置
+          </button>
+          <button onClick={() => setActiveTab('history-import')} style={tabButtonStyle(activeTab === 'history-import')}>
+            📥 历史 JSON 导入
           </button>
           <button onClick={() => setActiveTab('users')} style={tabButtonStyle(activeTab === 'users')}>
             👥 用户权限管理
@@ -191,6 +206,10 @@ const SystemSettingsPage: React.FC = () => {
             <p style={{ marginTop: '16px', fontSize: '15px' }}>当前活跃赛季为<strong>联赛赛制</strong>，无需进行小组分配。</p>
             <p style={{ fontSize: '13px' }}>如需管理杯赛分组，请先在"数据灾备与归档"页签中创建一个 CUP 类型的赛季并激活。</p>
           </div>
+        )}
+
+        {activeTab === 'history-import' && (
+          <HistoryImportPanel historyImport={historyImport} />
         )}
 
         {activeTab === 'users' && (

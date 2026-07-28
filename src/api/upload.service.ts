@@ -1,14 +1,55 @@
-import { ApiResponse, ImportResult } from './types';
+import {
+  ApiResponse,
+  ImportExecutionResult,
+  ImportPreview,
+  LastImportBatch,
+  UndoImportResult,
+} from './types';
 import { BASE_URL, handleResponse, createHeaders } from './http';
 
 export const importApi = {
-  importFromJson: async (filePath: string): Promise<ApiResponse<{ result: ImportResult }>> => {
+  preview: async (files: File[]): Promise<ImportPreview> => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+
+    const response = await fetch(`${BASE_URL}/import/json/preview`, {
+      method: 'POST',
+      headers: createHeaders(true),
+      body: formData,
+    });
+    return handleResponse<ImportPreview>(response);
+  },
+
+  execute: async (
+    files: File[],
+    expectedDigest: string,
+  ): Promise<{ message: string; result: ImportExecutionResult }> => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+    formData.append('expectedDigest', expectedDigest);
+
     const response = await fetch(`${BASE_URL}/import/json`, {
       method: 'POST',
-      headers: createHeaders(),
-      body: JSON.stringify({ filePath }),
+      headers: createHeaders(true),
+      body: formData,
     });
-    return handleResponse<ApiResponse<{ result: ImportResult }>>(response);
+    return handleResponse<{ message: string; result: ImportExecutionResult }>(response);
+  },
+
+  getLast: async (): Promise<LastImportBatch | null> => {
+    const response = await fetch(`${BASE_URL}/import/json/last`, {
+      method: 'GET',
+      headers: createHeaders(),
+    });
+    return handleResponse<LastImportBatch | null>(response);
+  },
+
+  undoLast: async (): Promise<{ message: string; result: UndoImportResult }> => {
+    const response = await fetch(`${BASE_URL}/import/json/undo`, {
+      method: 'POST',
+      headers: createHeaders(),
+    });
+    return handleResponse<{ message: string; result: UndoImportResult }>(response);
   },
 };
 
