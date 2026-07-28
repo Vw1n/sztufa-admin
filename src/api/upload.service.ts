@@ -1,4 +1,10 @@
-import { ApiResponse, ImportExecutionResult, ImportPreview } from './types';
+import {
+  ApiResponse,
+  ImportExecutionResult,
+  ImportPreview,
+  LastImportBatch,
+  UndoImportResult,
+} from './types';
 import { BASE_URL, handleResponse, createHeaders } from './http';
 
 export const importApi = {
@@ -28,6 +34,22 @@ export const importApi = {
       body: formData,
     });
     return handleResponse<{ message: string; result: ImportExecutionResult }>(response);
+  },
+
+  getLast: async (): Promise<LastImportBatch | null> => {
+    const response = await fetch(`${BASE_URL}/import/json/last`, {
+      method: 'GET',
+      headers: createHeaders(),
+    });
+    return handleResponse<LastImportBatch | null>(response);
+  },
+
+  undoLast: async (): Promise<{ message: string; result: UndoImportResult }> => {
+    const response = await fetch(`${BASE_URL}/import/json/undo`, {
+      method: 'POST',
+      headers: createHeaders(),
+    });
+    return handleResponse<{ message: string; result: UndoImportResult }>(response);
   },
 };
 

@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   FileCheck,
   RefreshCw,
+  RotateCcw,
   ShieldCheck,
   Upload,
 } from 'lucide-react';
@@ -36,12 +37,16 @@ export const HistoryImportPanel: React.FC<HistoryImportPanelProps> = ({ historyI
     files,
     preview,
     result,
+    undoResult,
+    lastImport,
     error,
     isPreviewing,
     isImporting,
+    isUndoing,
     selectFiles,
     previewFiles,
     importFiles,
+    undoLastImport,
   } = historyImport;
   const [confirmed, setConfirmed] = useState(false);
 
@@ -103,6 +108,19 @@ export const HistoryImportPanel: React.FC<HistoryImportPanelProps> = ({ historyI
           border-radius: 12px;
           background: #f8fafc;
         }
+        .history-undo-card {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          margin-bottom: 18px;
+          padding: 15px 17px;
+          border: 1px solid #fed7aa;
+          border-radius: 10px;
+          background: #fff7ed;
+        }
+        .history-undo-card strong { display: block; color: #9a3412; margin-bottom: 4px; }
+        .history-undo-card small { color: #78716c; line-height: 1.5; }
         .history-drop-copy {
           display: flex;
           align-items: center;
@@ -253,6 +271,7 @@ export const HistoryImportPanel: React.FC<HistoryImportPanelProps> = ({ historyI
             align-items: stretch;
             flex-direction: column;
           }
+          .history-undo-card { align-items: stretch; flex-direction: column; }
           .history-import-badge { align-self: flex-start; }
           .history-action { width: 100%; }
         }
@@ -268,6 +287,36 @@ export const HistoryImportPanel: React.FC<HistoryImportPanelProps> = ({ historyI
         </div>
         <span className="history-import-badge">仅超级管理员</span>
       </div>
+
+      {lastImport && (
+        <div className="history-undo-card">
+          <div>
+            <strong>最近一次导入可撤销</strong>
+            <small>
+              {new Date(lastImport.createdAt).toLocaleString('zh-CN')} · 操作人 {lastImport.username} ·
+              {' '}{lastImport.summary.created.seasons + lastImport.summary.updated.seasons} 个赛季、
+              {lastImport.summary.created.matches + lastImport.summary.updated.matches} 场比赛
+            </small>
+          </div>
+          <button
+            className="history-action"
+            type="button"
+            disabled={isUndoing || isImporting}
+            onClick={() => {
+              if (
+                window.confirm(
+                  '确定撤销最近一次历史 JSON 导入吗？\n\n系统将删除本批次新增数据，并恢复被覆盖前的比赛和球员信息。',
+                )
+              ) {
+                undoLastImport();
+              }
+            }}
+          >
+            <RotateCcw size={16} className={isUndoing ? 'spinning' : ''} />
+            {isUndoing ? '正在撤销…' : '撤销上一次导入'}
+          </button>
+        </div>
+      )}
 
       <div className="history-drop-zone">
         <div className="history-drop-copy">
@@ -409,6 +458,15 @@ export const HistoryImportPanel: React.FC<HistoryImportPanelProps> = ({ historyI
           新增 {result.created.seasons} 个赛季、{result.created.teams} 支球队、
           {result.created.players} 名球员、{result.created.matches} 场比赛；
           更新 {result.updated.players} 名球员和 {result.updated.matches} 场比赛。
+        </div>
+      )}
+
+      {undoResult && (
+        <div className="history-notice success">
+          <div className="history-notice-title"><RotateCcw size={17} />撤销完成</div>
+          已处理 {undoResult.affectedSeasons} 个赛季，删除本批次新增的
+          {' '}{undoResult.deletedPlayers} 名球员和 {undoResult.deletedMatches} 场比赛，
+          恢复 {undoResult.restoredPlayers} 名球员和 {undoResult.restoredMatches} 场比赛。
         </div>
       )}
     </section>

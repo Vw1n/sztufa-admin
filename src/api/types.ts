@@ -157,6 +157,25 @@ export interface ImportExecutionResult {
   warnings: string[];
 }
 
+export interface LastImportBatch {
+  id: string;
+  digest: string;
+  username: string;
+  status: string;
+  summary: ImportExecutionResult;
+  createdAt: string;
+}
+
+export interface UndoImportResult {
+  batchId: string;
+  affectedSeasons: number;
+  restoredMatches: number;
+  deletedMatches: number;
+  restoredPlayers: number;
+  deletedPlayers: number;
+  warnings: string[];
+}
+
 export interface AuthUser {
   id: string;
   username: string;

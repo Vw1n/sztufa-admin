@@ -602,5 +602,56 @@ describe('API Service Tests', () => {
       expect(request.body.getAll('files')).toEqual([file]);
       expect(result).toEqual(mockImportResponse);
     });
+
+    it('getLast should request the latest undoable import batch', async () => {
+      const mockBatch = {
+        id: 'batch-1',
+        digest: 'digest',
+        username: 'admin',
+        status: 'completed',
+        summary: {
+          digest: 'digest',
+          created: counts,
+          updated: { seasons: 0, teams: 0, players: 0, matches: 0, events: 0 },
+          warnings: [],
+        },
+        createdAt: '2026-07-28T04:00:00.000Z',
+      };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockBatch),
+      });
+
+      await expect(importApi.getLast()).resolves.toEqual(mockBatch);
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.sztufa.xyz/api/v1/import/json/last',
+        { method: 'GET', headers: expect.any(Headers) },
+      );
+    });
+
+    it('undoLast should request a transactional rollback', async () => {
+      const mockResponse = {
+        message: '已撤销上一次历史 JSON 导入',
+        result: {
+          batchId: 'batch-1',
+          affectedSeasons: 1,
+          restoredMatches: 0,
+          deletedMatches: 3,
+          restoredPlayers: 0,
+          deletedPlayers: 10,
+          warnings: [],
+        },
+      };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
+      });
+
+      await expect(importApi.undoLast()).resolves.toEqual(mockResponse);
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.sztufa.xyz/api/v1/import/json/undo',
+        { method: 'POST', headers: expect.any(Headers) },
+      );
+    });
   });
 });
