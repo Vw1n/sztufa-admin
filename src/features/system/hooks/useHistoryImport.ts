@@ -25,7 +25,9 @@ export const useHistoryImport = (onImported?: (message: string) => void) => {
     try {
       setLastImport(await importApi.getLast());
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : '无法获取最近导入记录');
+      // 最近一次导入记录只用于展示撤销入口，查询失败不应阻塞文件预检和导入。
+      console.warn('无法获取最近导入记录', caught);
+      setLastImport(null);
     }
   }, []);
 
