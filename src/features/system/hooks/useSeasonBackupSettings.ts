@@ -202,6 +202,8 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     setNewSeasonName,
     setNewSeasonType,
     loadBackups,
+    loadAllSeasons,
+    loadActiveSeason,
     handleCreateSeason,
     handleUpdateSeasonStatus,
     handleRenameSeason,

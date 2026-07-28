@@ -534,10 +534,52 @@ describe('API Service Tests', () => {
   });
 
   describe('importApi', () => {
-    it('importFromJson should send POST request with filePath', async () => {
-      const mockImportResponse: ApiResponse<{ result: { teams: number; players: number } }> = {
-        data: { result: { teams: 10, players: 150 } },
-        message: '导入完成',
+    const counts = { seasons: 1, teams: 2, players: 10, matches: 3, events: 8 };
+    const file = new File(['{"season":{"name":"2023"}}'], '2023.json', {
+      type: 'application/json',
+    });
+
+    it('preview should upload selected files as multipart form data', async () => {
+      const mockPreview = {
+        digest: 'preview-digest',
+        canImport: true,
+        files: [{ name: '2023.json', type: 'season', season: '2023' }],
+        records: counts,
+        create: counts,
+        update: { seasons: 0, teams: 0, players: 0, matches: 0, events: 0 },
+        warnings: [],
+        errors: [],
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockPreview),
+      });
+
+      const result = await importApi.preview([file]);
+
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.sztufa.xyz/api/v1/import/json/preview',
+        {
+          method: 'POST',
+          headers: expect.any(Headers),
+          body: expect.any(FormData),
+        }
+      );
+      const request = (fetch as jest.Mock).mock.calls[0][1];
+      expect(request.body.getAll('files')).toEqual([file]);
+      expect(result).toEqual(mockPreview);
+    });
+
+    it('execute should upload files with the preview digest', async () => {
+      const mockImportResponse = {
+        message: '历史 JSON 导入完成',
+        result: {
+          digest: 'preview-digest',
+          created: counts,
+          updated: { seasons: 0, teams: 0, players: 0, matches: 0, events: 0 },
+          warnings: [],
+        },
       };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -545,16 +587,19 @@ describe('API Service Tests', () => {
         json: jest.fn().mockResolvedValueOnce(mockImportResponse),
       });
 
-      const result = await importApi.importFromJson('/data/teams.json');
+      const result = await importApi.execute([file], 'preview-digest');
 
       expect(fetch).toHaveBeenCalledWith(
         'https://api.sztufa.xyz/api/v1/import/json',
         {
           method: 'POST',
           headers: expect.any(Headers),
-          body: JSON.stringify({ filePath: '/data/teams.json' }),
+          body: expect.any(FormData),
         }
       );
+      const request = (fetch as jest.Mock).mock.calls[0][1];
+      expect(request.body.get('expectedDigest')).toBe('preview-digest');
+      expect(request.body.getAll('files')).toEqual([file]);
       expect(result).toEqual(mockImportResponse);
     });
   });
