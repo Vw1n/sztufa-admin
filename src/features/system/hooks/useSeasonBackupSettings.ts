@@ -20,11 +20,16 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
   const loadAllSeasons = useCallback(async () => {
     try {
       const data = await seasonApi.getAll();
-      setSeasons(data || []);
+      if (!Array.isArray(data)) {
+        throw new Error('赛季列表响应格式不正确');
+      }
+      setSeasons(data);
     } catch (error) {
       console.error('加载所有赛季失败:', error);
+      setSeasons([]);
+      setError(error instanceof Error ? error.message : '无法加载赛季列表');
     }
-  }, []);
+  }, [setError]);
 
   const loadBackups = useCallback(async () => {
     setIsLoading(true);

@@ -3,17 +3,11 @@ import { SeasonDTO } from './types';
 
 export const seasonApi = {
   getAll: async (): Promise<SeasonDTO[]> => {
-    const response = await fetch(`${BASE_URL}/seasons`, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
+    const response = await fetch(`${BASE_URL}/seasons`);
     return handleResponse<SeasonDTO[]>(response);
   },
   getActive: async (): Promise<any> => {
-    const response = await fetch(`${BASE_URL}/seasons/active`, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
+    const response = await fetch(`${BASE_URL}/seasons/active`);
     return handleResponse<any>(response);
   },
   archive: async (name: string, type: string): Promise<any> => {
@@ -56,10 +50,7 @@ export const seasonApi = {
     return handleResponse<any>(response);
   },
   getGroups: async (id: string): Promise<any[]> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}/groups`, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
+    const response = await fetch(`${BASE_URL}/seasons/${id}/groups`);
     return handleResponse<any[]>(response);
   },
   updateGroups: async (id: string, groups: { teamId: string; groupName: string }[]): Promise<any> => {
