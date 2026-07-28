@@ -139,7 +139,7 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
         );
       } else {
         setSuccessMessage(
-          `已获三名超级管理员同意，删除赛季“${name}”及其 ${response.deleted?.matches ?? 0} 场比赛`,
+          `已删除赛季“${name}”及其 ${response.deleted?.matches ?? 0} 场比赛`,
         );
       }
       await Promise.all([loadActiveSeason(), loadAllSeasons()]);
