@@ -121,6 +121,18 @@ export const pdfImportApi = {
     return handleResponse<{ url: string }>(response);
   },
 
+  downloadAsset: async (batchId: string, url: string): Promise<Blob> => {
+    const response = await fetch(`${BASE_URL}/import/pdf/${batchId}/asset`, {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify({ url }),
+    });
+    if (!response.ok) {
+      await handleResponse(response);
+    }
+    return response.blob();
+  },
+
   cancel: async (batchId: string): Promise<{ message: string; batchId: string }> => {
     const response = await fetch(`${BASE_URL}/import/pdf/${batchId}/cancel`, {
       method: 'POST',

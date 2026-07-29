@@ -16,7 +16,7 @@ import {
 } from '../api/pdf-import.service';
 
 interface PdfImporterProps {
-  onImportSuccess: (importedData: { teams: ParsedTeam[] }) => void | Promise<void>;
+  onImportSuccess: (importedData: { batchId: string; teams: ParsedTeam[] }) => void | Promise<void>;
   onClose?: () => void;
 }
 
@@ -196,7 +196,7 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
     setError(null);
 
     try {
-      await onImportSuccess({ teams: [currentTeam] });
+      await onImportSuccess({ batchId: previewData.batchId, teams: [currentTeam] });
       await pdfImportApi.cancel(previewData.batchId);
       setPreviewData(null);
       setFile(null);

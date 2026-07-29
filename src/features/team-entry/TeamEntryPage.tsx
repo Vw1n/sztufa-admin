@@ -5,7 +5,7 @@ import TeamForm from './components/TeamForm';
 import PlayerList from './components/PlayerList';
 import ExcelImporter from '../../components/ExcelImporter';
 import PdfImporter from '../../components/PdfImporter';
-import { ParsedTeam } from '../../api/pdf-import.service';
+import { ParsedTeam, pdfImportApi } from '../../api/pdf-import.service';
 import SuccessToast from '../../components/SuccessToast';
 import { Team, TeamFormData, Player } from '../../types';
 import { generateId } from '../../utils';
@@ -24,13 +24,13 @@ interface PdfTeamDraft {
   players: Player[];
 }
 
-const downloadPdfImage = async (url: string | null | undefined, fileName: string) => {
+const downloadPdfImage = async (
+  batchId: string,
+  url: string | null | undefined,
+  fileName: string,
+) => {
   if (!url) return null;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`无法读取识别出的图片：${fileName}`);
-  }
-  const blob = await response.blob();
+  const blob = await pdfImportApi.downloadAsset(batchId, url);
   return new File([blob], fileName, { type: blob.type || 'image/webp' });
 };
 
@@ -213,7 +213,13 @@ const TeamEntryPage: React.FC = () => {
     }
   };
 
-  const handlePdfTeamsRecognized = async ({ teams }: { teams: ParsedTeam[] }) => {
+  const handlePdfTeamsRecognized = async ({
+    batchId,
+    teams,
+  }: {
+    batchId: string;
+    teams: ParsedTeam[];
+  }) => {
     if (teams.length === 0) {
       throw new Error('PDF 中没有可回填的球队');
     }
@@ -221,12 +227,21 @@ const TeamEntryPage: React.FC = () => {
     const drafts = await Promise.all(
       teams.map(async (team, teamIndex): Promise<PdfTeamDraft> => {
         const [teamLogo, homeJersey, awayJersey, importedPlayers] = await Promise.all([
-          downloadPdfImage(team.logo?.value, `team-${teamIndex + 1}-logo.webp`),
-          downloadPdfImage(team.homeJerseyPhoto?.value, `team-${teamIndex + 1}-home.webp`),
-          downloadPdfImage(team.awayJerseyPhoto?.value, `team-${teamIndex + 1}-away.webp`),
+          downloadPdfImage(batchId, team.logo?.value, `team-${teamIndex + 1}-logo.webp`),
+          downloadPdfImage(
+            batchId,
+            team.homeJerseyPhoto?.value,
+            `team-${teamIndex + 1}-home.webp`,
+          ),
+          downloadPdfImage(
+            batchId,
+            team.awayJerseyPhoto?.value,
+            `team-${teamIndex + 1}-away.webp`,
+          ),
           Promise.all(
             team.players.map(async (player, playerIndex): Promise<Player> => {
               const photoFile = await downloadPdfImage(
+                batchId,
                 player.photo.value,
                 `team-${teamIndex + 1}-player-${playerIndex + 1}.webp`,
               );
@@ -369,7 +384,9 @@ const TeamEntryPage: React.FC = () => {
       <main className="page-content">
         {isSaved && <SuccessToast message="球队信息录入成功！" />}
 
-        {pdfImportMessage && <SuccessToast message={pdfImportMessage} />}
+        {pdfImportMessage && (
+          <SuccessToast message={pdfImportMessage} onClose={() => setPdfImportMessage(null)} />
+        )}
 
         {error && (
           <div className="error-message">
