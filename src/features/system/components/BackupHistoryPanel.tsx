@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Database, Download, RefreshCw, RotateCcw } from 'lucide-react';
 import { BackupDTO } from '../../../api/types';
+import { backupApi } from '../../../api/backup.service';
 
 interface BackupHistoryPanelProps {
   backups: BackupDTO[];
@@ -19,7 +20,8 @@ const formatSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '-';
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
@@ -32,6 +34,38 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
   onRestoreBackup,
   onLoadBackups,
 }) => {
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+
+  const handleDownload = async (key: string) => {
+    setDownloadingKey(key);
+    try {
+      const res = await backupApi.getDownloadUrl(key);
+      if (res.success && res.downloadUrl) {
+        const link = document.createElement('a');
+        link.href = res.downloadUrl;
+        link.download = key.split('/').pop() || 'backup.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '获取下载链接失败');
+    } finally {
+      setDownloadingKey(null);
+    }
+  };
+
+  const handleRestore = (key: string) => {
+    const input = window.prompt(
+      `高危操作警告：全量数据库还原将清空当前所有数据并从备份重新导入！\n\n请输入 "CONFIRM_RESTORE" 以确认操作:`,
+    );
+    if (input === 'CONFIRM_RESTORE') {
+      onRestoreBackup(key);
+    } else if (input !== null) {
+      alert('二次确认文本错误，还原已被取消');
+    }
+  };
+
   return (
     <div className="form-section" style={{ marginTop: '30px' }}>
       <div className="section-header" style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -71,17 +105,17 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                   <td style={{ color: '#666' }}>{formatDate(bk.lastModified)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <a
-                        href={bk.downloadUrl}
-                        download
+                      <button
+                        onClick={() => handleDownload(bk.key)}
+                        disabled={downloadingKey === bk.key}
                         className="add-btn small btn-secondary"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', padding: '5px 10px', height: 'auto' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', cursor: 'pointer' }}
                       >
                         <Download size={12} />
-                        下载
-                      </a>
+                        {downloadingKey === bk.key ? '准备中...' : '下载'}
+                      </button>
                       <button
-                        onClick={() => onRestoreBackup(bk.key)}
+                        onClick={() => handleRestore(bk.key)}
                         disabled={isRestoring !== null || isBackingUp}
                         className="add-btn small refresh-btn"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', background: '#ffebeb', color: '#d93838', borderColor: '#ffd1d1' }}

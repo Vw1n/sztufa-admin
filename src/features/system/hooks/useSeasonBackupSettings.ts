@@ -178,7 +178,7 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     setError(null);
     setSuccessMessage(null);
     try {
-      const response = await backupApi.restore(key);
+      const response = await backupApi.restore(key, 'CONFIRM_RESTORE');
       if (response.success) {
         setSuccessMessage('数据库已成功恢复至指定备份状态！');
         setTimeout(() => setSuccessMessage(null), 5000);
