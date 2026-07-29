@@ -42,8 +42,27 @@ export const mapMatchDto = (match: MatchDTO): Match => {
   };
 };
 
+const PLACEMENT_ROUNDS = new Set([
+  '5TH',
+  '7TH',
+  'FIFTH_PLACE',
+  'SEVENTH_PLACE',
+]);
+
+export const isPlacementMatch = (match: Pick<Match, 'stage' | 'knockoutRound'>) =>
+  match.stage === 'KNOCKOUT' &&
+  PLACEMENT_ROUNDS.has(match.knockoutRound || '');
+
 export const validateMatchEdit = (match: Match): string | null => {
+  // Imported placement matches may only contain the final score, without a
+  // complete event timeline or player references. They must remain editable.
+  if (isPlacementMatch(match)) return null;
+
   const events = match.events || [];
+  // Historical JSON imports commonly contain only the result and no event
+  // details. Allow those records to be corrected without manufacturing events.
+  if (events.length === 0) return null;
+
   const homeGoalsCount =
     events.filter(
       (event) =>
