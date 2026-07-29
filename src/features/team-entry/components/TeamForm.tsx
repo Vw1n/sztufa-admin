@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Upload, Image } from 'lucide-react';
 import { TeamFormData } from '../../../types';
 import { SeasonDTO } from '../../../api/types';
@@ -12,6 +12,23 @@ interface TeamFormProps {
 
 const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) => {
   const [preview, setPreview] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const objectUrls: string[] = [];
+    const nextPreview: { [key: string]: string } = {};
+    for (const field of ['teamLogo', 'homeJersey', 'awayJersey'] as const) {
+      const image = data[field];
+      if (image instanceof File) {
+        const url = URL.createObjectURL(image);
+        objectUrls.push(url);
+        nextPreview[field] = url;
+      } else if (typeof image === 'string') {
+        nextPreview[field] = image;
+      }
+    }
+    setPreview(nextPreview);
+    return () => objectUrls.forEach((url) => URL.revokeObjectURL(url));
+  }, [data.teamLogo, data.homeJersey, data.awayJersey]);
 
   const handleFieldChange = (field: keyof TeamFormData, value: string) => {
     onChange({ ...data, [field]: value });

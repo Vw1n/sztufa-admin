@@ -14,14 +14,9 @@ import {
   ParsedTeam,
   PdfPreviewResponse,
 } from '../api/pdf-import.service';
-import { uploadImageFile } from '../utils/imageUpload';
 
 interface PdfImporterProps {
-  onImportSuccess: (importedData: {
-    createdTeamsCount: number;
-    createdPlayersCount: number;
-    teams: ParsedTeam[];
-  }) => void;
+  onImportSuccess: (importedData: { teams: ParsedTeam[] }) => void | Promise<void>;
   onClose?: () => void;
 }
 
@@ -35,6 +30,9 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
   const [previewData, setPreviewData] = useState<PdfPreviewResponse | null>(null);
   const [activeTeamIndex, setActiveTeamIndex] = useState(0);
   const [uploadingRowIndex, setUploadingRowIndex] = useState<number | null>(null);
+  const [uploadingTeamAsset, setUploadingTeamAsset] = useState<
+    'logo' | 'homeJerseyPhoto' | 'awayJerseyPhoto' | null
+  >(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -150,6 +148,31 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
     }
   };
 
+  const handleTeamAssetUpload = async (
+    field: 'logo' | 'homeJerseyPhoto' | 'awayJerseyPhoto',
+    imageFile: File,
+  ) => {
+    if (!previewData) return;
+    try {
+      setUploadingTeamAsset(field);
+      setError(null);
+      const res = await pdfImportApi.uploadPhoto(previewData.batchId, imageFile);
+      const updatedTeams = [...previewData.teams];
+      const current = updatedTeams[activeTeamIndex];
+      current[field] = {
+        value: res.url,
+        confidence: 1,
+        page: current[field]?.page || current.teamName.page,
+        manuallyConfirmed: true,
+      };
+      setPreviewData({ ...previewData, teams: updatedTeams });
+    } catch (err: any) {
+      setError(err?.message || '球队图片上传失败');
+    } finally {
+      setUploadingTeamAsset(null);
+    }
+  };
+
   const handleCommit = async () => {
     if (!previewData) return;
 
@@ -175,16 +198,12 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
     setError(null);
 
     try {
-      const res = await pdfImportApi.commit(previewData.batchId, previewData.teams);
-      onImportSuccess({
-        createdTeamsCount: res.createdTeamsCount,
-        createdPlayersCount: res.createdPlayersCount,
-        teams: previewData.teams,
-      });
+      await onImportSuccess({ teams: previewData.teams });
+      await pdfImportApi.cancel(previewData.batchId);
       setPreviewData(null);
       setFile(null);
     } catch (err: any) {
-      setError(err?.message || '提交 PDF 导入数据失败');
+      setError(err?.message || 'PDF 识别结果回填失败');
     } finally {
       setIsLoading(false);
     }
@@ -203,7 +222,7 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
     if (onClose) onClose();
   };
 
-  const isBusy = isLoading || uploadingRowIndex !== null;
+  const isBusy = isLoading || uploadingRowIndex !== null || uploadingTeamAsset !== null;
   const currentTeam = previewData?.teams[activeTeamIndex];
 
   return (
@@ -348,6 +367,46 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
                   />
                 </div>
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(150px, 1fr))', gap: '12px', marginTop: '16px' }}>
+                {([
+                  ['logo', '球队队徽'],
+                  ['homeJerseyPhoto', '主场球衣'],
+                  ['awayJerseyPhoto', '客场球衣'],
+                ] as const).map(([field, label]) => {
+                  const asset = currentTeam[field];
+                  const inputId = `pdf-${field}-${activeTeamIndex}`;
+                  return (
+                    <div key={field} style={{ border: '1px solid #dee2e6', borderRadius: '8px', padding: '10px', background: '#fff' }}>
+                      <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '8px' }}>{label}</div>
+                      <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f9fa', borderRadius: '6px', overflow: 'hidden' }}>
+                        {asset?.value ? (
+                          <img src={asset.value} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ) : (
+                          <span style={{ color: '#adb5bd', fontSize: '13px' }}>未识别</span>
+                        )}
+                      </div>
+                      <input
+                        id={inputId}
+                        type="file"
+                        accept="image/*"
+                        disabled={isBusy}
+                        onChange={(event) => {
+                          const selected = event.target.files?.[0];
+                          if (selected) void handleTeamAssetUpload(field, selected);
+                          event.target.value = '';
+                        }}
+                        style={{ display: 'none' }}
+                      />
+                      <label
+                        htmlFor={inputId}
+                        style={{ display: 'block', marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #ced4da', borderRadius: '5px', cursor: isBusy ? 'wait' : 'pointer', fontSize: '12px' }}
+                      >
+                        {uploadingTeamAsset === field ? '上传中...' : asset?.value ? '更换图片' : '补充图片'}
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -474,7 +533,7 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 24px', background: '#228be6', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: isBusy ? 'not-allowed' : 'pointer' }}
             >
               <Check size={16} />
-              {isLoading ? '提交中...' : '确认导入球队与球员名单'}
+              {isLoading ? '正在回填...' : '回填到球队信息录入表单'}
             </button>
           </div>
         </div>

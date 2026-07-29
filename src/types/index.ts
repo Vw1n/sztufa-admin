@@ -43,9 +43,9 @@ export interface TeamFormData {
   leaderPhone: string;
   homeJerseyColor: string;
   awayJerseyColor: string;
-  teamLogo: File | null;
-  homeJersey: File | null;
-  awayJersey: File | null;
+  teamLogo: File | string | null;
+  homeJersey: File | string | null;
+  awayJersey: File | string | null;
   gender: string;
   seasonId: string;
 }

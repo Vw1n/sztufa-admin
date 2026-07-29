@@ -34,9 +34,17 @@ jest.mock('../../components/PdfImporter', () => ({
         type="button"
         onClick={() =>
           onImportSuccess({
-            createdTeamsCount: 3,
-            createdPlayersCount: 48,
-            teams: [],
+            teams: [{
+              teamName: { value: '测试球队', confidence: 1, page: 1 },
+              teamDoctor: { value: '队医', confidence: 1, page: 1 },
+              headCoach: { value: '教练', confidence: 1, page: 1 },
+              teamLeader: { value: '领队', confidence: 1, page: 1 },
+              coachPhone: { value: '13800138000', confidence: 1, page: 1 },
+              leaderPhone: { value: '13900139000', confidence: 1, page: 1 },
+              homeJerseyColor: { value: '白', confidence: 1, page: 1 },
+              awayJerseyColor: { value: '黑', confidence: 1, page: 1 },
+              players: [],
+            }],
           })
         }
       >
@@ -74,7 +82,7 @@ describe('TeamEntryPage PDF 批量导入入口', () => {
       completeButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(container.textContent).toContain('新增或更新 3 支球队、48 名球员');
+    expect(container.textContent).toContain('PDF 信息已回填到球队录入表单');
     expect(container.textContent).not.toContain('多球队 PDF 预览器');
 
     await act(async () => {

@@ -5,6 +5,7 @@ import TeamForm from './components/TeamForm';
 import PlayerList from './components/PlayerList';
 import ExcelImporter from '../../components/ExcelImporter';
 import PdfImporter from '../../components/PdfImporter';
+import { ParsedTeam } from '../../api/pdf-import.service';
 import SuccessToast from '../../components/SuccessToast';
 import { Team, TeamFormData, Player } from '../../types';
 import { generateId } from '../../utils';
@@ -17,6 +18,21 @@ import {
   selectActiveSeasonId,
   validateTeamCreation,
 } from '../team-create';
+
+interface PdfTeamDraft {
+  formData: TeamFormData;
+  players: Player[];
+}
+
+const downloadPdfImage = async (url: string | null | undefined, fileName: string) => {
+  if (!url) return null;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`无法读取识别出的图片：${fileName}`);
+  }
+  const blob = await response.blob();
+  return new File([blob], fileName, { type: blob.type || 'image/webp' });
+};
 
 const TeamEntryPage: React.FC = () => {
   const { user } = useAuth();
@@ -45,6 +61,7 @@ const TeamEntryPage: React.FC = () => {
   const [saveProgress, setSaveProgress] = useState<{ current: number; total: number; message: string } | null>(null);
   const [showPdfImporter, setShowPdfImporter] = useState(false);
   const [pdfImportMessage, setPdfImportMessage] = useState<string | null>(null);
+  const [pendingPdfDrafts, setPendingPdfDrafts] = useState<PdfTeamDraft[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +187,16 @@ const TeamEntryPage: React.FC = () => {
       setIsSaved(true);
       setError(null);
 
+      if (pendingPdfDrafts.length > 0) {
+        const [nextDraft, ...remainingDrafts] = pendingPdfDrafts;
+        setTeamFormData(nextDraft.formData);
+        setPlayers(nextDraft.players);
+        setPendingPdfDrafts(remainingDrafts);
+        setPdfImportMessage(
+          `当前球队已保存，已自动载入下一支 PDF 球队；剩余 ${remainingDrafts.length} 支待录入。`,
+        );
+      }
+
       setTimeout(() => {
         setIsSaved(false);
       }, 3000);
@@ -184,6 +211,70 @@ const TeamEntryPage: React.FC = () => {
       setIsLoading(false);
       setSaveProgress(null);
     }
+  };
+
+  const handlePdfTeamsRecognized = async ({ teams }: { teams: ParsedTeam[] }) => {
+    if (teams.length === 0) {
+      throw new Error('PDF 中没有可回填的球队');
+    }
+
+    const drafts = await Promise.all(
+      teams.map(async (team, teamIndex): Promise<PdfTeamDraft> => {
+        const [teamLogo, homeJersey, awayJersey, importedPlayers] = await Promise.all([
+          downloadPdfImage(team.logo?.value, `team-${teamIndex + 1}-logo.webp`),
+          downloadPdfImage(team.homeJerseyPhoto?.value, `team-${teamIndex + 1}-home.webp`),
+          downloadPdfImage(team.awayJerseyPhoto?.value, `team-${teamIndex + 1}-away.webp`),
+          Promise.all(
+            team.players.map(async (player, playerIndex): Promise<Player> => {
+              const photoFile = await downloadPdfImage(
+                player.photo.value,
+                `team-${teamIndex + 1}-player-${playerIndex + 1}.webp`,
+              );
+              return {
+                id: generateId(),
+                name: player.name.value || '',
+                studentId: player.studentId.value || '',
+                jerseyNumber: player.jerseyNumber.value || '',
+                photo: photoFile ? URL.createObjectURL(photoFile) : null,
+                photoFile,
+                teamId: '',
+              };
+            }),
+          ),
+        ]);
+
+        return {
+          formData: {
+            teamName: team.teamName.value || '',
+            teamDoctor: team.teamDoctor.value || '',
+            headCoach: team.headCoach.value || '',
+            teamLeader: team.teamLeader.value || '',
+            coachPhone: team.coachPhone.value || '',
+            leaderPhone: team.leaderPhone.value || '',
+            homeJerseyColor: team.homeJerseyColor.value || '',
+            awayJerseyColor: team.awayJerseyColor.value || '',
+            teamLogo,
+            homeJersey,
+            awayJersey,
+            gender: teamFormData.gender,
+            seasonId: teamFormData.seasonId,
+          },
+          players: importedPlayers,
+        };
+      }),
+    );
+
+    const [firstDraft, ...remainingDrafts] = drafts;
+    setTeamFormData(firstDraft.formData);
+    setPlayers(firstDraft.players);
+    setPendingPdfDrafts(remainingDrafts);
+    setShowPdfImporter(false);
+    setError(null);
+    setPdfImportMessage(
+      teams.length === 1
+        ? 'PDF 信息已回填到球队录入表单，可继续修改后保存。'
+        : `PDF 已识别 ${teams.length} 支球队，当前载入第 1 支；每次保存后自动载入下一支。`,
+    );
   };
 
   const handleExportJson = () => {
@@ -331,13 +422,7 @@ const TeamEntryPage: React.FC = () => {
             {showPdfImporter && (
               <div style={{ marginTop: '18px' }}>
                 <PdfImporter
-                  onImportSuccess={(result) => {
-                    setShowPdfImporter(false);
-                    setError(null);
-                    setPdfImportMessage(
-                      `PDF 批量导入完成：新增或更新 ${result.createdTeamsCount} 支球队、${result.createdPlayersCount} 名球员。`,
-                    );
-                  }}
+                  onImportSuccess={handlePdfTeamsRecognized}
                   onClose={() => setShowPdfImporter(false)}
                 />
               </div>
