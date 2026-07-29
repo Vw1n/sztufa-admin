@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, FileSpreadsheet, Check, X, AlertCircle, Download } from 'lucide-react';
+import { Upload, FileSpreadsheet, Check, X, AlertCircle, Download, Image as ImageIcon } from 'lucide-react';
 import { Player } from '../types';
 import {
   MAX_ROWS,
@@ -8,6 +8,7 @@ import {
   validateWorksheetData,
   parsePlayerRows,
 } from '../utils/excelSecurity';
+import { uploadImageFile } from '../utils/imageUpload';
 
 interface ExcelImporterProps {
   onImport: (players: Omit<Player, 'id'>[]) => void;
@@ -19,6 +20,8 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
   const [error, setError] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [batchMatchingStatus, setBatchMatchingStatus] = useState<string | null>(null);
+  const [uploadingRowIndex, setUploadingRowIndex] = useState<number | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -32,6 +35,7 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
       setError(null);
       setIsPreviewing(false);
       setPreviewData([]);
+      setBatchMatchingStatus(null);
     }
   };
 
@@ -46,6 +50,7 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
 
     setIsLoading(true);
     setError(null);
+    setBatchMatchingStatus(null);
 
     try {
       // 动态导入 xlsx
@@ -128,20 +133,104 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
     }
   }, [file]);
 
+  const isBusy = isLoading || uploadingRowIndex !== null;
+
+  const handleSinglePhotoUpload = async (index: number, photoFile: File) => {
+    try {
+      setUploadingRowIndex(index);
+      setError(null);
+      const url = await uploadImageFile(photoFile, `球员 ${previewData[index]?.name || index + 1} 的照片`);
+      setPreviewData((prev) => {
+        if (index < 0 || index >= prev.length) return prev;
+        const updated = [...prev];
+        updated[index] = { ...updated[index], photo: url };
+        return updated;
+      });
+    } catch (err: any) {
+      setError(err?.message || '图片上传失败');
+    } finally {
+      setUploadingRowIndex(null);
+    }
+  };
+
+  const handleBatchPhotosUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFiles = Array.from(e.target.files || []);
+    if (rawFiles.length === 0) return;
+
+    // 重置 input 以允许再次选择同名图片
+    e.target.value = '';
+
+    const imageFiles = rawFiles.filter((f) => f.type.startsWith('image/'));
+    const ignoredCount = rawFiles.length - imageFiles.length;
+
+    if (imageFiles.length === 0) {
+      setBatchMatchingStatus(`所选的 ${rawFiles.length} 个文件均非有效图片格式。`);
+      return;
+    }
+
+    setIsLoading(true);
+    setBatchMatchingStatus('正在上传与匹配照片...');
+    setError(null);
+
+    let matchedCount = 0;
+    let failedCount = 0;
+    let unmatchedCount = 0;
+
+    const updatedData = [...previewData];
+
+    for (const imageFile of imageFiles) {
+      const fileNameWithoutExt = imageFile.name.substring(0, imageFile.name.lastIndexOf('.')) || imageFile.name;
+      const cleanStem = fileNameWithoutExt.trim();
+
+      // 按学号或姓名寻找相匹配的球员
+      const targetIndex = updatedData.findIndex(
+        (p) => p.studentId === cleanStem || p.name === cleanStem
+      );
+
+      if (targetIndex === -1) {
+        unmatchedCount++;
+      } else {
+        try {
+          const url = await uploadImageFile(imageFile, `照片 ${imageFile.name}`);
+          updatedData[targetIndex] = { ...updatedData[targetIndex], photo: url };
+          matchedCount++;
+        } catch (err) {
+          failedCount++;
+          console.error(`上传图片 ${imageFile.name} 失败`, err);
+        }
+      }
+    }
+
+    setPreviewData(updatedData);
+    setIsLoading(false);
+
+    const statusParts: string[] = [`批量处理完成 (${imageFiles.length} 张图片)`];
+    if (matchedCount > 0) statusParts.push(`成功匹配并更新 ${matchedCount} 张照片`);
+    if (failedCount > 0) statusParts.push(`${failedCount} 张匹配图片上传失败`);
+    if (unmatchedCount > 0) statusParts.push(`${unmatchedCount} 张图片未匹配到球员（文件名需与学号或姓名一致）`);
+    if (ignoredCount > 0) statusParts.push(`忽略 ${ignoredCount} 个非图片文件`);
+
+    setBatchMatchingStatus(statusParts.join('；') + '。');
+  };
+
   const handleConfirm = () => {
+    if (isBusy) return;
     if (previewData.length > 0) {
       onImport(previewData);
       setFile(null);
       setPreviewData([]);
       setIsPreviewing(false);
+      setBatchMatchingStatus(null);
     }
   };
 
   const handleCancel = () => {
+    if (isBusy) return;
     setFile(null);
     setPreviewData([]);
     setIsPreviewing(false);
     setError(null);
+    setBatchMatchingStatus(null);
   };
 
   const handleDownloadTemplate = async () => {
@@ -153,17 +242,20 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
         {
           '姓名': '张三',
           '学号': '20210001',
-          '球衣号码': '10'
+          '球衣号码': '10',
+          '照片': 'https://example.com/photos/20210001.jpg',
         },
         {
           '姓名': '李四',
           '学号': '20210002',
-          '球衣号码': '11'
+          '球衣号码': '11',
+          '照片': '',
         },
         {
           '姓名': '王五',
           '学号': '20210003',
-          '球衣号码': '12'
+          '球衣号码': '12',
+          '照片': '',
         }
       ];
 
@@ -223,26 +315,128 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
         </div>
       ) : (
         <div className="preview-section">
-          <div className="preview-header">
-            <h4>预览导入数据</h4>
-            <p>共 {previewData.length} 条记录</p>
+          <div className="preview-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h4>预览导入数据</h4>
+              <p>共 {previewData.length} 条记录</p>
+            </div>
+            <div>
+              <label
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  background: isBusy ? '#f1f3f5' : '#e7f5ff',
+                  color: isBusy ? '#adb5bd' : '#1c7ed6',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  cursor: isBusy ? 'not-allowed' : 'pointer',
+                  border: isBusy ? '1px solid #dee2e6' : '1px solid #a5d8ff',
+                  fontWeight: 500,
+                  opacity: isBusy ? 0.7 : 1,
+                }}
+              >
+                <ImageIcon size={16} />
+                批量选择本地照片 (按学号/姓名自动匹配)
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={isBusy}
+                  onChange={handleBatchPhotosUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
           </div>
+
+          {batchMatchingStatus && (
+            <div style={{ margin: '8px 0 12px 0', padding: '8px 12px', borderRadius: '6px', background: '#f4fce3', border: '1px solid #d8f5a2', color: '#2b8a3e', fontSize: '13px' }}>
+              {batchMatchingStatus}
+            </div>
+          )}
+
+          {error && (
+            <div className="error-message" style={{ marginBottom: '12px' }}>
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </div>
+          )}
           
           <div className="preview-table-wrapper">
             <table className="preview-table">
               <thead>
                 <tr>
+                  <th style={{ width: '60px', textAlign: 'center' }}>照片</th>
                   <th>姓名</th>
                   <th>学号</th>
                   <th>球衣号码</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {previewData.map((player, index) => (
                   <tr key={index}>
+                    <td style={{ textAlign: 'center' }}>
+                      {player.photo ? (
+                        <img
+                          src={player.photo}
+                          alt={player.name}
+                          style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            background: '#e9ecef',
+                            color: '#6c757d',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '10px',
+                            margin: '0 auto',
+                          }}
+                        >
+                          无
+                        </div>
+                      )}
+                    </td>
                     <td>{player.name}</td>
                     <td>{player.studentId}</td>
                     <td>{player.jerseyNumber}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <label
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          background: isBusy ? '#f8f9fa' : '#f1f3f5',
+                          color: isBusy ? '#adb5bd' : '#495057',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          cursor: isBusy ? 'not-allowed' : 'pointer',
+                          border: '1px solid #ced4da',
+                          opacity: isBusy ? 0.7 : 1,
+                        }}
+                      >
+                        <ImageIcon size={12} />
+                        {uploadingRowIndex === index ? '上传中' : player.photo ? '更换' : '上传照片'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={isBusy}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleSinglePhotoUpload(index, f);
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -250,11 +444,11 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
           </div>
 
           <div className="preview-actions">
-            <button onClick={handleConfirm} className="confirm-btn">
+            <button onClick={handleConfirm} className="confirm-btn" disabled={isBusy}>
               <Check size={16} />
               确认导入
             </button>
-            <button onClick={handleCancel} className="cancel-btn">
+            <button onClick={handleCancel} className="cancel-btn" disabled={isBusy}>
               <X size={16} />
               取消
             </button>
@@ -271,8 +465,9 @@ const ExcelImporter: React.FC<ExcelImporterProps> = ({ onImport }) => {
           </button>
         </div>
         <ul>
-          <li>列名：姓名、学号、球衣号码</li>
+          <li>列名：姓名、学号、球衣号码、照片（可选，支持图片 URL 链接）</li>
           <li>第一行为表头，从第二行开始为数据</li>
+          <li>除在 Excel 中填写照片 URL 外，解析后还可在预览界面批量选择本地照片（文件名需与学号或姓名一致，如 <code>20210001.jpg</code> 或 <code>张三.png</code>）</li>
         </ul>
       </div>
     </div>

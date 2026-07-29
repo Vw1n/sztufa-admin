@@ -58,6 +58,7 @@ export function exportPlayersToExcel(teamName: string, players: Player[]): void 
     '姓名': p.name,
     '学号': p.studentId,
     '球衣号码': p.jerseyNumber,
+    '照片': p.photo || '',
   }));
   const worksheet = XLSX.utils.json_to_sheet(exportData);
   const workbook = XLSX.utils.book_new();

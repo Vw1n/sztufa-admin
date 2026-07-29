@@ -82,7 +82,7 @@ describe('Excel 安全防护与导入校验测试', () => {
     it('能正确识别中文表头并提取球员信息', () => {
       const mockJson = [
         { 姓名: '张三', 学号: '20210001', 球衣号码: '10' },
-        { 姓名: '李四', 学号: '20210002', 球衣号码: 7 },
+        { 姓名: '李四', 学号: '20210002', 球衣号码: 7, 照片: 'https://example.com/avatar.jpg' },
       ];
       const players = parsePlayerRows(mockJson);
       expect(players).toHaveLength(2);
@@ -93,7 +93,24 @@ describe('Excel 安全防护与导入校验测试', () => {
         photo: null,
         teamId: '',
       });
-      expect(players[1].jerseyNumber).toBe('7');
+      expect(players[1]).toEqual({
+        name: '李四',
+        studentId: '20210002',
+        jerseyNumber: '7',
+        photo: 'https://example.com/avatar.jpg',
+        teamId: '',
+      });
+    });
+
+    it('能正确识别各种照片列别名（如 照片URL/头像/photo/avatar）', () => {
+      const mockJson = [
+        { name: '王五', studentId: '20210003', jerseyNumber: '12', avatar: 'https://img.com/3.png' },
+        { 姓名: '赵六', 学号: '20210004', 球衣号码: '15', 头像: 'https://img.com/4.jpg' },
+      ];
+      const players = parsePlayerRows(mockJson);
+      expect(players).toHaveLength(2);
+      expect(players[0].photo).toBe('https://img.com/3.png');
+      expect(players[1].photo).toBe('https://img.com/4.jpg');
     });
 
     it('过滤无效或缺少必要字段的错误记录', () => {
