@@ -16,7 +16,7 @@ describe('pdfImportApi', () => {
     setTokenExpiry(Date.now() + 3600000);
   });
 
-  it('preview 应通过 FormData 发送 POST 请求并返回解析数据', async () => {
+  it('preview 应先获取预签名地址、直传 PDF，再请求后端解析对象 Key', async () => {
     const mockResponse = {
       batchId: 'batch_123',
       fileHash: 'hash123',
@@ -25,20 +25,59 @@ describe('pdfImportApi', () => {
       hasLowConfidence: false,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      status: 200,
-      headers: new Headers({ 'content-type': 'application/json' }),
-      text: async () => JSON.stringify(mockResponse),
-    });
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({
+            uploadUrl: 'https://r2.example.com/signed-put',
+            objectKey: 'temp/pdf-source/admin/source.pdf',
+            expiresAt: '2026-07-29T12:00:00Z',
+          }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(mockResponse),
+      });
 
-    const file = { name: 'test.pdf', type: 'application/pdf' } as any;
+    const file = {
+      name: 'test.pdf',
+      type: 'application/pdf',
+      size: 15 * 1024 * 1024,
+    } as any;
     const result = await pdfImportApi.preview(file);
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/import/pdf/preview'),
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('/import/pdf/upload-url'),
       expect.objectContaining({
         method: 'POST',
+      }),
+    );
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      'https://r2.example.com/signed-put',
+      expect.objectContaining({
+        method: 'PUT',
+        body: file,
+      }),
+    );
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      3,
+      expect.stringContaining('/import/pdf/preview-uploaded'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          objectKey: 'temp/pdf-source/admin/source.pdf',
+          fileName: 'test.pdf',
+          fileSize: file.size,
+        }),
       }),
     );
     expect(result.batchId).toBe('batch_123');

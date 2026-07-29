@@ -46,15 +46,52 @@ export interface PdfCommitResponse {
   createdPlayersCount: number;
 }
 
+interface PdfUploadUrlResponse {
+  uploadUrl: string;
+  objectKey: string;
+  expiresAt: string;
+}
+
 export const pdfImportApi = {
   preview: async (file: File): Promise<PdfPreviewResponse> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch(`${BASE_URL}/import/pdf/preview`, {
+    const mimeType = file.type || 'application/pdf';
+    const uploadUrlResponse = await fetch(`${BASE_URL}/import/pdf/upload-url`, {
       method: 'POST',
-      headers: createHeaders(true),
-      body: formData,
+      headers: createHeaders(),
+      body: JSON.stringify({
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType,
+      }),
+    });
+    const upload = await handleResponse<PdfUploadUrlResponse>(uploadUrlResponse);
+
+    let directUploadResponse: Response;
+    try {
+      directUploadResponse = await fetch(upload.uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/pdf',
+        },
+        body: file,
+      });
+    } catch {
+      throw new Error(
+        'PDF 直传对象存储失败，请检查 R2/S3 CORS 配置或网络连接',
+      );
+    }
+    if (!directUploadResponse.ok) {
+      throw new Error(`PDF 直传对象存储失败（${directUploadResponse.status}）`);
+    }
+
+    const response = await fetch(`${BASE_URL}/import/pdf/preview-uploaded`, {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify({
+        objectKey: upload.objectKey,
+        fileName: file.name,
+        fileSize: file.size,
+      }),
     });
     return handleResponse<PdfPreviewResponse>(response);
   },
