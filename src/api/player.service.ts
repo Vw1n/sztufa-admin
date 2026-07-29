@@ -12,7 +12,7 @@ export const playerApi = {
   },
 
   getAll: async (page = 1, limit = 10, teamId?: string): Promise<PlayerListResponse> => {
-    let url = `${BASE_URL}/players?page=${page}&limit=${limit}`;
+    let url = `${BASE_URL}/players/admin/manage?page=${page}&limit=${limit}`;
     if (teamId) {
       url += `&teamId=${teamId}`;
     }

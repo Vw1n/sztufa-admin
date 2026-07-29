@@ -205,7 +205,7 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
             {isEditing ? (
               <select value={editData?.matchName || ''} onChange={(e) => onFieldChange('matchName', e.target.value)} className="form-select">
                 <option value="">请选择比赛名称</option>
-                {['小组赛第一轮','小组赛第二轮','小组赛第三轮','八分之一决赛','四分之一决赛','半决赛','季军赛','决赛'].map(n => (
+                {['小组赛第一轮','小组赛第二轮','小组赛第三轮','小组赛第四轮','小组赛第五轮','八分之一决赛','四分之一决赛','半决赛','季军赛','决赛'].map(n => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>

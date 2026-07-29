@@ -23,7 +23,7 @@ export const teamApi = {
   },
 
   getAll: async (page = 1, limit = 10, seasonId?: string, gender?: string): Promise<TeamListResponse> => {
-    let url = `${BASE_URL}/teams?page=${page}&limit=${limit}`;
+    let url = `${BASE_URL}/teams/admin/manage?page=${page}&limit=${limit}`;
     if (seasonId) {
       url += `&seasonId=${seasonId}`;
     }

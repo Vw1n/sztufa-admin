@@ -127,7 +127,7 @@ describe('API Service Tests', () => {
       const result = await teamApi.getAll(1, 10);
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://api.sztufa.xyz/api/v1/teams?page=1&limit=10',
+        'https://api.sztufa.xyz/api/v1/teams/admin/manage?page=1&limit=10',
         {
           method: 'GET',
           headers: expect.any(Headers),
@@ -263,7 +263,7 @@ describe('API Service Tests', () => {
       const result = await playerApi.getAll(1, 10, 'clx1234567890');
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://api.sztufa.xyz/api/v1/players?page=1&limit=10&teamId=clx1234567890',
+        'https://api.sztufa.xyz/api/v1/players/admin/manage?page=1&limit=10&teamId=clx1234567890',
         {
           method: 'GET',
           headers: expect.any(Headers),
