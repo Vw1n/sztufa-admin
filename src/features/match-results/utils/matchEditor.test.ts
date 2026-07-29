@@ -49,6 +49,28 @@ describe('matchEditor', () => {
     expect(validateMatchEdit(invalid)).toBe('换上球员与换下球员不能相同');
   });
 
+  it.each(['5TH', '7TH'])(
+    'allows an incomplete imported %s placement match to be edited',
+    (knockoutRound) => {
+      expect(validateMatchEdit(match({
+        stage: 'KNOCKOUT',
+        knockoutRound,
+        homeScore: 5,
+        awayScore: 3,
+        events: [],
+      }))).toBeNull();
+    },
+  );
+
+  it('allows an imported match without event details to be edited', () => {
+    expect(validateMatchEdit(match({
+      stage: 'GROUP',
+      homeScore: 4,
+      awayScore: 2,
+      events: [],
+    }))).toBeNull();
+  });
+
   it('builds backward-compatible goals from events', () => {
     const payload = buildMatchUpdatePayload(match());
     expect(payload.events?.[0]).toEqual(expect.objectContaining({ description: '进球' }));
