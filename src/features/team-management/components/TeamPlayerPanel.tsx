@@ -1,6 +1,7 @@
-import React from 'react';
-import { Trash2, Plus, Users, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash2, Plus, Users, Download, FileText } from 'lucide-react';
 import ExcelImporter from '../../../components/ExcelImporter';
+import PdfImporter from '../../../components/PdfImporter';
 import { Team, Player } from '../../../types';
 import { uploadImageFile } from '../../../utils/imageUpload';
 
@@ -23,6 +24,7 @@ export const TeamPlayerPanel: React.FC<TeamPlayerPanelProps> = ({
   onAddPlayerRow, onDeletePlayerRow, onPlayerFieldChange,
   onExcelImport, onExportPlayers,
 }) => {
+  const [showPdfImporter, setShowPdfImporter] = useState(false);
   const players = isEditing ? (editData?.players || []) : (selectedTeam.players || []);
   const count = players.length;
 
@@ -149,20 +151,38 @@ export const TeamPlayerPanel: React.FC<TeamPlayerPanelProps> = ({
 
       {isEditing && (
         <>
-          <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+          <div style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button onClick={onAddPlayerRow} className="add-btn small" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', height: 'auto' }}>
               <Plus size={14} />
               添加单个球员
             </button>
             <button onClick={onToggleImporter} className="add-btn small refresh-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', height: 'auto' }}>
               <Users size={14} />
-              {showImporter ? '隐藏批量导入' : 'Excel 批量追加'}
+              {showImporter ? '隐藏 Excel 导入' : 'Excel 批量追加'}
+            </button>
+            <button onClick={() => setShowPdfImporter(!showPdfImporter)} className="add-btn small refresh-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', height: 'auto', background: '#e7f5ff', color: '#1c7ed6', borderColor: '#a5d8ff' }}>
+              <FileText size={14} />
+              {showPdfImporter ? '隐藏 PDF 导入' : '📄 导入 PDF 报名表'}
             </button>
           </div>
 
           {showImporter && (
             <div style={{ marginTop: '20px', padding: '20px', border: '1px dashed #ddd', borderRadius: '8px', background: '#fcfcfc' }}>
               <ExcelImporter onImport={onExcelImport} />
+            </div>
+          )}
+
+          {showPdfImporter && (
+            <div style={{ marginTop: '20px' }}>
+              <PdfImporter
+                onImportSuccess={(res) => {
+                  setShowPdfImporter(false);
+                  if (typeof window !== 'undefined') {
+                    window.location.reload();
+                  }
+                }}
+                onClose={() => setShowPdfImporter(false)}
+              />
             </div>
           )}
         </>

@@ -124,11 +124,24 @@ export function parsePlayerRows(jsonData: Record<string, any>[]) {
             ? row['jersey_number']
             : '';
 
+    const rawPhoto =
+      row['照片'] ??
+      row['照片URL'] ??
+      row['头像'] ??
+      row['头像URL'] ??
+      row['photo'] ??
+      row['avatar'] ??
+      row['图片'] ??
+      row['照片地址'] ??
+      '';
+
+    const photoUrl = String(rawPhoto || '').trim();
+
     return {
       name: String(rawName).trim(),
       studentId: String(rawStudentId).trim(),
       jerseyNumber: String(rawJerseyNumber).trim(),
-      photo: null,
+      photo: photoUrl || null,
       teamId: '',
     };
   });

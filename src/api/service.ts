@@ -7,6 +7,7 @@ export { matchApi } from './match.service';
 export { authApi, userApi } from './auth.service';
 export { seasonApi } from './season.service';
 export { uploadApi, importApi } from './upload.service';
+export { pdfImportApi } from './pdf-import.service';
 export { newsApi } from './news.service';
 export type { NewsDTO } from './news.service';
 export { auditLogApi } from './audit.service';

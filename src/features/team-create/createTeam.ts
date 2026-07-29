@@ -12,6 +12,9 @@ export interface TeamCreationProgress {
 
 export type TeamCreationProgressHandler = (progress: TeamCreationProgress) => void;
 
+const isUploadFile = (value: File | string | null | undefined): value is File =>
+  Boolean(value) && typeof value !== 'string';
+
 export const createTeam = async (
   form: TeamFormData,
   players: Player[],
@@ -22,7 +25,7 @@ export const createTeam = async (
     form.homeJersey,
     form.awayJersey,
     ...players.map((player) => player.photoFile),
-  ].filter(Boolean).length;
+  ].filter((image) => isUploadFile(image)).length;
   const totalSteps = imageCount + 1;
   let currentStep = 0;
 
@@ -37,15 +40,15 @@ export const createTeam = async (
     return url;
   };
 
-  const teamLogoUrl = form.teamLogo
+  const teamLogoUrl = isUploadFile(form.teamLogo)
     ? await uploadImage(form.teamLogo, '队徽')
-    : null;
-  const homeJerseyUrl = form.homeJersey
+    : form.teamLogo;
+  const homeJerseyUrl = isUploadFile(form.homeJersey)
     ? await uploadImage(form.homeJersey, '主场球衣')
-    : null;
-  const awayJerseyUrl = form.awayJersey
+    : form.homeJersey;
+  const awayJerseyUrl = isUploadFile(form.awayJersey)
     ? await uploadImage(form.awayJersey, '客场球衣')
-    : null;
+    : form.awayJersey;
 
   const playerPayloads: CreateTeamPlayerDTO[] = [];
   for (const player of players) {

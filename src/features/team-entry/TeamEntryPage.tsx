@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Download, Trophy, FileJson, Loader2, AlertCircle } from 'lucide-react';
+import { Save, Download, Trophy, FileJson, Loader2, AlertCircle, FileText, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import TeamForm from './components/TeamForm';
 import PlayerList from './components/PlayerList';
 import ExcelImporter from '../../components/ExcelImporter';
+import PdfImporter from '../../components/PdfImporter';
+import { ParsedTeam, pdfImportApi } from '../../api/pdf-import.service';
 import SuccessToast from '../../components/SuccessToast';
 import { Team, TeamFormData, Player } from '../../types';
 import { generateId } from '../../utils';
@@ -16,6 +18,21 @@ import {
   selectActiveSeasonId,
   validateTeamCreation,
 } from '../team-create';
+
+interface PdfTeamDraft {
+  formData: TeamFormData;
+  players: Player[];
+}
+
+const downloadPdfImage = async (
+  batchId: string,
+  url: string | null | undefined,
+  fileName: string,
+) => {
+  if (!url) return null;
+  const blob = await pdfImportApi.downloadAsset(batchId, url);
+  return new File([blob], fileName, { type: blob.type || 'image/webp' });
+};
 
 const TeamEntryPage: React.FC = () => {
   const { user } = useAuth();
@@ -42,6 +59,9 @@ const TeamEntryPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [savedTeam, setSavedTeam] = useState<Team | null>(null);
   const [saveProgress, setSaveProgress] = useState<{ current: number; total: number; message: string } | null>(null);
+  const [showPdfImporter, setShowPdfImporter] = useState(false);
+  const [pdfImportMessage, setPdfImportMessage] = useState<string | null>(null);
+  const [pendingPdfDrafts, setPendingPdfDrafts] = useState<PdfTeamDraft[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -167,6 +187,16 @@ const TeamEntryPage: React.FC = () => {
       setIsSaved(true);
       setError(null);
 
+      if (pendingPdfDrafts.length > 0) {
+        const [nextDraft, ...remainingDrafts] = pendingPdfDrafts;
+        setTeamFormData(nextDraft.formData);
+        setPlayers(nextDraft.players);
+        setPendingPdfDrafts(remainingDrafts);
+        setPdfImportMessage(
+          `当前球队已保存，已自动载入下一支 PDF 球队；剩余 ${remainingDrafts.length} 支待录入。`,
+        );
+      }
+
       setTimeout(() => {
         setIsSaved(false);
       }, 3000);
@@ -181,6 +211,85 @@ const TeamEntryPage: React.FC = () => {
       setIsLoading(false);
       setSaveProgress(null);
     }
+  };
+
+  const handlePdfTeamsRecognized = async ({
+    batchId,
+    teams,
+  }: {
+    batchId: string;
+    teams: ParsedTeam[];
+  }) => {
+    if (teams.length === 0) {
+      throw new Error('PDF 中没有可回填的球队');
+    }
+
+    const drafts = await Promise.all(
+      teams.map(async (team, teamIndex): Promise<PdfTeamDraft> => {
+        const [teamLogo, homeJersey, awayJersey, importedPlayers] = await Promise.all([
+          downloadPdfImage(batchId, team.logo?.value, `team-${teamIndex + 1}-logo.webp`),
+          downloadPdfImage(
+            batchId,
+            team.homeJerseyPhoto?.value,
+            `team-${teamIndex + 1}-home.webp`,
+          ),
+          downloadPdfImage(
+            batchId,
+            team.awayJerseyPhoto?.value,
+            `team-${teamIndex + 1}-away.webp`,
+          ),
+          Promise.all(
+            team.players.map(async (player, playerIndex): Promise<Player> => {
+              const photoFile = await downloadPdfImage(
+                batchId,
+                player.photo.value,
+                `team-${teamIndex + 1}-player-${playerIndex + 1}.webp`,
+              );
+              return {
+                id: generateId(),
+                name: player.name.value || '',
+                studentId: player.studentId.value || '',
+                jerseyNumber: player.jerseyNumber.value || '',
+                photo: photoFile ? URL.createObjectURL(photoFile) : null,
+                photoFile,
+                teamId: '',
+              };
+            }),
+          ),
+        ]);
+
+        return {
+          formData: {
+            teamName: team.teamName.value || '',
+            teamDoctor: team.teamDoctor.value || '',
+            headCoach: team.headCoach.value || '',
+            teamLeader: team.teamLeader.value || '',
+            coachPhone: team.coachPhone.value || '',
+            leaderPhone: team.leaderPhone.value || '',
+            homeJerseyColor: team.homeJerseyColor.value || '',
+            awayJerseyColor: team.awayJerseyColor.value || '',
+            teamLogo,
+            homeJersey,
+            awayJersey,
+            gender: teamFormData.gender,
+            seasonId: teamFormData.seasonId,
+          },
+          players: importedPlayers,
+        };
+      }),
+    );
+
+    const [firstDraft, ...remainingDrafts] = drafts;
+    setTeamFormData(firstDraft.formData);
+    setPlayers(firstDraft.players);
+    setPendingPdfDrafts(remainingDrafts);
+    setShowPdfImporter(false);
+    setError(null);
+    setPdfImportMessage(
+      teams.length === 1
+        ? 'PDF 信息已回填到球队录入表单，可继续修改后保存。'
+        : `PDF 已识别 ${teams.length} 支球队，当前载入第 1 支；每次保存后自动载入下一支。`,
+    );
   };
 
   const handleExportJson = () => {
@@ -275,11 +384,67 @@ const TeamEntryPage: React.FC = () => {
       <main className="page-content">
         {isSaved && <SuccessToast message="球队信息录入成功！" />}
 
+        {pdfImportMessage && (
+          <SuccessToast message={pdfImportMessage} onClose={() => setPdfImportMessage(null)} />
+        )}
+
         {error && (
           <div className="error-message">
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
+        )}
+
+        {user?.role === 'super_admin' && (
+          <section
+            className="form-section"
+            style={{
+              border: '1px solid #a5d8ff',
+              background: '#f8fbff',
+              marginBottom: '20px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div>
+                <h2 className="form-title" style={{ marginBottom: '6px' }}>
+                  <FileText size={20} />
+                  PDF 报名表批量导入
+                </h2>
+                <p style={{ margin: 0, color: '#5c677d', fontSize: '14px' }}>
+                  可上传一份包含多支球队的官方 PDF，逐队预览；确认当前球队后即可回填到下方录入表单继续修改。
+                </p>
+              </div>
+              <button
+                type="button"
+                className="add-btn"
+                onClick={() => {
+                  setShowPdfImporter((visible) => !visible);
+                  setPdfImportMessage(null);
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                {showPdfImporter ? <X size={16} /> : <FileText size={16} />}
+                {showPdfImporter ? '关闭 PDF 导入' : '上传多球队 PDF'}
+              </button>
+            </div>
+
+            {showPdfImporter && (
+              <div style={{ marginTop: '18px' }}>
+                <PdfImporter
+                  onImportSuccess={handlePdfTeamsRecognized}
+                  onClose={() => setShowPdfImporter(false)}
+                />
+              </div>
+            )}
+          </section>
         )}
 
         <div className="form-section">
