@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Download, Trophy, FileJson, Loader2, AlertCircle } from 'lucide-react';
+import { Save, Download, Trophy, FileJson, Loader2, AlertCircle, FileText, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import TeamForm from './components/TeamForm';
 import PlayerList from './components/PlayerList';
 import ExcelImporter from '../../components/ExcelImporter';
+import PdfImporter from '../../components/PdfImporter';
 import SuccessToast from '../../components/SuccessToast';
 import { Team, TeamFormData, Player } from '../../types';
 import { generateId } from '../../utils';
@@ -42,6 +43,8 @@ const TeamEntryPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [savedTeam, setSavedTeam] = useState<Team | null>(null);
   const [saveProgress, setSaveProgress] = useState<{ current: number; total: number; message: string } | null>(null);
+  const [showPdfImporter, setShowPdfImporter] = useState(false);
+  const [pdfImportMessage, setPdfImportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -275,11 +278,71 @@ const TeamEntryPage: React.FC = () => {
       <main className="page-content">
         {isSaved && <SuccessToast message="球队信息录入成功！" />}
 
+        {pdfImportMessage && <SuccessToast message={pdfImportMessage} />}
+
         {error && (
           <div className="error-message">
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
+        )}
+
+        {user?.role === 'super_admin' && (
+          <section
+            className="form-section"
+            style={{
+              border: '1px solid #a5d8ff',
+              background: '#f8fbff',
+              marginBottom: '20px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div>
+                <h2 className="form-title" style={{ marginBottom: '6px' }}>
+                  <FileText size={20} />
+                  PDF 报名表批量导入
+                </h2>
+                <p style={{ margin: 0, color: '#5c677d', fontSize: '14px' }}>
+                  可上传一份包含多支球队的官方 PDF，统一预览、校对球队资料与球员照片后一次性导入。
+                </p>
+              </div>
+              <button
+                type="button"
+                className="add-btn"
+                onClick={() => {
+                  setShowPdfImporter((visible) => !visible);
+                  setPdfImportMessage(null);
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                {showPdfImporter ? <X size={16} /> : <FileText size={16} />}
+                {showPdfImporter ? '关闭 PDF 导入' : '上传多球队 PDF'}
+              </button>
+            </div>
+
+            {showPdfImporter && (
+              <div style={{ marginTop: '18px' }}>
+                <PdfImporter
+                  onImportSuccess={(result) => {
+                    setShowPdfImporter(false);
+                    setError(null);
+                    setPdfImportMessage(
+                      `PDF 批量导入完成：新增或更新 ${result.createdTeamsCount} 支球队、${result.createdPlayersCount} 名球员。`,
+                    );
+                  }}
+                  onClose={() => setShowPdfImporter(false)}
+                />
+              </div>
+            )}
+          </section>
         )}
 
         <div className="form-section">
