@@ -174,18 +174,16 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
   };
 
   const handleCommit = async () => {
-    if (!previewData) return;
+    if (!previewData || !currentTeam) return;
 
-    // 检查是否有低置信度且未经人工确认的球员
+    // 只检查当前选中的球队，其他球队不影响本次回填。
     let unconfirmedCount = 0;
-    for (const team of previewData.teams) {
-      for (const player of team.players) {
-        if (
-          (player.photo.confidence < 0.8 || player.needsManualConfirm) &&
-          !player.photo.manuallyConfirmed
-        ) {
-          unconfirmedCount++;
-        }
+    for (const player of currentTeam.players) {
+      if (
+        (player.photo.confidence < 0.8 || player.needsManualConfirm) &&
+        !player.photo.manuallyConfirmed
+      ) {
+        unconfirmedCount++;
       }
     }
 
@@ -198,7 +196,7 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
     setError(null);
 
     try {
-      await onImportSuccess({ teams: previewData.teams });
+      await onImportSuccess({ teams: [currentTeam] });
       await pdfImportApi.cancel(previewData.batchId);
       setPreviewData(null);
       setFile(null);
@@ -533,7 +531,7 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 24px', background: '#228be6', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: isBusy ? 'not-allowed' : 'pointer' }}
             >
               <Check size={16} />
-              {isLoading ? '正在回填...' : '回填到球队信息录入表单'}
+              {isLoading ? '正在回填...' : '回填当前球队到录入表单'}
             </button>
           </div>
         </div>

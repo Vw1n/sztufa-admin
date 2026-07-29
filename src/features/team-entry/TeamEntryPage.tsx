@@ -402,7 +402,7 @@ const TeamEntryPage: React.FC = () => {
                   PDF 报名表批量导入
                 </h2>
                 <p style={{ margin: 0, color: '#5c677d', fontSize: '14px' }}>
-                  可上传一份包含多支球队的官方 PDF，统一预览、校对球队资料与球员照片后一次性导入。
+                  可上传一份包含多支球队的官方 PDF，逐队预览；确认当前球队后即可回填到下方录入表单继续修改。
                 </p>
               </div>
               <button
