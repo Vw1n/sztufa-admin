@@ -223,11 +223,13 @@ const SystemSettingsPage: React.FC = () => {
             newPassword={userManagement.newPassword}
             newRole={userManagement.newRole}
             newTeamId={userManagement.newTeamId}
+            newStudentId={userManagement.newStudentId}
             isCreatingUser={userManagement.isCreatingUser}
             onNewUsernameChange={userManagement.setNewUsername}
             onNewPasswordChange={userManagement.setNewPassword}
             onNewRoleChange={userManagement.setNewRole}
             onNewTeamIdChange={userManagement.setNewTeamId}
+            onNewStudentIdChange={userManagement.setNewStudentId}
             onCreateUser={userManagement.handleCreateUser}
             onRoleChangeInRow={userManagement.handleRoleChangeInRow}
             onTeamChangeInRow={userManagement.handleTeamChangeInRow}

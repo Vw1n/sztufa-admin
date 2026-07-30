@@ -15,7 +15,7 @@ export const authApi = {
   },
 
   // 管理员创建用户（需要携带 Token）
-  createUser: async (credentials: { username: string; password: string; role?: string; teamId?: string }): Promise<AuthResponse> => {
+  createUser: async (credentials: { username: string; password: string; role?: string; teamId?: string; studentId?: string }): Promise<AuthResponse> => {
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: 'POST',
       headers: createHeaders(),

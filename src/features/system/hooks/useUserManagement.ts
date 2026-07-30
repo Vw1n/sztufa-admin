@@ -12,6 +12,7 @@ export const useUserManagement = (teams: TeamDTO[], enabled: boolean) => {
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('user');
   const [newTeamId, setNewTeamId] = useState('');
+  const [newStudentId, setNewStudentId] = useState('');
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
   const [userSuccess, setUserSuccess] = useState<string | null>(null);
@@ -172,6 +173,10 @@ export const useUserManagement = (teams: TeamDTO[], enabled: boolean) => {
       setUserError('用户名和密码不能为空');
       return;
     }
+    if (newRole === 'user' && !newStudentId.trim()) {
+      setUserError('创建普通用户必须填写学号');
+      return;
+    }
     setIsCreatingUser(true);
     setUserError(null);
     setUserSuccess(null);
@@ -181,12 +186,14 @@ export const useUserManagement = (teams: TeamDTO[], enabled: boolean) => {
         password: newPassword,
         role: newRole,
         teamId: newRole === 'coach' && newTeamId ? newTeamId : undefined,
+        studentId: newRole === 'user' ? newStudentId.trim() : undefined,
       });
       setUserSuccess(`新账号"${newUsername}"创建成功！`);
       setNewUsername('');
       setNewPassword('');
       setNewRole('user');
       setNewTeamId('');
+      setNewStudentId('');
       loadUsers();
       setTimeout(() => setUserSuccess(null), 4000);
     } catch (error) {
@@ -213,6 +220,7 @@ export const useUserManagement = (teams: TeamDTO[], enabled: boolean) => {
     newPassword,
     newRole,
     newTeamId,
+    newStudentId,
     isCreatingUser,
     userError,
     userSuccess,
@@ -220,6 +228,7 @@ export const useUserManagement = (teams: TeamDTO[], enabled: boolean) => {
     setNewPassword,
     setNewRole,
     setNewTeamId,
+    setNewStudentId,
     loadUsers,
     handleRoleChangeInRow,
     handleTeamChangeInRow,

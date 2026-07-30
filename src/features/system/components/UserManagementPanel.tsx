@@ -17,11 +17,13 @@ interface UserManagementPanelProps {
   newPassword: string;
   newRole: string;
   newTeamId: string;
+  newStudentId: string;
   isCreatingUser: boolean;
   onNewUsernameChange: (val: string) => void;
   onNewPasswordChange: (val: string) => void;
   onNewRoleChange: (val: string) => void;
   onNewTeamIdChange: (val: string) => void;
+  onNewStudentIdChange: (val: string) => void;
   onCreateUser: (e: React.FormEvent) => void;
   onRoleChangeInRow: (userId: string, currentRole: string, currentTeamId: string | null, newRole: string) => void;
   onTeamChangeInRow: (userId: string, currentRole: string, currentTeamId: string | null, newTeamId: string | null) => void;
@@ -40,11 +42,13 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
   newPassword,
   newRole,
   newTeamId,
+  newStudentId,
   isCreatingUser,
   onNewUsernameChange,
   onNewPasswordChange,
   onNewRoleChange,
   onNewTeamIdChange,
+  onNewStudentIdChange,
   onCreateUser,
   onRoleChangeInRow,
   onTeamChangeInRow,
@@ -64,26 +68,37 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
           </h2>
         </div>
         <div style={{ background: '#fcfcfc', border: '1px solid #eee', padding: '20px', borderRadius: '8px' }}>
-          <form onSubmit={onCreateUser} className="create-user-form" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}>
+          <form
+            onSubmit={onCreateUser}
+            className="create-user-form"
+            autoComplete="off"
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}
+          >
             <div style={{ flex: '1 1 200px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '8px' }}>用户名</label>
+              <label htmlFor="create-user-username" style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '8px' }}>用户名</label>
               <input
+                id="create-user-username"
+                name="create-user-username"
                 type="text"
                 placeholder="账号用户名"
                 value={newUsername}
                 onChange={(e) => onNewUsernameChange(e.target.value)}
                 disabled={isCreatingUser}
+                autoComplete="off"
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' }}
               />
             </div>
             <div style={{ flex: '1 1 200px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '8px' }}>密码</label>
+              <label htmlFor="create-user-password" style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '8px' }}>密码</label>
               <input
+                id="create-user-password"
+                name="create-user-password"
                 type="password"
                 placeholder="至少6个字符"
                 value={newPassword}
                 onChange={(e) => onNewPasswordChange(e.target.value)}
                 disabled={isCreatingUser}
+                autoComplete="new-password"
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' }}
               />
             </div>
@@ -121,6 +136,22 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+            {newRole === 'user' && (
+              <div style={{ width: '200px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#555', marginBottom: '8px' }}>绑定学号</label>
+                <input
+                  type="text"
+                  placeholder="请输入学生学号"
+                  value={newStudentId}
+                  onChange={(e) => onNewStudentIdChange(e.target.value)}
+                  disabled={isCreatingUser}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  required
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' }}
+                />
               </div>
             )}
             <button
