@@ -81,7 +81,7 @@ export const validateMatchForm = (formData: MatchFormData): string | null => {
       if (!event.playerId) return '请选择换人事件的换上球员';
       if (!event.subPlayerId) return '请选择换人事件的换下球员';
       if (event.playerId === event.subPlayerId) return '换上球员与换下球员不能相同';
-    } else if (!event.playerId) {
+    } else if (event.eventType !== 'own_goal' && !event.playerId) {
       return '请选择事件关联的球员';
     }
   }
@@ -144,7 +144,7 @@ export const buildMatchDto = (
     .filter((event) => ['goal', 'penalty', 'own_goal'].includes(event.eventType))
     .map((event) => ({
       playerName: event.eventType === 'own_goal'
-        ? `${event.playerName} (乌龙)`
+        ? `${event.playerName || '未记录球员'} (乌龙)`
         : event.eventType === 'penalty'
           ? `${event.playerName} (点球)`
           : event.playerName || '',
