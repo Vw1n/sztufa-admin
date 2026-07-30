@@ -50,11 +50,13 @@ const PdfImporter: React.FC<PdfImporterProps> = ({
     if (!file) return;
     setIsLoading(true);
     setError(null);
+    // 新一次识别必须丢弃上一批预览，避免失败信息与旧数据同时显示。
+    setPreviewData(null);
+    setActiveTeamIndex(0);
 
     try {
       const res = await pdfImportApi.preview(file);
       setPreviewData(res);
-      setActiveTeamIndex(0);
     } catch (err: any) {
       setError(err?.message || 'PDF 报名表识别解析失败，请检查文件格式');
     } finally {
