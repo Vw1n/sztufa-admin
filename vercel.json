@@ -5,10 +5,6 @@
   "installCommand": "npm install",
   "rewrites": [
     {
-      "source": "/api/v1/:path*",
-      "destination": "https://api.sztufa.xyz/api/v1/:path*"
-    },
-    {
       "source": "/:path*",
       "destination": "/index.html"
     }
