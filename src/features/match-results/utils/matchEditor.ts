@@ -178,14 +178,12 @@ export const buildMatchUpdatePayload = (match: Match): Partial<MatchDTO> => {
     const date = new Date(matchDate.replace(/\//g, '-'));
     if (!Number.isNaN(date.getTime())) matchDate = date.toISOString();
   }
-  return {
+  const payload: Partial<MatchDTO> = {
     homeScore: match.homeScore,
     awayScore: match.awayScore,
     matchDate,
     location: match.location,
     status: match.status,
-    goals,
-    events,
     mvpPlayerId: match.mvpPlayerId || null,
     mvpPlayerName: match.mvpPlayerName || null,
     stage: match.stage || 'LEAGUE',
@@ -203,4 +201,11 @@ export const buildMatchUpdatePayload = (match: Match): Partial<MatchDTO> => {
       lineupType: lineup.lineupType,
     })),
   };
+  // Historical JSON records may only contain a final score. Omitting empty
+  // event fields avoids deleting legacy goal data during an unrelated edit.
+  if (events.length > 0) {
+    payload.events = events;
+    payload.goals = goals;
+  }
+  return payload;
 };
