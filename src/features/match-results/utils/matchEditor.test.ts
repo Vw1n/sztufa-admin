@@ -84,4 +84,36 @@ describe('matchEditor', () => {
       expect.objectContaining({ playerName: 'Player', teamType: 'home', goalTime: "10'" }),
     );
   });
+
+  it('keeps an aggregate imported shootout score alongside regular events', () => {
+    const payload = buildMatchUpdatePayload(match({
+      homeScore: 2,
+      awayScore: 2,
+      homePenaltyScore: 4,
+      awayPenaltyScore: 5,
+      events: [
+        {
+          eventTime: "10'",
+          eventType: 'goal',
+          playerId: 'home-1',
+          description: '',
+          teamType: 'home',
+        },
+        {
+          eventTime: "20'",
+          eventType: 'goal',
+          playerId: 'away-1',
+          description: '',
+          teamType: 'away',
+        },
+      ],
+    }));
+
+    expect(payload).toEqual(
+      expect.objectContaining({
+        homePenaltyScore: 4,
+        awayPenaltyScore: 5,
+      }),
+    );
+  });
 });
