@@ -63,12 +63,18 @@ describe('matchEditor', () => {
   );
 
   it('allows an imported match without event details to be edited', () => {
-    expect(validateMatchEdit(match({
+    const imported = match({
       stage: 'GROUP',
       homeScore: 4,
       awayScore: 2,
       events: [],
-    }))).toBeNull();
+    });
+    const payload = buildMatchUpdatePayload(imported);
+
+    expect(validateMatchEdit(imported)).toBeNull();
+    expect(payload).toEqual(expect.objectContaining({ homeScore: 4, awayScore: 2 }));
+    expect(payload).not.toHaveProperty('events');
+    expect(payload).not.toHaveProperty('goals');
   });
 
   it('builds backward-compatible goals from events', () => {
