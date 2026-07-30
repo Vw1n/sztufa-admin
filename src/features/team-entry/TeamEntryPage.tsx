@@ -34,6 +34,27 @@ const downloadPdfImage = async (
   return new File([blob], fileName, { type: blob.type || 'image/webp' });
 };
 
+const mapWithConcurrency = async <T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> => {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex++;
+      results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => worker()),
+  );
+  return results;
+};
+
 const TeamEntryPage: React.FC = () => {
   const { user } = useAuth();
   const [teamFormData, setTeamFormData] = useState<TeamFormData>({
@@ -224,8 +245,11 @@ const TeamEntryPage: React.FC = () => {
       throw new Error('PDF 中没有可回填的球队');
     }
 
-    const drafts = await Promise.all(
-      teams.map(async (team, teamIndex): Promise<PdfTeamDraft> => {
+    // 限制并发下载，避免一支球队的全部图片瞬间打满 Serverless 请求额度。
+    const drafts = await mapWithConcurrency(
+      teams,
+      1,
+      async (team, teamIndex): Promise<PdfTeamDraft> => {
         const [teamLogo, homeJersey, awayJersey, importedPlayers] = await Promise.all([
           downloadPdfImage(batchId, team.logo?.value, `team-${teamIndex + 1}-logo.webp`),
           downloadPdfImage(
@@ -238,8 +262,10 @@ const TeamEntryPage: React.FC = () => {
             team.awayJerseyPhoto?.value,
             `team-${teamIndex + 1}-away.webp`,
           ),
-          Promise.all(
-            team.players.map(async (player, playerIndex): Promise<Player> => {
+          mapWithConcurrency(
+            team.players,
+            4,
+            async (player, playerIndex): Promise<Player> => {
               const photoFile = await downloadPdfImage(
                 batchId,
                 player.photo.value,
@@ -254,7 +280,7 @@ const TeamEntryPage: React.FC = () => {
                 photoFile,
                 teamId: '',
               };
-            }),
+            },
           ),
         ]);
 
@@ -276,7 +302,7 @@ const TeamEntryPage: React.FC = () => {
           },
           players: importedPlayers,
         };
-      }),
+      },
     );
 
     const [firstDraft, ...remainingDrafts] = drafts;
