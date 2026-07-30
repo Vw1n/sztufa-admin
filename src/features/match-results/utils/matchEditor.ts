@@ -201,6 +201,17 @@ export const buildMatchUpdatePayload = (match: Match): Partial<MatchDTO> => {
       lineupType: lineup.lineupType,
     })),
   };
+  const hasShootoutEvents = events.some((event) => isShootoutEventType(event.eventType));
+  if (
+    !hasShootoutEvents &&
+    match.homePenaltyScore !== null &&
+    match.homePenaltyScore !== undefined &&
+    match.awayPenaltyScore !== null &&
+    match.awayPenaltyScore !== undefined
+  ) {
+    payload.homePenaltyScore = match.homePenaltyScore;
+    payload.awayPenaltyScore = match.awayPenaltyScore;
+  }
   // Historical JSON records may only contain a final score. Omitting empty
   // event fields avoids deleting legacy goal data during an unrelated edit.
   if (events.length > 0) {
