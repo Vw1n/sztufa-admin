@@ -43,6 +43,7 @@ const SystemSettingsPage: React.FC = () => {
   }, [seasonBackup.loadAllSeasons]);
   const historyImport = useHistoryImport(handleHistoryImported);
   const { teams } = useSystemTeams();
+  const { teams: activeSeasonTeams } = useSystemTeams(seasonBackup.activeSeason?.id);
   const cupGroups = useCupGroupSettings(seasonBackup.activeSeason, feedback);
   const userManagement = useUserManagement(teams, activeTab === 'users');
 
@@ -192,7 +193,7 @@ const SystemSettingsPage: React.FC = () => {
         {activeTab === 'groups' && seasonBackup.activeSeason?.type === 'CUP' && (
           <CupGroupPanel
             activeSeason={seasonBackup.activeSeason}
-            teams={teams}
+            teams={activeSeasonTeams}
             groupsData={cupGroups.groupsData}
             isSavingGroups={cupGroups.isSavingGroups}
             onTeamGroupChange={cupGroups.handleTeamGroupChange}
