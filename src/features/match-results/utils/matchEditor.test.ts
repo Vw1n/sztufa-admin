@@ -49,6 +49,32 @@ describe('matchEditor', () => {
     expect(validateMatchEdit(invalid)).toBe('换上球员与换下球员不能相同');
   });
 
+  it('allows an own goal without an associated player', () => {
+    const ownGoal = match({
+      homeScore: 0,
+      awayScore: 1,
+      events: [
+        {
+          eventTime: "10'",
+          eventType: 'own_goal',
+          playerId: '',
+          playerName: '',
+          description: '',
+          teamType: 'home',
+        },
+      ],
+    });
+
+    expect(validateMatchEdit(ownGoal)).toBeNull();
+    expect(buildMatchUpdatePayload(ownGoal).goals?.[0]).toEqual(
+      expect.objectContaining({
+        playerId: null,
+        playerName: '未记录球员 (乌龙)',
+        teamType: 'away',
+      }),
+    );
+  });
+
   it.each(['5TH', '7TH'])(
     'allows an incomplete imported %s placement match to be edited',
     (knockoutRound) => {
