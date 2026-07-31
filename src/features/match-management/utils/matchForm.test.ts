@@ -40,4 +40,23 @@ describe('matchForm', () => {
       }),
     );
   });
+
+  it('allows a forfeit match with 3:0 or 0:3 score and no events', () => {
+    const forfeitHomeWin = form({
+      homeTeamScore: '3',
+      awayTeamScore: '0',
+      events: [],
+    });
+    const forfeitAwayWin = form({
+      homeTeamScore: '0',
+      awayTeamScore: '3',
+      events: [],
+    });
+
+    expect(validateMatchForm(forfeitHomeWin)).toBeNull();
+    expect(validateMatchForm(forfeitAwayWin)).toBeNull();
+    expect(buildMatchDto(forfeitHomeWin, [])).toEqual(
+      expect.objectContaining({ homeScore: 3, awayScore: 0, events: [] }),
+    );
+  });
 });
