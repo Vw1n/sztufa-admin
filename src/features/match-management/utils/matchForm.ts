@@ -49,6 +49,8 @@ export const validateMatchForm = (formData: MatchFormData): string | null => {
   if (Number.isNaN(homeScore) || homeScore < 0) return '主队得分必须是非负整数';
   if (Number.isNaN(awayScore) || awayScore < 0) return '客队得分必须是非负整数';
 
+  if (formData.events.length === 0) return null;
+
   const homeGoalsCount = formData.events.filter(
     (event) =>
       (event.teamType === 'home' && ['goal', 'penalty'].includes(event.eventType))
