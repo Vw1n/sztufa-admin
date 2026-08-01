@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, Download, RefreshCw, RotateCcw } from 'lucide-react';
+import { Database, Download, RefreshCw, RotateCcw, Trash2, ShieldCheck } from 'lucide-react';
 import { BackupDTO } from '../../../api/types';
 import { backupApi } from '../../../api/backup.service';
 
@@ -9,11 +9,12 @@ interface BackupHistoryPanelProps {
   isBackingUp: boolean;
   isRestoring: string | null;
   onRestoreBackup: (key: string) => void;
+  onDeleteBackup: (key: string, isNewest: boolean) => void;
   onLoadBackups: () => void;
 }
 
 const formatSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
+  if (!bytes || bytes === 0) return '流式动态';
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -32,9 +33,12 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
   isBackingUp,
   isRestoring,
   onRestoreBackup,
+  onDeleteBackup,
   onLoadBackups,
 }) => {
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+
+  const totalBytes = backups.reduce((acc, cur) => acc + (cur.size || 0), 0);
 
   const handleDownload = async (key: string) => {
     setDownloadingKey(key);
@@ -69,10 +73,12 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
   return (
     <div className="form-section" style={{ marginTop: '30px' }}>
       <div className="section-header" style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 className="form-title" style={{ margin: 0 }}>
-          <span className="icon">☁️</span>
-          R2 云端历史备份记录 ({backups.length}个备份)
-        </h2>
+        <div>
+          <h2 className="form-title" style={{ margin: 0 }}>
+            <span className="icon">☁️</span>
+            R2 云端历史备份记录 ({backups.length} 个备份，共 {formatSize(totalBytes)})
+          </h2>
+        </div>
         <button onClick={onLoadBackups} className="add-btn refresh-btn" disabled={isLoading} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', height: 'auto' }}>
           <RefreshCw size={14} className={isLoading ? 'spinning' : ''} />
           刷新列表
@@ -92,50 +98,89 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
             <thead>
               <tr>
                 <th>备份文件名</th>
+                <th>格式 / 类型</th>
                 <th>文件大小</th>
                 <th>创建时间</th>
-                <th style={{ width: '220px', textAlign: 'center' }}>操作</th>
+                <th style={{ width: '280px', textAlign: 'center' }}>操作</th>
               </tr>
             </thead>
             <tbody>
-              {backups.map((bk) => (
-                <tr key={bk.key}>
-                  <td style={{ fontWeight: 500, color: '#333' }}>{bk.filename}</td>
-                  <td style={{ color: '#666' }}>{formatSize(bk.size)}</td>
-                  <td style={{ color: '#666' }}>{formatDate(bk.lastModified)}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button
-                        onClick={() => handleDownload(bk.key)}
-                        disabled={downloadingKey === bk.key}
-                        className="add-btn small btn-secondary"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', cursor: 'pointer' }}
-                      >
-                        <Download size={12} />
-                        {downloadingKey === bk.key ? '准备中...' : '下载'}
-                      </button>
-                      <button
-                        onClick={() => handleRestore(bk.key)}
-                        disabled={isRestoring !== null || isBackingUp}
-                        className="add-btn small refresh-btn"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', background: '#ffebeb', color: '#d93838', borderColor: '#ffd1d1' }}
-                      >
-                        {isRestoring === bk.key ? (
-                          <>
-                            <RefreshCw size={12} className="spinning" />
-                            还原中...
-                          </>
-                        ) : (
-                          <>
-                            <RotateCcw size={12} />
-                            覆盖还原
-                          </>
+              {backups.map((bk, index) => {
+                const isNewest = index === 0;
+                const isGzip = bk.filename.endsWith('.json.gz');
+
+                return (
+                  <tr key={bk.key}>
+                    <td style={{ fontWeight: 500, color: '#333' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {bk.filename}
+                        {isNewest && (
+                          <span title="最新恢复点受系统强保护" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <ShieldCheck size={12} /> 最新保护
+                          </span>
                         )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '12px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: isGzip ? '#ecfdf5' : '#f3f4f6', color: isGzip ? '#047857' : '#374151' }}>
+                        {isGzip ? 'V3.0 GZIP' : 'V2.0 JSON'}
+                      </span>
+                    </td>
+                    <td style={{ color: '#666' }}>{formatSize(bk.size)}</td>
+                    <td style={{ color: '#666' }}>{formatDate(bk.lastModified)}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        <button
+                          onClick={() => handleDownload(bk.key)}
+                          disabled={downloadingKey === bk.key}
+                          className="add-btn small btn-secondary"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', cursor: 'pointer' }}
+                        >
+                          <Download size={12} />
+                          {downloadingKey === bk.key ? '准备中...' : '下载'}
+                        </button>
+                        <button
+                          onClick={() => handleRestore(bk.key)}
+                          disabled={isRestoring !== null || isBackingUp}
+                          className="add-btn small refresh-btn"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', background: '#ffebeb', color: '#d93838', borderColor: '#ffd1d1' }}
+                        >
+                          {isRestoring === bk.key ? (
+                            <>
+                              <RefreshCw size={12} className="spinning" />
+                              还原中...
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw size={12} />
+                              覆盖还原
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => onDeleteBackup(bk.key, isNewest)}
+                          disabled={isNewest || isRestoring !== null || isBackingUp}
+                          title={isNewest ? '最新备份已被系统永久保护，禁止删除' : '受控删除云端备份文件'}
+                          className="add-btn small btn-secondary"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '5px 8px',
+                            height: 'auto',
+                            opacity: isNewest ? 0.4 : 1,
+                            cursor: isNewest ? 'not-allowed' : 'pointer',
+                            color: '#999',
+                          }}
+                        >
+                          <Trash2 size={12} />
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

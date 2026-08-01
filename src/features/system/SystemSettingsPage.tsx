@@ -175,6 +175,9 @@ const SystemSettingsPage: React.FC = () => {
             isLoading={seasonBackup.isLoading}
             isBackingUp={seasonBackup.isBackingUp}
             isRestoring={seasonBackup.isRestoring}
+            isUploading={seasonBackup.isUploading}
+            isCleaningRetention={seasonBackup.isCleaningRetention}
+            uploadProgress={seasonBackup.uploadProgress}
             isUpdatingStatusId={seasonBackup.isUpdatingStatusId}
             isRenamingSeasonId={seasonBackup.isRenamingSeasonId}
             isDeletingSeasonId={seasonBackup.isDeletingSeasonId}
@@ -185,6 +188,9 @@ const SystemSettingsPage: React.FC = () => {
             onRenameSeason={seasonBackup.handleRenameSeason}
             onDeleteSeason={seasonBackup.handleDeleteSeason}
             onCreateBackup={seasonBackup.handleCreateBackup}
+            onUploadFile={seasonBackup.handleUploadFile}
+            onDeleteBackup={seasonBackup.handleDeleteBackup}
+            onCleanRetention={seasonBackup.handleCleanRetention}
             onRestoreBackup={seasonBackup.handleRestore}
             onLoadBackups={seasonBackup.loadBackups}
           />
@@ -239,10 +245,8 @@ const SystemSettingsPage: React.FC = () => {
             onLoadUsers={userManagement.loadUsers}
           />
         )}
-
       </main>
 
-      {/* 确认删除弹窗 */}
       <ConfirmDialog
         isOpen={userManagement.confirmDialog.isOpen}
         onClose={userManagement.closeConfirmDialog}
@@ -254,7 +258,6 @@ const SystemSettingsPage: React.FC = () => {
         cancelText="取消"
       />
 
-      {/* 密码重置弹窗 */}
       <PasswordDialog
         isOpen={userManagement.passwordDialog.isOpen}
         onClose={userManagement.closePasswordDialog}

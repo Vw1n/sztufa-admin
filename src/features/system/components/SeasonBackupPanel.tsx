@@ -16,6 +16,9 @@ interface SeasonBackupPanelProps {
   isLoading: boolean;
   isBackingUp: boolean;
   isRestoring: string | null;
+  isUploading?: boolean;
+  isCleaningRetention?: boolean;
+  uploadProgress?: string | null;
   isUpdatingStatusId: string | null;
   isRenamingSeasonId: string | null;
   isDeletingSeasonId: string | null;
@@ -26,6 +29,9 @@ interface SeasonBackupPanelProps {
   onRenameSeason: (id: string, currentName: string, newName: string) => Promise<void>;
   onDeleteSeason: (id: string, name: string) => void;
   onCreateBackup: () => void;
+  onUploadFile?: (file: File) => void;
+  onDeleteBackup?: (key: string, isNewest: boolean) => void;
+  onCleanRetention?: (dryRun: boolean) => void;
   onRestoreBackup: (key: string) => void;
   onLoadBackups: () => void;
 }
@@ -39,6 +45,9 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
   isLoading,
   isBackingUp,
   isRestoring,
+  isUploading = false,
+  isCleaningRetention = false,
+  uploadProgress = null,
   isUpdatingStatusId,
   isRenamingSeasonId,
   isDeletingSeasonId,
@@ -49,6 +58,9 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
   onRenameSeason,
   onDeleteSeason,
   onCreateBackup,
+  onUploadFile = () => {},
+  onDeleteBackup = () => {},
+  onCleanRetention = () => {},
   onRestoreBackup,
   onLoadBackups,
 }) => {
@@ -76,7 +88,12 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
       <BackupActions
         isBackingUp={isBackingUp}
         isRestoring={isRestoring}
+        isUploading={isUploading}
+        isCleaningRetention={isCleaningRetention}
+        uploadProgress={uploadProgress}
         onCreateBackup={onCreateBackup}
+        onUploadFile={onUploadFile}
+        onCleanRetention={onCleanRetention}
       />
 
       <BackupHistoryPanel
@@ -85,6 +102,7 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
         isBackingUp={isBackingUp}
         isRestoring={isRestoring}
         onRestoreBackup={onRestoreBackup}
+        onDeleteBackup={onDeleteBackup}
         onLoadBackups={onLoadBackups}
       />
 
@@ -93,8 +111,11 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
         <div>
           <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#b37400' }}>安全操作守则</h3>
           <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '14px', color: '#665c40', lineHeight: '1.5' }}>
-            <li><strong>备份范围</strong>：备份文件仅包含数据库内容，并不包含图片文件本身（图片将安全保留在 Cloudflare R2 云存储上，不被删除）。</li>
-            <li><strong>还原警告</strong>：点击“覆盖还原”将清空本地或 Neon 线上当前的所有赛程比分、球队数据，并完全用备份文件里的老数据覆盖。进行此操作前，建议先创建一个最新的备份！</li>
+            <li><strong>备份范围与格式</strong>：备份文件包含数据库 17 张数据表的全部记录。支持生成及恢复紧凑型 V3.0 `.json.gz` GZIP 格式，同时全量兼容旧版 V2.0 `.json` 格式。</li>
+            <li><strong>直传与防护</strong>：本地备份上传采用 Web Crypto 摘要计算与 R2 预签名 URL 浏览器直传，不占用服务器内存包体（支持 `.json.gz` 100 MB / `.json` 200 MB 上限），服务端提供双重 Zip Bomb 及文件篡改拦截。</li>
+            <li><strong>删除与保留</strong>：系统最新恢复点及带有 protected 标识的备份自动永久受保护不可删除；物理删除需二次输入 `DELETE_BACKUP`，且系统强制校验确保删后保留至少 2 个可用恢复点。</li>
+            <li><strong>保留策略清理</strong>：自动识别 24 小时超时未完成临时上传、超出 7 天的 `_pre-restore` 前置快照，且按周一 ISO 日期保留最近 4 周与 6 个月数据库备份。支持 Dry-run 检查与强制二次确认物理清理。</li>
+            <li><strong>还原警告</strong>：点击“覆盖还原”将清空线上或本地数据库并用备份数据覆盖，触发前系统会自动生成一个 `_pre-restore` 前置应急快照。</li>
           </ul>
         </div>
       </div>
