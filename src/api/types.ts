@@ -203,8 +203,14 @@ export interface BackupDTO {
   filename: string;
   size: number;
   lastModified: string;
-  downloadUrl: string;
+  formatVersion?: string;
+  compressed?: boolean;
+  checksum?: string;
+  purpose?: string;
+  protected?: boolean;
+  validated?: boolean;
 }
+
 
 export const validateResponse = (response: ApiResponse | ErrorResponse): response is ApiResponse => {
   return 'data' in response && 'message' in response;

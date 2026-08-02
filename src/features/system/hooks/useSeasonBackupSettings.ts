@@ -3,6 +3,13 @@ import { backupApi, seasonApi } from '../../../api/service';
 import { BackupDTO } from '../../../api/types';
 import { SeasonSummary, SystemFeedback } from './types';
 
+const computeFileSha256 = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(digest));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+};
+
 export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemFeedback) => {
   const [backups, setBackups] = useState<BackupDTO[]>([]);
   const [activeSeason, setActiveSeason] = useState<SeasonSummary | null>(null);
@@ -12,10 +19,13 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
   const [isLoading, setIsLoading] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isRestoring, setIsRestoring] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [seasons, setSeasons] = useState<SeasonSummary[]>([]);
   const [isUpdatingStatusId, setIsUpdatingStatusId] = useState<string | null>(null);
   const [isRenamingSeasonId, setIsRenamingSeasonId] = useState<string | null>(null);
   const [isDeletingSeasonId, setIsDeletingSeasonId] = useState<string | null>(null);
+  const [isCleaningRetention, setIsCleaningRetention] = useState(false);
 
   const loadAllSeasons = useCallback(async () => {
     try {
@@ -159,7 +169,7 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     try {
       const response = await backupApi.create();
       if (response.success) {
-        setSuccessMessage('数据库成功备份并上传至 Cloudflare R2！');
+        setSuccessMessage('数据库成功生成 V3.0 GZIP 备份并上传至 Cloudflare R2！');
         loadBackups();
         setTimeout(() => setSuccessMessage(null), 4000);
       }
@@ -168,6 +178,148 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
       setError('创建备份失败，请检查 R2 存储桶配置');
     } finally {
       setIsBackingUp(false);
+    }
+  };
+
+  const handleUploadFile = async (file: File) => {
+    const isGzip = file.name.endsWith('.json.gz');
+    const isJson = file.name.endsWith('.json');
+
+    if (!isJson && !isGzip) {
+      setError('仅支持上传 .json 或 .json.gz 格式的备份文件');
+      return;
+    }
+
+    const maxBytes = isGzip ? 100 * 1024 * 1024 : 200 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setError(`上传文件大小超出 ${isGzip ? '100 MB' : '200 MB'} 上限限制`);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress('计算 SHA-256 摘要中...');
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const sha256 = await computeFileSha256(file);
+      setUploadProgress('申请云端直传凭证...');
+
+      const initRes = await backupApi.initUpload(file.name, file.size, sha256);
+      if (!initRes.success || !initRes.data) {
+        throw new Error('初始化直传凭证失败');
+      }
+
+      const { uploadToken, uploadUrl, requiredHeaders } = initRes.data;
+      setUploadProgress('直传 Cloudflare R2 中...');
+
+      const headersToSend = requiredHeaders || {
+        'Content-Type': isGzip ? 'application/gzip' : 'application/json',
+      };
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: headersToSend,
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`文件上传至 R2 失败 (${uploadRes.status})`);
+      }
+
+      setUploadProgress('服务端解压与合规校验中...');
+      const completeRes = await backupApi.completeUpload(uploadToken);
+
+      if (completeRes.success) {
+        setSuccessMessage('本地备份文件已成功直传、校验并保存至云端备份列表！');
+        loadBackups();
+        setTimeout(() => setSuccessMessage(null), 4000);
+      }
+    } catch (err: any) {
+      console.error('上传备份失败:', err);
+      setError(err instanceof Error ? err.message : '上传备份失败');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+    }
+  };
+
+  const handleDeleteBackup = async (key: string, isNewest: boolean) => {
+    if (isNewest) {
+      setError('最新备份点已被系统永久保护，无法删除！');
+      return;
+    }
+
+    const confirmInput = window.prompt(
+      `【高危警告】确定要永久删除云端备份文件吗？\n文件: ${key}\n\n请输入 "DELETE_BACKUP" 以确认删除：`,
+    );
+    if (confirmInput !== 'DELETE_BACKUP') {
+      if (confirmInput !== null) {
+        setError('二次确认文本输入错误，取消删除操作');
+      }
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await backupApi.deleteBackup(key, 'DELETE_BACKUP');
+      if (res.success) {
+        setSuccessMessage('已成功删除指定云端备份文件');
+        loadBackups();
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
+    } catch (err: any) {
+      console.error('删除备份失败:', err);
+      setError(err instanceof Error ? err.message : '删除备份失败');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCleanRetention = async (dryRun: boolean = true) => {
+    setIsCleaningRetention(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      if (dryRun) {
+        const res = await backupApi.cleanRetention(true);
+        if (res.success) {
+          const planned = res.data.plannedDeletions || [];
+          if (planned.length === 0) {
+            setSuccessMessage('保留策略检查完成：当前所有备份均在安全保留窗口内，无需清理。');
+          } else {
+            alert(
+              `【Retention Dry-run 检查结果】\n` +
+                `规划清理文件数: ${planned.length}\n` +
+                `保留备份数: ${res.data.keptCount}\n\n` +
+                planned.map((p, i) => `${i + 1}. ${p.filename} (${p.reason})`).join('\n'),
+            );
+          }
+        }
+      } else {
+        const confirmInput = window.prompt(
+          '【高危操作】确定要根据保留策略执行物理删除吗？\n\n请输入 "EXECUTE_RETENTION_DELETE" 以确认执行：',
+        );
+        if (confirmInput !== 'EXECUTE_RETENTION_DELETE') {
+          if (confirmInput !== null) setError('确认文本输入错误，终止保留清理操作');
+          return;
+        }
+
+        const res = await backupApi.cleanRetention(false, 'EXECUTE_RETENTION_DELETE');
+        if (res.success) {
+          setSuccessMessage(`保留策略物理清理已完成！成功清理 ${res.data.deletedCount} 个超出保存窗口的备份。`);
+          loadBackups();
+        }
+      }
+    } catch (err: any) {
+      console.error('保留策略清理失败:', err);
+      setError(err instanceof Error ? err.message : '保留策略清理失败');
+    } finally {
+      setIsCleaningRetention(false);
     }
   };
 
@@ -200,6 +352,9 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     isLoading,
     isBackingUp,
     isRestoring,
+    isUploading,
+    uploadProgress,
+    isCleaningRetention,
     seasons,
     isUpdatingStatusId,
     isRenamingSeasonId,
@@ -214,6 +369,9 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     handleRenameSeason,
     handleDeleteSeason,
     handleCreateBackup,
+    handleUploadFile,
+    handleDeleteBackup,
+    handleCleanRetention,
     handleRestore,
   };
 };
