@@ -35,46 +35,46 @@ export const authApi = {
 };
 
 export const userApi = {
-  getAll: async (): Promise<any[]> => {
+  getAll: async (): Promise<AuthUser[]> => {
     const response = await fetch(`${BASE_URL}/auth/users`, {
       method: 'GET',
       headers: createHeaders(),
     });
-    return handleResponse<any[]>(response);
+    return handleResponse<AuthUser[]>(response);
   },
 
-  updateRole: async (id: string, role: string, teamId: string | null): Promise<any> => {
+  updateRole: async (id: string, role: string, teamId: string | null): Promise<AuthUser> => {
     const response = await fetch(`${BASE_URL}/auth/users/${id}/role`, {
       method: 'PATCH',
       headers: createHeaders(),
       body: JSON.stringify({ role, teamId }),
     });
-    return handleResponse<any>(response);
+    return handleResponse<AuthUser>(response);
   },
 
-  delete: async (id: string): Promise<any> => {
+  delete: async (id: string): Promise<{ message?: string }> => {
     const response = await fetch(`${BASE_URL}/auth/users/${id}`, {
       method: 'DELETE',
       headers: createHeaders(),
     });
-    return handleResponse<any>(response);
+    return handleResponse<{ message?: string }>(response);
   },
 
-  resetPassword: async (id: string, password: string): Promise<any> => {
+  resetPassword: async (id: string, password: string): Promise<{ message?: string }> => {
     const response = await fetch(`${BASE_URL}/auth/users/${id}/reset-password`, {
       method: 'PATCH',
       headers: createHeaders(),
       body: JSON.stringify({ password }),
     });
-    return handleResponse<any>(response);
+    return handleResponse<{ message?: string }>(response);
   },
 
-  updateStudentId: async (id: string, studentId: string): Promise<any> => {
+  updateStudentId: async (id: string, studentId: string): Promise<AuthUser> => {
     const response = await fetch(`${BASE_URL}/auth/users/${id}/student-id`, {
       method: 'PATCH',
       headers: createHeaders(),
       body: JSON.stringify({ studentId }),
     });
-    return handleResponse<any>(response);
+    return handleResponse<AuthUser>(response);
   },
 };

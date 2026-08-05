@@ -73,6 +73,48 @@ export interface GoalDTO {
   playerName: string;
   goalTime: string;
   jerseyNumber: string;
+  teamType?: 'home' | 'away';
+}
+
+export interface MatchEventDTO {
+  id?: string;
+  eventTime: string;
+  eventType: 'goal' | 'own_goal' | 'penalty' | 'yellow_card' | 'red_card' | 'yellow_to_red' | 'substitution' | 'penalty_shootout_goal' | 'penalty_shootout_miss' | 'penalty_miss';
+  phase?: 'REGULAR' | 'EXTRA_TIME' | 'SHOOTOUT';
+  shootoutRound?: number;
+  shootoutOrder?: number;
+  playerId?: string | null;
+  playerName?: string | null;
+  jerseyNumber?: string | null;
+  subPlayerId?: string | null;
+  subPlayerName?: string | null;
+  subJerseyNumber?: string | null;
+  assistPlayerId?: string | null;
+  assistPlayerName?: string | null;
+  assistJerseyNumber?: string | null;
+  description: string;
+  teamType: 'home' | 'away';
+}
+
+export interface MatchLineupDTO {
+  id?: string;
+  matchId?: string;
+  teamId?: string;
+  playerId: string;
+  position?: string;
+  isStarter?: boolean;
+  jerseyNumber?: string;
+  player?: PlayerDTO;
+  teamType?: 'home' | 'away';
+  lineupType?: string;
+}
+
+export interface SeasonGroupDTO {
+  id?: string;
+  seasonId?: string;
+  teamId: string;
+  groupName: string;
+  team?: TeamDTO;
 }
 
 export interface MatchDTO {
@@ -90,12 +132,12 @@ export interface MatchDTO {
   status?: 'scheduled' | 'ongoing' | 'finished' | 'cancelled' | 'completed';
   homeTeam?: TeamDTO;
   awayTeam?: TeamDTO;
-  goals?: any[];
-  events?: any[];
+  goals?: GoalDTO[];
+  events?: MatchEventDTO[];
   mvpPlayerId?: string | null;
   mvpPlayerName?: string | null;
   seasonId?: string | null;
-  lineups?: any[];
+  lineups?: MatchLineupDTO[];
   stage?: string;
   groupName?: string;
   knockoutRound?: string;
@@ -176,12 +218,21 @@ export interface UndoImportResult {
   warnings: string[];
 }
 
+export interface SeasonDeleteResponse {
+  pending?: boolean;
+  approval?: Record<string, any>;
+  deleted?: { matches?: number; [key: string]: any };
+  message?: string;
+}
+
 export interface AuthUser {
   id: string;
   username: string;
   role: string;
   teamId?: string;
+  studentId?: string;
   createdAt?: string;
+  [key: string]: unknown;
 }
 
 export interface AuthResponse {
