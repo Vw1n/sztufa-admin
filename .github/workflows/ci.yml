@@ -35,6 +35,12 @@ jobs:
       - name: 检查高危依赖漏洞
         run: npm audit --audit-level=high || true
 
+      - name: 代码规范检查
+        run: npm run lint
+
+      - name: 静态类型检查
+        run: npm run typecheck
+
       - name: 运行测试
         run: npm test -- --runInBand
 

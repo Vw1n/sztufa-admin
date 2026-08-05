@@ -95,7 +95,7 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
                 type="button"
                 onClick={() => {
                   if (confirm(`确认要重新结算比赛 "${selectedMatch.matchName}" 的竞猜得分吗？`)) {
-                    onRecalculatePredictions && onRecalculatePredictions(selectedMatch.id);
+                    onRecalculatePredictions?.(selectedMatch.id);
                   }
                 }}
                 className="save-btn small"
@@ -107,7 +107,7 @@ export const MatchDetailPanel: React.FC<MatchDetailPanelProps> = ({
                 type="button"
                 onClick={() => {
                   if (confirm(`警告：作废竞猜将把比赛 "${selectedMatch.matchName}" 的所有预测设为 VOID 且归零，确认操作吗？`)) {
-                    onVoidPredictions && onVoidPredictions(selectedMatch.id);
+                    onVoidPredictions?.(selectedMatch.id);
                   }
                 }}
                 className="cancel-btn small"
