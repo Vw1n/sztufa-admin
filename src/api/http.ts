@@ -23,23 +23,27 @@ const safeGetItem = (key: string): string | null => {
     try {
       const val = localStorage.getItem(key);
       if (val !== null) return val;
-    } catch {}
+    } catch (_err) {
+      // Ignore storage error
+    }
   }
   if (typeof sessionStorage !== 'undefined') {
     try {
       const val = sessionStorage.getItem(key);
       if (val !== null) return val;
-    } catch {}
+    } catch (_err) {
+      // Ignore storage error
+    }
   }
   return null;
 };
 
 const safeRemoveItem = (key: string): void => {
   if (typeof localStorage !== 'undefined') {
-    try { localStorage.removeItem(key); } catch {}
+    try { localStorage.removeItem(key); } catch (_err) { /* ignore */ }
   }
   if (typeof sessionStorage !== 'undefined') {
-    try { sessionStorage.removeItem(key); } catch {}
+    try { sessionStorage.removeItem(key); } catch (_err) { /* ignore */ }
   }
 };
 
@@ -113,11 +117,11 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
     handleAuthError(response);
   }
   
-  let responseText = '';
+  let responseText: string;
   try {
     responseText = await response.text();
   } catch (textErr) {
-    throw new Error(`无法读取服务器响应: ${status}`);
+    throw new Error(`无法读取服务器响应: ${status}`, { cause: textErr });
   }
 
   let data: any = null;
@@ -125,7 +129,7 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
   try {
     data = JSON.parse(responseText);
     isJson = true;
-  } catch (jsonErr) {
+  } catch (_jsonErr) {
     // 不是 JSON 响应（可能是 HTML，例如 502 Bad Gateway）
   }
 

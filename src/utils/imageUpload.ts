@@ -21,6 +21,6 @@ export const uploadImageFile = async (file: File, label = '图片'): Promise<str
     return response.data.url;
   } catch (error) {
     const reason = error instanceof Error ? error.message : '未知错误';
-    throw new Error(`${label}上传失败：${reason}`);
+    throw new Error(`${label}上传失败：${reason}`, { cause: error });
   }
 };

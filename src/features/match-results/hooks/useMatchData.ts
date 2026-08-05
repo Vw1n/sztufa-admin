@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { matchApi, seasonApi, teamApi } from '../../../api/service';
-import { PlayerDTO } from '../../../api/types';
+import { PlayerDTO, SeasonDTO } from '../../../api/types';
 import { Match } from '../../../types';
 import { mapMatchDto } from '../utils/matchEditor';
 
@@ -15,7 +15,7 @@ export const useMatchData = () => {
   const [error, setError] = useState<string | null>(null);
   const [homeTeamPlayers, setHomeTeamPlayers] = useState<PlayerDTO[]>([]);
   const [awayTeamPlayers, setAwayTeamPlayers] = useState<PlayerDTO[]>([]);
-  const [seasons, setSeasons] = useState<any[]>([]);
+  const [seasons, setSeasons] = useState<SeasonDTO[]>([]);
   const [selectedSeasonId, setSelectedSeasonId] = useState('all');
   const [seasonsLoaded, setSeasonsLoaded] = useState(false);
 
@@ -24,7 +24,7 @@ export const useMatchData = () => {
       try {
         const data = await seasonApi.getAll();
         setSeasons(data || []);
-        const active = data.find((season: any) => season.status === 'active');
+        const active = data.find((season: SeasonDTO) => season.status === 'active');
         if (active) setSelectedSeasonId(active.id);
       } catch (loadError) {
         console.error('加载赛季列表失败:', loadError);

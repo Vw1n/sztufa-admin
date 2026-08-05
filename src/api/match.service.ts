@@ -68,19 +68,19 @@ export const matchApi = {
     return handleResponse<MatchDTO>(response);
   },
 
-  recalculatePredictions: async (matchId: string): Promise<any> => {
+  recalculatePredictions: async (matchId: string): Promise<{ settledCount?: number; count?: number; message?: string }> => {
     const response = await fetch(`${BASE_URL}/predictions/matches/${matchId}/recalculate`, {
       method: 'POST',
       headers: createHeaders(),
     });
-    return handleResponse<any>(response);
+    return handleResponse<{ settledCount?: number; count?: number; message?: string }>(response);
   },
 
-  voidPredictions: async (matchId: string): Promise<any> => {
+  voidPredictions: async (matchId: string): Promise<{ voidedCount?: number; count?: number; message?: string }> => {
     const response = await fetch(`${BASE_URL}/predictions/matches/${matchId}/void`, {
       method: 'POST',
       headers: createHeaders(),
     });
-    return handleResponse<any>(response);
+    return handleResponse<{ voidedCount?: number; count?: number; message?: string }>(response);
   },
 };
