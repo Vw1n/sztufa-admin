@@ -110,6 +110,13 @@ export function useTeamDirectory(user?: AuthUser | null) {
       } else {
         setTeams(teamList);
         setTotalTeams(response.total);
+        // Reconcile the detail panel with the freshly loaded season result.
+        // A team filtered out by a season change/migration must not leave its
+        // stale global roster visible under the current season.
+        setSelectedTeam((previous) => {
+          if (!previous) return null;
+          return teamList.find((team) => team.id === previous.id) || null;
+        });
       }
     } catch (err) {
       if (requestId !== teamsRequestIdRef.current) return;
