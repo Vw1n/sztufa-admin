@@ -65,6 +65,7 @@ export const teamApi = {
   updateWithPlayers: async (
     id: string,
     data: {
+      seasonId: string;
       teamName?: string;
       teamDoctor?: string;
       headCoach?: string;

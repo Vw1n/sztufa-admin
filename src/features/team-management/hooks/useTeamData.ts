@@ -24,7 +24,7 @@ export function useTeamData(user: any) {
   };
 
   const handleSaveEdit = async () => {
-    await editor.handleSaveEdit(directory.selectedTeam, (updatedTeam) => {
+    await editor.handleSaveEdit(directory.selectedTeam, directory.filterSeasonId, (updatedTeam) => {
       directory.setSelectedTeam(updatedTeam);
       directory.loadTeams();
     });

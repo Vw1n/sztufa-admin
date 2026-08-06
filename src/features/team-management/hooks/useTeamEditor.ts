@@ -71,9 +71,14 @@ export function useTeamEditor(
 
   const handleSaveEdit = async (
     selectedTeam: Team | null,
+    seasonId: string,
     onSuccess: (updatedTeam: Team) => void,
   ) => {
     if (!editData) return;
+    if (!seasonId || seasonId === 'all') {
+      setError('请先选择一个具体赛季再编辑球队');
+      return;
+    }
 
     const validationError = validateTeamData(editData);
     if (validationError) {
@@ -111,6 +116,7 @@ export function useTeamEditor(
 
       try {
         updatedTeam = await teamApi.updateWithPlayers(editData.id, {
+          seasonId,
           ...updatePayload,
           players: playersPayload,
           deletePlayerIds,
