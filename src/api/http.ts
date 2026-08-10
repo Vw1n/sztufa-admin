@@ -8,9 +8,11 @@ const isDevelopmentAdminHost =
   (window.location.hostname.includes('dev.sztufa.xyz') ||
     window.location.hostname.includes('admin-dev.sztufa.xyz'));
 
+const DEVELOPMENT_API_BASE_URL = 'https://sztufa-server-dev.vercel.app/api/v1';
+
 export const BASE_URL = (
   isDevelopmentAdminHost
-    ? 'https://api-dev.sztufa.xyz/api/v1'
+    ? DEVELOPMENT_API_BASE_URL
     : configuredApiBaseUrl ||
       (typeof window !== 'undefined' && window.location.hostname.endsWith('sztufa.xyz')
         ? 'https://api.sztufa.xyz/api/v1'
