@@ -16,6 +16,7 @@ interface LineupSectionProps {
   awayTeamPlayers: PlayerDTO[];
   lineups: Lineup[];
   handleLineupChange: (playerId: string, teamType: 'home' | 'away', lineupType: 'starting' | 'substitute' | 'none') => void;
+  isSuperAdmin?: boolean;
 }
 
 const LineupSection: React.FC<LineupSectionProps> = ({
@@ -27,6 +28,7 @@ const LineupSection: React.FC<LineupSectionProps> = ({
   awayTeamPlayers,
   lineups,
   handleLineupChange,
+  isSuperAdmin = false,
 }) => {
   if (!homeTeamId && !awayTeamId) return null;
 

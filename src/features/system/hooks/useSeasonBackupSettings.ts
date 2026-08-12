@@ -337,7 +337,11 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
       }
     } catch (error) {
       console.error('还原备份失败:', error);
-      setError('还原失败，备份文件可能损坏或网络连接中断');
+      setError(
+        error instanceof Error
+          ? `还原失败：${error.message}`
+          : '还原失败：服务端未返回可识别的错误信息',
+      );
     } finally {
       setIsRestoring(null);
     }

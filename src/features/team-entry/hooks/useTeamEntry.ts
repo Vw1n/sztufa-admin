@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ParsedTeam, pdfImportApi } from '../../../api/pdf-import.service';
 import { seasonApi } from '../../../api/service';
 import { SeasonDTO } from '../../../api/types';
+import { formDraftApi } from '../../../api/form-draft.service';
 import { Player, Team, TeamFormData } from '../../../types';
 import { generateId } from '../../../utils';
 import {
@@ -116,16 +117,8 @@ export const useTeamEntry = () => {
   }, [activeSeasons, teamFormData.gender]);
 
   const handleAddPlayer = (player: Omit<Player, 'id'>) => {
-    const sId = String(player.studentId).trim();
+    const sId = String(player.studentId || '').trim();
     const jNum = String(player.jerseyNumber ?? '').trim();
-    if (players.some((p) => p.studentId === sId)) {
-      setError(`已存在学号为 ${sId} 的球员`);
-      return;
-    }
-    if (players.some((p) => String(p.jerseyNumber ?? '') === jNum)) {
-      setError(`球衣号码 ${jNum} 在本队中已被占用`);
-      return;
-    }
     setPlayers((prev) => [...prev, { ...player, studentId: sId, jerseyNumber: jNum, id: generateId() }]);
     setError(null);
   };
@@ -141,40 +134,16 @@ export const useTeamEntry = () => {
   };
 
   const handleImportPlayers = (importedPlayers: Omit<Player, 'id'>[]) => {
-    const mergedPlayers = [...players];
-    let studentIdDupCount = 0;
-    let jerseyNumDupCount = 0;
+    const newItems = importedPlayers.map((p) => ({
+      ...p,
+      studentId: String(p.studentId ?? '').trim(),
+      jerseyNumber: String(p.jerseyNumber ?? '').trim(),
+      id: generateId(),
+    }));
 
-    for (const p of importedPlayers) {
-      const sId = String(p.studentId ?? '').trim();
-      const jNum = String(p.jerseyNumber ?? '').trim();
-      if (mergedPlayers.some((mp) => mp.studentId === sId)) {
-        studentIdDupCount++;
-        continue;
-      }
-      if (mergedPlayers.some((mp) => String(mp.jerseyNumber ?? '') === jNum)) {
-        jerseyNumDupCount++;
-        continue;
-      }
-      mergedPlayers.push({
-        ...p,
-        studentId: sId,
-        jerseyNumber: jNum,
-        id: generateId(),
-      });
-    }
-
-    setPlayers(mergedPlayers);
+    setPlayers((prev) => [...prev, ...newItems]);
     setError(null);
-
-    if (studentIdDupCount > 0 || jerseyNumDupCount > 0) {
-      let msg = `成功导入 ${importedPlayers.length - studentIdDupCount - jerseyNumDupCount} 名球员。`;
-      if (studentIdDupCount > 0) msg += `跳过了 ${studentIdDupCount} 名学号重复的球员。`;
-      if (jerseyNumDupCount > 0) msg += `跳过了 ${jerseyNumDupCount} 名球衣号码重复的球员。`;
-      alert(msg);
-    } else {
-      alert(`成功导入 ${importedPlayers.length} 名球员`);
-    }
+    alert(`成功导入 ${importedPlayers.length} 名球员`);
   };
 
   const validateForm = (): boolean => {
@@ -183,21 +152,59 @@ export const useTeamEntry = () => {
     return validationError === null;
   };
 
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+
   const handleSave = async () => {
     setError(null);
 
-    if (!validateForm()) {
-      return;
+    const userStr = typeof localStorage !== 'undefined' ? localStorage.getItem('user') : null;
+    let currentUserRole = 'super_admin';
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u.role) currentUserRole = u.role;
+      } catch (_e) {
+        // Keep the default role when the persisted user payload is invalid.
+      }
+    }
+    const isSuperAdmin = currentUserRole === 'super_admin';
+
+    if (!isSuperAdmin) {
+      if (!validateForm()) {
+        return;
+      }
     }
 
     setIsLoading(true);
 
     try {
-      const team = await createTeam(teamFormData, players, setSaveProgress);
+      if (isSuperAdmin) {
+        // 先上报保存草稿 (带着 activeDraftId)
+        const saveRes = await formDraftApi.saveDraft({
+          draftId: activeDraftId || undefined,
+          formType: 'TEAM',
+          payload: { ...teamFormData, players },
+          seasonId: teamFormData.seasonId || null,
+        });
 
-      setSavedTeam(team);
-      setIsSaved(true);
-      setError(null);
+        if (saveRes.draftId) {
+          setActiveDraftId(saveRes.draftId);
+        }
+
+        // 尝试落库正式化
+        const matRes = await formDraftApi.materializeDraft(saveRes.draftId);
+        if (matRes.success && matRes.officialRecordId) {
+          setSavedTeam({ id: matRes.officialRecordId, teamName: teamFormData.teamName } as any);
+          setIsSaved(true);
+        } else {
+          setIsSaved(true);
+          setError(matRes.error || '信息不完整，已保存为草稿');
+        }
+      } else {
+        const team = await createTeam(teamFormData, players, setSaveProgress);
+        setSavedTeam(team);
+        setIsSaved(true);
+      }
 
       if (pendingPdfDrafts.length > 0) {
         const [nextDraft, ...remainingDrafts] = pendingPdfDrafts;

@@ -34,24 +34,22 @@ describe('teamRosterExcel', () => {
       expect(result.mergedPlayers[1].photo).toBe('https://example.com/p2.jpg');
     });
 
-    it('should skip duplicate student IDs', () => {
+    it('should allow duplicate student IDs during merge', () => {
       const imported = [
         { name: '同学号球员', studentId: '20210001', jerseyNumber: '99', photo: null, teamId: 't1' },
       ];
       const result = mergeImportedPlayers(existingPlayers, imported, 't1');
-      expect(result.importedCount).toBe(0);
-      expect(result.studentIdDupCount).toBe(1);
-      expect(result.mergedPlayers.length).toBe(1);
+      expect(result.importedCount).toBe(1);
+      expect(result.mergedPlayers.length).toBe(2);
     });
 
-    it('should skip duplicate jersey numbers', () => {
+    it('should allow duplicate jersey numbers during merge', () => {
       const imported = [
         { name: '撞号球员', studentId: '20210003', jerseyNumber: '10', photo: null, teamId: 't1' },
       ];
       const result = mergeImportedPlayers(existingPlayers, imported, 't1');
-      expect(result.importedCount).toBe(0);
-      expect(result.jerseyNumDupCount).toBe(1);
-      expect(result.mergedPlayers.length).toBe(1);
+      expect(result.importedCount).toBe(1);
+      expect(result.mergedPlayers.length).toBe(2);
     });
   });
 
