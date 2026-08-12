@@ -82,6 +82,7 @@ const TeamEntryPage: React.FC = () => {
             data={teamFormData}
             onChange={setTeamFormData}
             activeSeasons={compatibleActiveSeasons}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
         </div>
 
@@ -91,6 +92,7 @@ const TeamEntryPage: React.FC = () => {
             onAddPlayer={handleAddPlayer}
             onRemovePlayer={handleRemovePlayer}
             onUpdatePlayer={handleUpdatePlayer}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
         </div>
 

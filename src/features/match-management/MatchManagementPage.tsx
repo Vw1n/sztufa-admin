@@ -7,7 +7,10 @@ import LineupSection from './components/LineupSection';
 import EventTable from './components/EventTable';
 import SuccessToast from '../../components/SuccessToast';
 
+import { useAuth } from '../../contexts/AuthContext';
+
 const MatchManagementPage: React.FC = () => {
+  const { user } = useAuth();
   const {
     formData,
     setFormData,
@@ -63,6 +66,7 @@ const MatchManagementPage: React.FC = () => {
             activeSeasons={activeSeasons}
             handleChange={handleChange}
             handleSeasonSelect={handleSeasonSelect}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
 
           <TeamScoreSection
@@ -73,6 +77,7 @@ const MatchManagementPage: React.FC = () => {
             getFilteredTeams={getFilteredTeams}
             handleChange={handleChange}
             handleTeamSelect={handleTeamSelect}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
 
           <LineupSection
@@ -84,6 +89,7 @@ const MatchManagementPage: React.FC = () => {
             awayTeamPlayers={awayTeamPlayers}
             lineups={lineups}
             handleLineupChange={handleLineupChange}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
 
           <EventTable
@@ -96,6 +102,7 @@ const MatchManagementPage: React.FC = () => {
             handleEventPlayerSelect={handleEventPlayerSelect}
             handleSubPlayerSelect={handleSubPlayerSelect}
             handleAssistPlayerSelect={handleAssistPlayerSelect}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
 
           <EventTable
@@ -108,6 +115,7 @@ const MatchManagementPage: React.FC = () => {
             handleEventPlayerSelect={handleEventPlayerSelect}
             handleSubPlayerSelect={handleSubPlayerSelect}
             handleAssistPlayerSelect={handleAssistPlayerSelect}
+            isSuperAdmin={user?.role === 'super_admin'}
           />
         </form>
       </main>

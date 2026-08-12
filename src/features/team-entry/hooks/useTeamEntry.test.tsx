@@ -49,7 +49,7 @@ describe('useTeamEntry Hook 单元测试', () => {
     document.body.removeChild(container);
   });
 
-  it('应能够添加球员并防止学号与球衣号码重复', async () => {
+  it('应能够添加球员并允许存在同名、同学号或同号码球员', async () => {
     let latestHook: ReturnType<typeof useTeamEntry> | null = null;
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -72,7 +72,7 @@ describe('useTeamEntry Hook 单元测试', () => {
     expect(latestHook!.players.length).toBe(1);
     expect(latestHook!.players[0].name).toBe('张三');
 
-    // 尝试添加相同学号
+    // 添加相同学号球员
     await act(async () => {
       latestHook!.handleAddPlayer({
         name: '李四',
@@ -82,10 +82,9 @@ describe('useTeamEntry Hook 单元测试', () => {
         photo: null,
       });
     });
-    expect(latestHook!.players.length).toBe(1);
-    expect(latestHook!.error).toContain('已存在学号为 2026001 的球员');
+    expect(latestHook!.players.length).toBe(2);
 
-    // 尝试添加相同球衣号码
+    // 添加相同球衣号码球员
     await act(async () => {
       latestHook!.handleAddPlayer({
         name: '王五',
@@ -95,8 +94,7 @@ describe('useTeamEntry Hook 单元测试', () => {
         photo: null,
       });
     });
-    expect(latestHook!.players.length).toBe(1);
-    expect(latestHook!.error).toContain('球衣号码 10 在本队中已被占用');
+    expect(latestHook!.players.length).toBe(3);
 
     await act(async () => {
       root.unmount();

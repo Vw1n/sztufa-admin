@@ -17,6 +17,7 @@ interface EventTableProps {
   handleEventPlayerSelect: (index: number, playerId: string) => void;
   handleSubPlayerSelect: (index: number, playerId: string) => void;
   handleAssistPlayerSelect: (index: number, playerId: string) => void;
+  isSuperAdmin?: boolean;
 }
 
 const EventTable: React.FC<EventTableProps> = ({
@@ -29,6 +30,7 @@ const EventTable: React.FC<EventTableProps> = ({
   handleEventPlayerSelect,
   handleSubPlayerSelect,
   handleAssistPlayerSelect,
+  isSuperAdmin = false,
 }) => {
   const isHome = teamType === 'home';
   const label = isHome ? '主队' : '客队';

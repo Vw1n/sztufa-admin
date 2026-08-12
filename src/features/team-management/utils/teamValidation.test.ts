@@ -37,8 +37,8 @@ describe('teamValidation', () => {
       expect(validateTeamData(validTeam)).toBeNull();
     });
 
-    it('should return error when teamName is empty', () => {
-      expect(validateTeamData({ ...validTeam, teamName: '' })).toBe('请输入队伍名称');
+    it('should allow saving team with empty teamName in zero-required mode', () => {
+      expect(validateTeamData({ ...validTeam, teamName: '' })).toBeNull();
     });
 
     it('should return error when coachPhone is invalid', () => {
@@ -47,26 +47,26 @@ describe('teamValidation', () => {
       );
     });
 
-    it('should detect duplicate student IDs', () => {
-      const invalidTeam = {
+    it('should allow duplicate student IDs in player list', () => {
+      const teamWithDuplicates = {
         ...validTeam,
         players: [
           { id: 'p1', name: '选手一', studentId: '20230001', jerseyNumber: '10', photo: null, teamId: 'team1' },
           { id: 'p2', name: '选手二', studentId: '20230001', jerseyNumber: '7', photo: null, teamId: 'team1' },
         ],
       };
-      expect(validateTeamData(invalidTeam)).toBe('球员列表中存在重复的学号: 20230001');
+      expect(validateTeamData(teamWithDuplicates)).toBeNull();
     });
 
-    it('should detect duplicate jersey numbers', () => {
-      const invalidTeam = {
+    it('should allow duplicate jersey numbers in player list', () => {
+      const teamWithDuplicates = {
         ...validTeam,
         players: [
           { id: 'p1', name: '选手一', studentId: '20230001', jerseyNumber: '10', photo: null, teamId: 'team1' },
           { id: 'p2', name: '选手二', studentId: '20230002', jerseyNumber: '10', photo: null, teamId: 'team1' },
         ],
       };
-      expect(validateTeamData(invalidTeam)).toBe('球员列表中存在重复的球衣号码: 10');
+      expect(validateTeamData(teamWithDuplicates)).toBeNull();
     });
   });
 });

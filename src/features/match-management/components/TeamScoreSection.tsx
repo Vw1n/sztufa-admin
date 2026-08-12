@@ -11,6 +11,7 @@ interface TeamScoreSectionProps {
   getFilteredTeams: () => TeamDTO[];
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   handleTeamSelect: (teamType: 'home' | 'away', team: TeamDTO) => void;
+  isSuperAdmin?: boolean;
 }
 
 const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
@@ -21,6 +22,7 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
   getFilteredTeams,
   handleChange,
   handleTeamSelect,
+  isSuperAdmin = false,
 }) => {
   const penaltyScore = getPenaltyScoreFromEvents(formData.events);
 
@@ -64,7 +66,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                   value={formData.groupName || 'A'}
                   onChange={handleChange}
                   className="form-select"
-                  required
                 >
                   <option value="A">A 组</option>
                   <option value="B">B 组</option>
@@ -87,7 +88,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                     value={formData.knockoutRound || 'QF'}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="R16">1/8 决赛 (16强)</option>
                     <option value="QF">1/4 决赛 (8强)</option>
@@ -104,7 +104,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                     value={formData.knockoutMatchIndex || '1'}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="1">对阵 #1</option>
                     <option value="2">对阵 #2</option>
@@ -159,7 +158,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                 onChange={handleChange}
                 className="form-input team-name-input"
                 placeholder="主队名称"
-                required
               />
             </div>
             <div className="team-id-wrapper">
@@ -180,7 +178,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                 onChange={handleChange}
                 className="form-input score-input"
                 min="0"
-                required
                 placeholder="0"
               />
             </div>
@@ -223,7 +220,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                 onChange={handleChange}
                 className="form-input team-name-input"
                 placeholder="客队名称"
-                required
               />
             </div>
             <div className="team-id-wrapper">
@@ -244,7 +240,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
                 onChange={handleChange}
                 className="form-input score-input"
                 min="0"
-                required
                 placeholder="0"
               />
             </div>

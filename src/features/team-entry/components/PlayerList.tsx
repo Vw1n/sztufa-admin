@@ -8,6 +8,7 @@ interface PlayerListProps {
   onAddPlayer: (player: Omit<Player, 'id'>) => void;
   onRemovePlayer: (id: string) => void;
   onUpdatePlayer: (id: string, updates: Partial<Player>) => void;
+  isSuperAdmin?: boolean;
 }
 
 const PlayerList: React.FC<PlayerListProps> = ({
@@ -15,6 +16,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
   onAddPlayer,
   onRemovePlayer,
   onUpdatePlayer,
+  isSuperAdmin = false,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayer, setNewPlayer] = useState<PlayerFormData>({
@@ -48,19 +50,17 @@ const PlayerList: React.FC<PlayerListProps> = ({
   };
 
   const handleAddPlayer = () => {
-    if (newPlayer.name.trim() && newPlayer.studentId.trim() && newPlayer.jerseyNumber !== '') {
-      onAddPlayer({
-        name: newPlayer.name.trim(),
-        studentId: newPlayer.studentId.trim(),
-        jerseyNumber: newPlayer.jerseyNumber,
-        photo: preview,
-        photoFile: newPlayer.photo instanceof File ? newPlayer.photo : null,
-        teamId: '',
-      });
-      setNewPlayer({ name: '', studentId: '', jerseyNumber: '', photo: null, teamId: '' });
-      setPreview(null);
-      setIsAdding(false);
-    }
+    onAddPlayer({
+      name: newPlayer.name.trim(),
+      studentId: newPlayer.studentId.trim(),
+      jerseyNumber: newPlayer.jerseyNumber,
+      photo: preview,
+      photoFile: newPlayer.photo instanceof File ? newPlayer.photo : null,
+      teamId: '',
+    });
+    setNewPlayer({ name: '', studentId: '', jerseyNumber: '', photo: null, teamId: '' });
+    setPreview(null);
+    setIsAdding(false);
   };
 
   const handleFieldChange = (field: keyof PlayerFormData, value: string) => {
@@ -94,7 +94,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
           <h3>添加新球员</h3>
           <div className="form-row">
             <div className="form-group">
-              <label>姓名 *</label>
+              <label>姓名</label>
               <input
                 type="text"
                 value={newPlayer.name}
@@ -103,7 +103,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
               />
             </div>
             <div className="form-group">
-              <label>学号 *</label>
+              <label>学号</label>
               <input
                 type="text"
                 value={newPlayer.studentId}
@@ -112,7 +112,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
               />
             </div>
             <div className="form-group">
-              <label>球衣号码 *</label>
+              <label>球衣号码</label>
               <input
                 type="number"
                 value={newPlayer.jerseyNumber}
