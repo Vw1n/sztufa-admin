@@ -6,6 +6,7 @@ interface MatchBasicInfoProps {
   activeSeasons: any[];
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   handleSeasonSelect: (seasonId: string) => void;
+  isSuperAdmin?: boolean;
 }
 
 const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
@@ -13,6 +14,7 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
   activeSeasons,
   handleChange,
   handleSeasonSelect,
+  isSuperAdmin = false,
 }) => {
   return (
     <div className="form-section">
@@ -29,7 +31,6 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
               value={formData.seasonId || ''}
               onChange={(e) => handleSeasonSelect(e.target.value)}
               className="form-select"
-              required
             >
               <option value="">请选择赛季</option>
               {activeSeasons.map((s) => (
@@ -48,7 +49,6 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
             value={formData.matchName}
             onChange={handleChange}
             className="form-select"
-            required
           >
             <option value="">请选择比赛名称</option>
             <option value="小组赛第一轮">小组赛第一轮</option>
@@ -72,7 +72,6 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
             value={formData.matchTime}
             onChange={handleChange}
             className="form-input"
-            required
           />
         </div>
 
@@ -83,7 +82,6 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
             value={formData.location}
             onChange={handleChange}
             className="form-input"
-            required
           >
             <option value="">请选择比赛地点</option>
             <option value="五人场">五人场</option>
@@ -102,7 +100,6 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
             value={formData.status || 'finished'}
             onChange={handleChange}
             className="form-input"
-            required
           >
             <option value="scheduled">即将开始</option>
             <option value="ongoing">进行中</option>

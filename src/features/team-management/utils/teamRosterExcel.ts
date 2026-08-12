@@ -16,20 +16,12 @@ export function mergeImportedPlayers(
   teamId: string
 ): MergeImportResult {
   const mergedPlayers = [...existingPlayers];
-  let studentIdDupCount = 0;
-  let jerseyNumDupCount = 0;
+  const studentIdDupCount = 0;
+  const jerseyNumDupCount = 0;
 
   for (const p of importedPlayers) {
     const sId = String(p.studentId ?? '').trim();
     const jNum = String(p.jerseyNumber ?? '').trim();
-    if (mergedPlayers.some((mp) => mp.studentId === sId)) {
-      studentIdDupCount++;
-      continue;
-    }
-    if (mergedPlayers.some((mp) => String(mp.jerseyNumber ?? '') === jNum)) {
-      jerseyNumDupCount++;
-      continue;
-    }
     mergedPlayers.push({
       ...p,
       studentId: sId,
@@ -39,10 +31,8 @@ export function mergeImportedPlayers(
     });
   }
 
-  const successCount = importedPlayers.length - studentIdDupCount - jerseyNumDupCount;
-  let message = `成功导入 ${successCount} 名球员。`;
-  if (studentIdDupCount > 0) message += `跳过了 ${studentIdDupCount} 名学号重复的球员。`;
-  if (jerseyNumDupCount > 0) message += `跳过了 ${jerseyNumDupCount} 名球衣号码重复的球员。`;
+  const successCount = importedPlayers.length;
+  const message = `成功导入 ${successCount} 名球员。`;
 
   return {
     mergedPlayers,

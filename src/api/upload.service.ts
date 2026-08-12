@@ -65,4 +65,14 @@ export const uploadApi = {
     });
     return handleResponse<ApiResponse<{ url: string }>>(response);
   },
+
+  cleanupTempKeys: async (keys: string[]): Promise<{ cleanedCount: number }> => {
+    if (!keys || keys.length === 0) return { cleanedCount: 0 };
+    const response = await fetch(`${BASE_URL}/upload/cleanup-temp`, {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify({ keys }),
+    });
+    return handleResponse<{ cleanedCount: number }>(response);
+  },
 };

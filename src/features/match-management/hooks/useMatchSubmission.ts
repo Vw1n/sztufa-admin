@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MatchFormData, Match } from '../../../types';
 import { generateId } from '../../../utils';
 import { matchApi, teamApi } from '../../../api/service';
+import { formDraftApi } from '../../../api/form-draft.service';
 import { buildMatchDto, validateMatchForm, MatchLineup } from '../utils/matchForm';
 
 export function useMatchSubmission() {
@@ -10,6 +11,7 @@ export function useMatchSubmission() {
   const [isVerifyingTeams, setIsVerifyingTeams] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedMatch, setSavedMatch] = useState<Match | null>(null);
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
 
   const validateTeamId = async (teamId: string): Promise<boolean> => {
     if (!teamId.trim()) {
@@ -32,74 +34,85 @@ export function useMatchSubmission() {
     e.preventDefault();
     setError(null);
 
-    const validationError = validateMatchForm(formData);
-    if (validationError) {
-      setError(validationError);
-      return;
+    const userStr = typeof localStorage !== 'undefined' ? localStorage.getItem('user') : null;
+    let currentUserRole = 'super_admin';
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u.role) currentUserRole = u.role;
+      } catch (_e) {
+        // Keep the default role when the persisted user payload is invalid.
+      }
+    }
+    const isSuperAdmin = currentUserRole === 'super_admin';
+
+    if (!isSuperAdmin) {
+      const validationError = validateMatchForm(formData);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
     }
 
     setIsLoading(true);
 
     try {
-      if (formData.homeTeamId.trim()) {
-        setIsVerifyingTeams(true);
-        const homeTeamValid = await validateTeamId(formData.homeTeamId);
-        if (!homeTeamValid) {
-          setError(`主队ID ${formData.homeTeamId} 不存在，请检查或使用球队名称`);
-          setIsLoading(false);
-          setIsVerifyingTeams(false);
-          return;
+      if (isSuperAdmin) {
+        // 保存原始可序列化 formData (带 activeDraftId)
+        const saveRes = await formDraftApi.saveDraft({
+          draftId: activeDraftId || undefined,
+          formType: 'MATCH',
+          payload: { ...formData, lineups },
+          seasonId: formData.seasonId || null,
+        });
+
+        if (saveRes.draftId) {
+          setActiveDraftId(saveRes.draftId);
         }
-      }
 
-      if (formData.awayTeamId.trim()) {
-        const awayTeamValid = await validateTeamId(formData.awayTeamId);
-        if (!awayTeamValid) {
-          setError(`客队ID ${formData.awayTeamId} 不存在，请检查或使用球队名称`);
-          setIsLoading(false);
-          setIsVerifyingTeams(false);
-          return;
+        const matRes = await formDraftApi.materializeDraft(saveRes.draftId);
+        if (matRes.success && matRes.officialRecordId) {
+          setSavedMatch({ id: matRes.officialRecordId } as any);
+          setIsSaved(true);
+          if (onSuccess) onSuccess();
+        } else {
+          setIsSaved(true);
+          setError(matRes.error || '信息不完整，已保存为草稿');
+          if (onSuccess) onSuccess();
         }
+      } else {
+        if (formData.homeTeamId.trim()) {
+          setIsVerifyingTeams(true);
+          const homeTeamValid = await validateTeamId(formData.homeTeamId);
+          if (!homeTeamValid) {
+            setError(`主队ID ${formData.homeTeamId} 不存在，请检查或使用球队名称`);
+            setIsLoading(false);
+            setIsVerifyingTeams(false);
+            return;
+          }
+        }
+
+        if (formData.awayTeamId.trim()) {
+          const awayTeamValid = await validateTeamId(formData.awayTeamId);
+          if (!awayTeamValid) {
+            setError(`客队ID ${formData.awayTeamId} 不存在，请检查或使用球队名称`);
+            setIsLoading(false);
+            setIsVerifyingTeams(false);
+            return;
+          }
+        }
+        setIsVerifyingTeams(false);
+
+        const matchDTO = buildMatchDto(formData, lineups);
+        const response = await matchApi.create(matchDTO);
+        setSavedMatch(response as any);
+        setIsSaved(true);
+        if (onSuccess) onSuccess();
       }
-      setIsVerifyingTeams(false);
-
-      const matchDTO = buildMatchDto(formData, lineups);
-
-      console.log('正在提交比赛数据到后端:', matchDTO);
-      const response = await matchApi.create(matchDTO);
-
-      const savedData = response;
-      const match: Match = {
-        id: savedData.id || generateId(),
-        matchName: `${savedData.homeTeam?.teamName || '主队'} vs ${savedData.awayTeam?.teamName || '客队'}`,
-        matchTime: savedData.matchDate,
-        homeScore: savedData.homeScore,
-        awayScore: savedData.awayScore,
-        homePenaltyScore: savedData.homePenaltyScore,
-        awayPenaltyScore: savedData.awayPenaltyScore,
-        winnerTeamId: savedData.winnerTeamId,
-        decidedBy: savedData.decidedBy,
-        homeTeamGoals: [],
-        awayTeamGoals: [],
-        events: savedData.events || [],
-        homeTeamId: savedData.homeTeamId,
-        awayTeamId: savedData.awayTeamId,
-        homeTeamName: savedData.homeTeam?.teamName,
-        awayTeamName: savedData.awayTeam?.teamName,
-        location: savedData.location,
-        status: savedData.status || 'finished',
-      };
-
-      setSavedMatch(match);
-      setIsSaved(true);
-      setError(null);
-      if (onSuccess) onSuccess();
 
       setTimeout(() => {
         setIsSaved(false);
       }, 3000);
-
-      console.log('比赛信息已成功保存到后端:', match);
     } catch (err) {
       console.error('保存比赛信息失败:', err);
       if (err instanceof Error) {
