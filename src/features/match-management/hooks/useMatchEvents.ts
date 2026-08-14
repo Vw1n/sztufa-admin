@@ -1,4 +1,4 @@
-import { MatchFormData, MatchEvent } from '../../../types';
+import { MatchFormData, MatchEvent, MatchEventValue } from '../../../types';
 import { PlayerDTO } from '../../../api/types';
 import { applyEventTypeDefaults } from '../../../utils/matchEvents';
 
@@ -34,7 +34,7 @@ export function useMatchEvents(
     setError(null);
   };
 
-  const updateEvent = (index: number, field: keyof MatchEvent, value: any) => {
+  const updateEvent = (index: number, field: keyof MatchEvent, value: MatchEventValue) => {
     const updatedEvents = [...formData.events];
     let newEvent = { ...updatedEvents[index], [field]: value } as MatchEvent;
 

@@ -1,12 +1,12 @@
 import React from 'react';
 import { MatchFormData } from '../../../types';
-import { TeamDTO } from '../../../api/types';
+import { SeasonDTO, TeamDTO } from '../../../api/types';
 import { getPenaltyScoreFromEvents } from '../../../utils/matchEvents';
 
 interface TeamScoreSectionProps {
   formData: MatchFormData;
   setFormData: React.Dispatch<React.SetStateAction<MatchFormData>>;
-  activeSeason: any;
+  activeSeason: SeasonDTO | null;
   availableTeams: TeamDTO[];
   getFilteredTeams: () => TeamDTO[];
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
@@ -22,7 +22,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
   getFilteredTeams,
   handleChange,
   handleTeamSelect,
-  isSuperAdmin = false,
 }) => {
   const penaltyScore = getPenaltyScoreFromEvents(formData.events);
 

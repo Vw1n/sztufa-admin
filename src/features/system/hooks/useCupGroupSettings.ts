@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { seasonApi } from '../../../api/service';
+import { SeasonGroupDTO } from '../../../api/types';
 import { replaceTeamGroup } from './settingsState';
 import { SeasonGroupAssignment, SeasonSummary, SystemFeedback } from './types';
 
@@ -13,7 +14,7 @@ export const useCupGroupSettings = (
   const loadSeasonGroups = useCallback(async (seasonId: string) => {
     try {
       const data = await seasonApi.getGroups(seasonId);
-      setGroupsData((data || []).map((group: any) => ({
+      setGroupsData((data || []).map((group: SeasonGroupDTO) => ({
         teamId: group.teamId,
         groupName: group.groupName,
       })));

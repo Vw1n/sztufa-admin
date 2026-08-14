@@ -36,11 +36,12 @@ const SystemSettingsPage: React.FC = () => {
   const feedback = { setError, setSuccessMessage };
 
   const seasonBackup = useSeasonBackupSettings(feedback);
+  const { loadAllSeasons } = seasonBackup;
   const handleHistoryImported = useCallback((message: string) => {
     setSuccessMessage(message);
-    seasonBackup.loadAllSeasons();
+    void loadAllSeasons();
     setTimeout(() => setSuccessMessage(null), 5000);
-  }, [seasonBackup.loadAllSeasons]);
+  }, [loadAllSeasons]);
   const historyImport = useHistoryImport(handleHistoryImported);
   const { teams } = useSystemTeams();
   const { teams: activeSeasonTeams } = useSystemTeams(seasonBackup.activeSeason?.id, true);

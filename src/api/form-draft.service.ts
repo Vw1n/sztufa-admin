@@ -4,7 +4,7 @@ export interface AdminFormDraftDTO {
   id?: string;
   draftId?: string;
   formType: 'TEAM' | 'MATCH';
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   seasonId?: string | null;
   officialRecordId?: string | null;
   status?: string;

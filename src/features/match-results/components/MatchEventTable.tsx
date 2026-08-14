@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
 import { PlayerDTO } from '../../../api/types';
-import { MatchEvent } from '../../../types';
+import { MatchEvent, MatchEventValue } from '../../../types';
 import {
   EVENT_TYPE_LABELS,
   isShootoutEventType,
@@ -14,7 +14,7 @@ interface MatchEventTableProps {
   players: PlayerDTO[];
   onAddEvent: () => void;
   onRemoveEvent: (index: number) => void;
-  onEventChange: (index: number, field: keyof MatchEvent, value: any) => void;
+  onEventChange: (index: number, field: keyof MatchEvent, value: MatchEventValue) => void;
   onEventPlayerSelect: (index: number, playerId: string) => void;
   onSubPlayerSelect: (index: number, playerId: string) => void;
   onAssistPlayerSelect: (index: number, playerId: string) => void;
@@ -110,7 +110,7 @@ export const MatchEventTable: React.FC<MatchEventTableProps> = ({
                       {isEditing ? (
                         <select
                           value={event.eventType}
-                          onChange={(e) => onEventChange(index, 'eventType', e.target.value as any)}
+                          onChange={(e) => onEventChange(index, 'eventType', e.target.value as MatchEvent['eventType'])}
                           className="form-select inline"
                           required
                         >

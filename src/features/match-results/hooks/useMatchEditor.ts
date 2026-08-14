@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 import { matchApi } from '../../../api/service';
 import { PlayerDTO } from '../../../api/types';
-import { Match, MatchEvent } from '../../../types';
+import { Match, MatchEvent, MatchEventValue } from '../../../types';
 import { buildMatchUpdatePayload, validateMatchEdit } from '../utils/matchEditor';
 import { applyEventTypeDefaults } from '../../../utils/matchEvents';
 
@@ -91,7 +91,7 @@ export const useMatchEditor = ({
     });
   };
 
-  const changeEvent = (index: number, field: keyof MatchEvent, value: any) => {
+  const changeEvent = (index: number, field: keyof MatchEvent, value: MatchEventValue) => {
     setEditData((current) => {
       if (!current) return current;
       const events = [...(current.events || [])];

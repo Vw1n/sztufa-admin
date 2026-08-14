@@ -13,6 +13,8 @@ export interface UserSummary {
   username: string;
   role: string;
   teamId?: string | null;
+  studentId?: string | null;
+  createdAt?: string;
   [key: string]: unknown;
 }
 

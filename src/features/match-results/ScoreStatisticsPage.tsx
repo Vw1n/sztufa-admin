@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { matchApi } from '../../api/match.service';
 import { MatchDetailPanel, MatchListPanel } from './components';
 import { useMatchData, useMatchEditor } from './hooks';
+import { getErrorMessage } from '../../utils/errors';
 
 const MatchViewEditPage: React.FC = () => {
   const { user } = useAuth();
@@ -86,16 +87,16 @@ const MatchViewEditPage: React.FC = () => {
               try {
                 const res = await matchApi.recalculatePredictions(matchId);
                 alert(`重新结算成功，共结算 ${res.settledCount ?? 0} 条竞猜记录！`);
-              } catch (err: any) {
-                alert(err.message || '重新结算失败');
+              } catch (err: unknown) {
+                alert(getErrorMessage(err, '重新结算失败'));
               }
             }}
             onVoidPredictions={async (matchId) => {
               try {
                 const res = await matchApi.voidPredictions(matchId);
                 alert(`作废成功，共作废 ${res.voidedCount ?? 0} 条竞猜记录！`);
-              } catch (err: any) {
-                alert(err.message || '作废失败');
+              } catch (err: unknown) {
+                alert(getErrorMessage(err, '作废失败'));
               }
             }}
           />

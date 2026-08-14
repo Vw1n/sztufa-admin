@@ -28,7 +28,6 @@ const LineupSection: React.FC<LineupSectionProps> = ({
   awayTeamPlayers,
   lineups,
   handleLineupChange,
-  isSuperAdmin = false,
 }) => {
   if (!homeTeamId && !awayTeamId) return null;
 

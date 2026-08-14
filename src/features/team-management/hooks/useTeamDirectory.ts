@@ -1,12 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { teamApi, matchApi, seasonApi } from '../../../api/service';
-import { TeamDTO, MatchDTO, SeasonDTO, AuthUser } from '../../../api/types';
+import { TeamDTO, MatchDTO, SeasonDTO } from '../../../api/types';
 import { Team } from '../../../types';
+import { User } from '../../../types/auth';
 import { mapTeamDtoToModel } from '../utils/teamMapper';
 
 const PAGE_SIZE = 10;
 
-export function useTeamDirectory(user?: AuthUser | null) {
+export function useTeamDirectory(user?: User | null) {
+  const userRole = user?.role;
+  const userTeamId = user?.teamId;
   const [teams, setTeams] = useState<Team[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalTeams, setTotalTeams] = useState(0);
@@ -23,6 +26,80 @@ export function useTeamDirectory(user?: AuthUser | null) {
 
   const teamsRequestIdRef = useRef(0);
   const matchesRequestIdRef = useRef(0);
+
+  const loadActiveSeasonAndMatchesForSeason = useCallback(async (seasonId: string) => {
+    const requestId = ++matchesRequestIdRef.current;
+    try {
+      const response = await matchApi.getAll(1, 200, undefined, seasonId === 'all' ? undefined : seasonId);
+
+      if (requestId !== matchesRequestIdRef.current) return;
+
+      setAllMatches(response.data || []);
+
+      const currentSeason = seasons.find(s => s.id === seasonId);
+      if (currentSeason) {
+        setActiveSeasonId(currentSeason.id);
+        setActiveSeasonName(currentSeason.name);
+      }
+    } catch (err) {
+      if (requestId !== matchesRequestIdRef.current) return;
+      console.error('加载比赛记录失败:', err);
+    }
+  }, [seasons]);
+
+  const loadTeams = useCallback(async (page = currentPage, seasonId = filterSeasonId) => {
+    const requestId = ++teamsRequestIdRef.current;
+    setIsLoading(true);
+    try {
+      let gender = 'MALE';
+      if (seasonId !== 'all') {
+        const currentSeason = seasons.find(s => s.id === seasonId);
+        if (currentSeason && (currentSeason.name.includes('女') || currentSeason.name.includes('女子'))) {
+          gender = 'FEMALE';
+        }
+      } else {
+        gender = 'all';
+      }
+
+      const response = await teamApi.getAll(
+        userRole === 'coach' ? 1 : page,
+        userRole === 'coach' ? 100 : PAGE_SIZE,
+        seasonId === 'all' ? undefined : seasonId,
+        gender === 'all' ? undefined : gender
+      );
+
+      if (requestId !== teamsRequestIdRef.current) return;
+
+      const teamList: Team[] = response.data.map((t: TeamDTO) => mapTeamDtoToModel(t));
+      if (userRole === 'coach') {
+        const filteredTeams = teamList.filter(t => t.id === userTeamId);
+        setTeams(filteredTeams);
+        setTotalTeams(filteredTeams.length);
+        if (filteredTeams.length > 0) {
+          setSelectedTeam(filteredTeams[0]);
+        }
+      } else {
+        setTeams(teamList);
+        setTotalTeams(response.total);
+        setSelectedTeam((previous) => {
+          if (!previous) return null;
+          return teamList.find((team) => team.id === previous.id) || null;
+        });
+      }
+    } catch (err) {
+      if (requestId !== teamsRequestIdRef.current) return;
+      console.error('加载球队列表失败:', err);
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        setError('请先登录系统');
+      } else {
+        setError('网络连接失败，请稍后重试');
+      }
+    } finally {
+      if (requestId === teamsRequestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [currentPage, filterSeasonId, seasons, userRole, userTeamId]);
 
   useEffect(() => {
     const initPage = async () => {
@@ -44,94 +121,16 @@ export function useTeamDirectory(user?: AuthUser | null) {
   }, []);
 
   useEffect(() => {
-    loadTeams(currentPage, filterSeasonId);
-  }, [currentPage, filterSeasonId, seasons]);
+    void loadTeams(currentPage, filterSeasonId);
+  }, [currentPage, filterSeasonId, loadTeams]);
 
   useEffect(() => {
     if (filterSeasonId !== 'all') {
-      loadActiveSeasonAndMatchesForSeason(filterSeasonId);
+      void loadActiveSeasonAndMatchesForSeason(filterSeasonId);
     } else {
       setAllMatches([]);
     }
-  }, [filterSeasonId, seasons]);
-
-  const loadActiveSeasonAndMatchesForSeason = async (seasonId: string) => {
-    const requestId = ++matchesRequestIdRef.current;
-    try {
-      const response = await matchApi.getAll(1, 200, undefined, seasonId === 'all' ? undefined : seasonId);
-
-      if (requestId !== matchesRequestIdRef.current) return;
-
-      setAllMatches(response.data || []);
-
-      const currentSeason = seasons.find(s => s.id === seasonId);
-      if (currentSeason) {
-        setActiveSeasonId(currentSeason.id);
-        setActiveSeasonName(currentSeason.name);
-      }
-    } catch (err) {
-      if (requestId !== matchesRequestIdRef.current) return;
-      console.error('加载比赛记录失败:', err);
-    }
-  };
-
-  const loadTeams = async (page = currentPage, seasonId = filterSeasonId) => {
-    const requestId = ++teamsRequestIdRef.current;
-    setIsLoading(true);
-    try {
-      let gender = 'MALE';
-      if (seasonId !== 'all') {
-        const currentSeason = seasons.find(s => s.id === seasonId);
-        if (currentSeason && (currentSeason.name.includes('女') || currentSeason.name.includes('女子'))) {
-          gender = 'FEMALE';
-        }
-      } else {
-        gender = 'all';
-      }
-
-      const response = await teamApi.getAll(
-        user?.role === 'coach' ? 1 : page,
-        user?.role === 'coach' ? 100 : PAGE_SIZE,
-        seasonId === 'all' ? undefined : seasonId,
-        gender === 'all' ? undefined : gender
-      );
-
-      if (requestId !== teamsRequestIdRef.current) return;
-
-      const teamList: Team[] = response.data.map((t: TeamDTO) => mapTeamDtoToModel(t));
-      if (user && user.role === 'coach') {
-        const coachTeamId = user.teamId;
-        const filteredTeams = teamList.filter(t => t.id === coachTeamId);
-        setTeams(filteredTeams);
-        setTotalTeams(filteredTeams.length);
-        if (filteredTeams.length > 0) {
-          setSelectedTeam(filteredTeams[0]);
-        }
-      } else {
-        setTeams(teamList);
-        setTotalTeams(response.total);
-        // Reconcile the detail panel with the freshly loaded season result.
-        // A team filtered out by a season change/migration must not leave its
-        // stale global roster visible under the current season.
-        setSelectedTeam((previous) => {
-          if (!previous) return null;
-          return teamList.find((team) => team.id === previous.id) || null;
-        });
-      }
-    } catch (err) {
-      if (requestId !== teamsRequestIdRef.current) return;
-      console.error('加载球队列表失败:', err);
-      if (err instanceof Error && err.message === 'Unauthorized') {
-        setError('请先登录系统');
-      } else {
-        setError('网络连接失败，请稍后重试');
-      }
-    } finally {
-      if (requestId === teamsRequestIdRef.current) {
-        setIsLoading(false);
-      }
-    }
-  };
+  }, [filterSeasonId, loadActiveSeasonAndMatchesForSeason]);
 
   const handleSeasonChange = (seasonId: string) => {
     setFilterSeasonId(seasonId);

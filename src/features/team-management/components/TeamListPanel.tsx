@@ -1,11 +1,12 @@
 import React from 'react';
 import { Users, Eye, Edit2, Trash2, RefreshCw } from 'lucide-react';
 import { Team } from '../../../types';
+import { SeasonDTO } from '../../../api/types';
 import { Pagination } from '../../../components/Pagination';
 
 interface TeamListPanelProps {
   teams: Team[];
-  seasons: any[];
+  seasons: SeasonDTO[];
   filterSeasonId: string;
   selectedTeam: Team | null;
   isLoading: boolean;

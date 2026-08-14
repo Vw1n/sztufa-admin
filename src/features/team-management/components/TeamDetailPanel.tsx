@@ -1,6 +1,8 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { Team } from '../../../types';
+import { MatchDTO } from '../../../api/types';
+import { getErrorMessage } from '../../../utils/errors';
 import { uploadImageFile } from '../../../utils/imageUpload';
 
 interface TeamDetailPanelProps {
@@ -10,14 +12,14 @@ interface TeamDetailPanelProps {
   isLoading: boolean;
   editData: Team | null;
   activeSeasonName: string;
-  allMatches: any[];
+  allMatches: MatchDTO[];
   userRole?: string;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onFieldChange: (field: keyof Team, value: string) => void;
 }
 
-const getTeamStats = (teamId: string, allMatches: any[]) => {
+const getTeamStats = (teamId: string, allMatches: MatchDTO[]) => {
   const teamMatches = allMatches
     .filter(m => (m.homeTeamId === teamId || m.awayTeamId === teamId) && m.status === 'finished')
     .sort((a, b) => new Date(a.matchDate || '').getTime() - new Date(b.matchDate || '').getTime());
@@ -67,8 +69,8 @@ const ImageUploadField: React.FC<{
               if (file) {
                 try {
                   onUpload(await uploadImageFile(file, label));
-                } catch (err: any) {
-                  alert(err?.message || String(err));
+                } catch (err: unknown) {
+                  alert(getErrorMessage(err, '图片上传失败'));
                 }
               }
             }}

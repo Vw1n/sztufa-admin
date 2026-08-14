@@ -8,6 +8,7 @@ import {
   validateWorksheetData,
 } from '../../utils/excelSecurity';
 import { uploadImageFile } from '../../utils/imageUpload';
+import { getErrorMessage } from '../../utils/errors';
 
 interface UseExcelImporterOptions {
   onImport: (players: Omit<Player, 'id'>[]) => void;
@@ -93,7 +94,7 @@ export const useExcelImporter = ({ onImport }: UseExcelImporterOptions) => {
             sheetRows: MAX_ROWS + 2,
           });
           const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet) as Record<string, any>[];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet) as Record<string, unknown>[];
           const sheetDataValidation = validateWorksheetData(
             workbookMetadata.SheetNames,
             jsonData,
@@ -147,8 +148,8 @@ export const useExcelImporter = ({ onImport }: UseExcelImporterOptions) => {
         updated[index] = { ...updated[index], photo: url };
         return updated;
       });
-    } catch (err: any) {
-      setError(err?.message || '图片上传失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '图片上传失败'));
     } finally {
       setUploadingRowIndex(null);
     }

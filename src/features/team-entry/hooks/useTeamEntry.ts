@@ -71,7 +71,7 @@ export const useTeamEntry = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [savedTeam, setSavedTeam] = useState<Team | null>(null);
+  const [savedTeam, setSavedTeam] = useState<Partial<Team> & Pick<Team, 'id' | 'teamName'> | null>(null);
   const [saveProgress, setSaveProgress] = useState<{ current: number; total: number; message: string } | null>(null);
   const [showPdfImporter, setShowPdfImporter] = useState(false);
   const [pdfImportMessage, setPdfImportMessage] = useState<string | null>(null);
@@ -163,7 +163,7 @@ export const useTeamEntry = () => {
       try {
         const u = JSON.parse(userStr);
         if (u.role) currentUserRole = u.role;
-      } catch (_e) {
+      } catch {
         // Keep the default role when the persisted user payload is invalid.
       }
     }
@@ -194,7 +194,7 @@ export const useTeamEntry = () => {
         // 尝试落库正式化
         const matRes = await formDraftApi.materializeDraft(saveRes.draftId);
         if (matRes.success && matRes.officialRecordId) {
-          setSavedTeam({ id: matRes.officialRecordId, teamName: teamFormData.teamName } as any);
+          setSavedTeam({ id: matRes.officialRecordId, teamName: teamFormData.teamName });
           setIsSaved(true);
         } else {
           setIsSaved(true);

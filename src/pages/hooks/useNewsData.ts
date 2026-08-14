@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { newsApi } from '../../api/service';
 import { NewsDTO } from '../../api/service';
+import { getErrorMessage } from '../../utils/errors';
 
 const LIMIT = 10;
 
@@ -37,9 +38,9 @@ export function useNewsData(): UseNewsDataReturn {
       const res = await newsApi.getAll(page, LIMIT, categoryFilter);
       setNewsList(res.data || []);
       setTotal(res.total || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || '获取活动资讯列表失败');
+      setError(getErrorMessage(err, '获取活动资讯列表失败'));
     } finally {
       setIsLoading(false);
     }
@@ -61,9 +62,9 @@ export function useNewsData(): UseNewsDataReturn {
       setSuccess('删除成功！');
       loadNews();
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || '删除资讯失败');
+      setError(getErrorMessage(err, '删除资讯失败'));
     }
   };
 

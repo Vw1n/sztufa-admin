@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { X, AlertTriangle, Info } from 'lucide-react';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
