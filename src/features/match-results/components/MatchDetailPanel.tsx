@@ -1,6 +1,6 @@
 import React from 'react';
-import { PlayerDTO } from '../../../api/types';
-import { Match, MatchEvent } from '../../../types';
+import { PlayerDTO, SeasonDTO } from '../../../api/types';
+import { Match, MatchEvent, MatchEventValue } from '../../../types';
 import { MatchEventTable } from './MatchEventTable';
 import { MatchLineupPanel } from './MatchLineupPanel';
 import MatchBasicFields from './match-detail/MatchBasicFields';
@@ -14,7 +14,7 @@ interface MatchDetailPanelProps {
   isSaved: boolean;
   isLoading: boolean;
   editData: Match | null;
-  seasons: any[];
+  seasons: SeasonDTO[];
   selectedSeasonId: string;
   homeTeamPlayers: PlayerDTO[];
   awayTeamPlayers: PlayerDTO[];
@@ -27,7 +27,7 @@ interface MatchDetailPanelProps {
     teamType: 'home' | 'away',
     type: 'starting' | 'substitute' | 'none',
   ) => void;
-  onEventChange: (index: number, field: keyof MatchEvent, value: any) => void;
+  onEventChange: (index: number, field: keyof MatchEvent, value: MatchEventValue) => void;
   onEventPlayerSelect: (index: number, playerId: string) => void;
   onSubPlayerSelect: (index: number, playerId: string) => void;
   onAssistPlayerSelect: (index: number, playerId: string) => void;

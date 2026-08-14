@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, Plus, Trash2 } from 'lucide-react';
-import { MatchEvent } from '../../../types';
+import { MatchEvent, MatchEventValue } from '../../../types';
 import { PlayerDTO } from '../../../api/types';
 import {
   EVENT_TYPE_LABELS,
@@ -13,7 +13,7 @@ interface EventTableProps {
   players: PlayerDTO[];
   addEvent: (team: 'home' | 'away') => void;
   removeEvent: (index: number) => void;
-  updateEvent: (index: number, field: keyof MatchEvent, value: any) => void;
+  updateEvent: (index: number, field: keyof MatchEvent, value: MatchEventValue) => void;
   handleEventPlayerSelect: (index: number, playerId: string) => void;
   handleSubPlayerSelect: (index: number, playerId: string) => void;
   handleAssistPlayerSelect: (index: number, playerId: string) => void;
@@ -113,7 +113,7 @@ const EventTable: React.FC<EventTableProps> = ({
                     <td data-label="事件类型">
                       <select
                         value={event.eventType}
-                        onChange={(e) => updateEvent(index, 'eventType', e.target.value as any)}
+                        onChange={(e) => updateEvent(index, 'eventType', e.target.value as MatchEvent['eventType'])}
                         className="form-select inline"
                         required
                       >

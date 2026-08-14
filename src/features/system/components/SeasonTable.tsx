@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { RefreshCw, Pencil, Trash2, Check, X } from 'lucide-react';
+import { SeasonSummary } from '../hooks/types';
 
 interface SeasonTableProps {
-  seasons: any[];
+  seasons: SeasonSummary[];
   isUpdatingStatusId: string | null;
   isRenamingSeasonId: string | null;
   isDeletingSeasonId: string | null;
