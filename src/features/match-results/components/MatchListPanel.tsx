@@ -1,12 +1,13 @@
 import React from 'react';
 import { Calendar, Edit2, Trash2, Eye, RefreshCw } from 'lucide-react';
 import { Match } from '../../../types';
+import { SeasonDTO } from '../../../api/types';
 import { Pagination } from '../../../components/Pagination';
 import { getMatchPenaltyScore } from '../../../utils/matchEvents';
 
 interface MatchListPanelProps {
   matches: Match[];
-  seasons: any[];
+  seasons: SeasonDTO[];
   selectedSeasonId: string;
   selectedMatch: Match | null;
   isLoading: boolean;

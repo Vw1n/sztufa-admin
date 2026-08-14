@@ -31,4 +31,10 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ['src/**/*.{test,spec}.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
 );

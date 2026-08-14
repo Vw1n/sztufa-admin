@@ -1,8 +1,9 @@
 import React from 'react';
 import { TeamDTO } from '../../../api/types';
+import { SeasonSummary } from '../hooks/types';
 
 interface CupGroupPanelProps {
-  activeSeason: any;
+  activeSeason: SeasonSummary | null;
   teams: TeamDTO[];
   groupsData: { teamId: string; groupName: string }[];
   isSavingGroups: boolean;

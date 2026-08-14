@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { teamApi, matchApi, seasonApi } from '../../../api/service';
-import { TeamDTO, MatchDTO, SeasonDTO, AuthUser } from '../../../api/types';
+import { TeamDTO, MatchDTO, SeasonDTO } from '../../../api/types';
 import { Team } from '../../../types';
+import { User } from '../../../types/auth';
 import { mapTeamDtoToModel } from '../utils/teamMapper';
 
 const PAGE_SIZE = 10;
 
-export function useTeamDirectory(user?: AuthUser | null) {
+export function useTeamDirectory(user?: User | null) {
   const userRole = user?.role;
   const userTeamId = user?.teamId;
   const [teams, setTeams] = useState<Team[]>([]);

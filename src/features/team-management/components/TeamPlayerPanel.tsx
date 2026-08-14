@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Trash2, Plus, Users, Download, FileText } from 'lucide-react';
 import ExcelImporter from '../../../components/ExcelImporter';
 import PdfImporter from '../../../components/PdfImporter';
-import { Team, Player } from '../../../types';
+import { Team, Player, PlayerValue } from '../../../types';
 import { uploadImageFile } from '../../../utils/imageUpload';
+import { getErrorMessage } from '../../../utils/errors';
 
 interface TeamPlayerPanelProps {
   selectedTeam: Team;
@@ -13,7 +14,7 @@ interface TeamPlayerPanelProps {
   onToggleImporter: () => void;
   onAddPlayerRow: () => void;
   onDeletePlayerRow: (index: number) => void;
-  onPlayerFieldChange: (index: number, field: keyof Player, value: any) => void;
+  onPlayerFieldChange: (index: number, field: keyof Player, value: PlayerValue) => void;
   onExcelImport: (players: Omit<Player, 'id'>[]) => void;
   onExportPlayers: () => void;
 }
@@ -84,8 +85,8 @@ export const TeamPlayerPanel: React.FC<TeamPlayerPanelProps> = ({
                               try {
                                 const url = await uploadImageFile(file, `球员 ${player.name || index + 1} 的照片`);
                                 onPlayerFieldChange(index, 'photo', url);
-                              } catch (err: any) {
-                                alert(err?.message || String(err));
+                              } catch (err: unknown) {
+                                alert(getErrorMessage(err, '图片上传失败'));
                               }
                             }
                           }}

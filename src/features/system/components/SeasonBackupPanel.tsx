@@ -1,14 +1,15 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { BackupDTO } from '../../../api/types';
+import { SeasonSummary } from '../hooks/types';
 import { SeasonManagementPanel } from './SeasonManagementPanel';
 import { SeasonTable } from './SeasonTable';
 import { BackupActions } from './BackupActions';
 import { BackupHistoryPanel } from './BackupHistoryPanel';
 
 interface SeasonBackupPanelProps {
-  seasons: any[];
-  activeSeason: any;
+  seasons: SeasonSummary[];
+  activeSeason: SeasonSummary | null;
   backups: BackupDTO[];
   newSeasonName: string;
   newSeasonType: string;

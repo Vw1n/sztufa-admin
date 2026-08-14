@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { teamApi } from '../../../api/service';
 import { TeamDTO } from '../../../api/types';
-import { Team, Player } from '../../../types';
+import { Team, Player, PlayerValue } from '../../../types';
 import { validateTeamData } from '../utils/teamValidation';
 import {
   mapTeamDtoToModel,
@@ -40,7 +40,7 @@ export function useTeamEditor(
     }
   };
 
-  const handlePlayerFieldChange = (index: number, field: keyof Player, value: any) => {
+  const handlePlayerFieldChange = (index: number, field: keyof Player, value: PlayerValue) => {
     if (editData) {
       const players = [...(editData.players || [])];
       players[index] = { ...players[index], [field]: value } as Player;
@@ -121,8 +121,9 @@ export function useTeamEditor(
           players: playersPayload,
           deletePlayerIds,
         });
-      } catch (patchErr: any) {
-        if (patchErr?.message?.includes('404') || patchErr?.message?.includes('Cannot PATCH')) {
+      } catch (patchErr: unknown) {
+        const patchMessage = patchErr instanceof Error ? patchErr.message : '';
+        if (patchMessage.includes('404') || patchMessage.includes('Cannot PATCH')) {
           console.warn('后端尚未支持 with-players 批量更新接口，降级调用基本信息更新接口');
           updatedTeam = await teamApi.update(editData.id, updatePayload);
         } else {

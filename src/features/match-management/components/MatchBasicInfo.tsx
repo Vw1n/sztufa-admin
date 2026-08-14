@@ -1,9 +1,10 @@
 import React from 'react';
 import { MatchFormData } from '../../../types';
+import { SeasonDTO } from '../../../api/types';
 
 interface MatchBasicInfoProps {
   formData: MatchFormData;
-  activeSeasons: any[];
+  activeSeasons: SeasonDTO[];
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   handleSeasonSelect: (seasonId: string) => void;
   isSuperAdmin?: boolean;

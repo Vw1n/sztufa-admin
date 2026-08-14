@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Loader2, Upload } from 'lucide-react';
 import { newsApi, uploadApi } from '../../../api/service';
 import { NewsDTO } from '../../../api/service';
+import { getErrorMessage } from '../../../utils/errors';
 
 interface NewsFormModalProps {
   mode: 'create' | 'edit';
@@ -87,9 +88,9 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
 
       onSaved();
       setTimeout(() => onSuccess(''), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      onError(err?.message || '保存资讯失败');
+      onError(getErrorMessage(err, '保存资讯失败'));
     } finally {
       setIsSubmitting(false);
     }
