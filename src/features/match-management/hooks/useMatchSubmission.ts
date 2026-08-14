@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { MatchFormData, Match } from '../../../types';
-import { generateId } from '../../../utils';
 import { matchApi, teamApi } from '../../../api/service';
 import { formDraftApi } from '../../../api/form-draft.service';
 import { buildMatchDto, validateMatchForm, MatchLineup } from '../utils/matchForm';
@@ -40,7 +39,7 @@ export function useMatchSubmission() {
       try {
         const u = JSON.parse(userStr);
         if (u.role) currentUserRole = u.role;
-      } catch (_e) {
+      } catch {
         // Keep the default role when the persisted user payload is invalid.
       }
     }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ParsedTeam, pdfImportApi, PdfPreviewResponse } from '../../api/pdf-import.service';
+import { getErrorMessage } from '../../utils/errors';
 
 interface UsePdfImporterOptions {
   onImportSuccess: (importedData: { batchId: string; teams: ParsedTeam[] }) => void | Promise<void>;
@@ -39,8 +40,8 @@ export const usePdfImporter = ({ onImportSuccess, onClose }: UsePdfImporterOptio
     try {
       const res = await pdfImportApi.preview(file);
       setPreviewData(res);
-    } catch (err: any) {
-      setError(err?.message || 'PDF 报名表识别解析失败，请检查文件格式');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'PDF 报名表识别解析失败，请检查文件格式'));
     } finally {
       setIsLoading(false);
     }
@@ -132,8 +133,8 @@ export const usePdfImporter = ({ onImportSuccess, onClose }: UsePdfImporterOptio
         player.needsManualConfirm = false;
         setPreviewData({ ...previewData, teams: updatedTeams });
       }
-    } catch (err: any) {
-      setError(err?.message || '图片上传失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '图片上传失败'));
     } finally {
       setUploadingRowIndex(null);
     }
@@ -157,8 +158,8 @@ export const usePdfImporter = ({ onImportSuccess, onClose }: UsePdfImporterOptio
         manuallyConfirmed: true,
       };
       setPreviewData({ ...previewData, teams: updatedTeams });
-    } catch (err: any) {
-      setError(err?.message || '球队图片上传失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '球队图片上传失败'));
     } finally {
       setUploadingTeamAsset(null);
     }
@@ -192,8 +193,8 @@ export const usePdfImporter = ({ onImportSuccess, onClose }: UsePdfImporterOptio
       await pdfImportApi.cancel(previewData.batchId);
       setPreviewData(null);
       setFile(null);
-    } catch (err: any) {
-      setError(err?.message || 'PDF 识别结果回填失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'PDF 识别结果回填失败'));
     } finally {
       setIsLoading(false);
     }

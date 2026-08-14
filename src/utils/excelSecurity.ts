@@ -91,7 +91,7 @@ export function validateExcelArchive(
 
 export function validateWorksheetData(
   sheetNames: string[],
-  jsonData: Record<string, any>[],
+  jsonData: Record<string, unknown>[],
 ): ExcelValidationError {
   if (!sheetNames || sheetNames.length === 0) {
     return { valid: false, error: '文件不包含有效工作表' };
@@ -111,7 +111,7 @@ export function validateWorksheetData(
   return { valid: true };
 }
 
-export function parsePlayerRows(jsonData: Record<string, any>[]) {
+export function parsePlayerRows(jsonData: Record<string, unknown>[]) {
   const players = jsonData.map((row) => {
     const rawName = row['姓名'] ?? row['name'] ?? '';
     const rawStudentId = row['学号'] ?? row['studentId'] ?? row['student_id'] ?? '';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { auditLogApi } from '../../../api/service';
 import { AuditLogDTO } from '../../../api/types';
 
@@ -12,25 +12,29 @@ export function useAuditLogs() {
 
   const [filterUsername, setFilterUsername] = useState('');
   const [filterAction, setFilterAction] = useState('all');
+  const requestSequence = useRef(0);
 
-  useEffect(() => {
-    loadLogs();
-  }, [page, filterUsername, filterAction]);
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
+    const requestId = ++requestSequence.current;
     setIsLoading(true);
     setError(null);
     try {
       const response = await auditLogApi.getAll(page, limit, filterUsername, filterAction);
+      if (requestId !== requestSequence.current) return;
       setLogs(response.data || []);
       setTotal(response.total || 0);
     } catch (err) {
+      if (requestId !== requestSequence.current) return;
       console.error('加载审计日志失败:', err);
       setError(err instanceof Error ? err.message : '无法连接服务器，请稍后重试');
     } finally {
-      setIsLoading(false);
+      if (requestId === requestSequence.current) setIsLoading(false);
     }
-  };
+  }, [page, limit, filterUsername, filterAction]);
+
+  useEffect(() => {
+    void loadLogs();
+  }, [loadLogs]);
 
   const totalPages = Math.ceil(total / limit) || 1;
 

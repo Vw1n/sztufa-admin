@@ -163,7 +163,7 @@ export const useTeamEntry = () => {
       try {
         const u = JSON.parse(userStr);
         if (u.role) currentUserRole = u.role;
-      } catch (_e) {
+      } catch {
         // Keep the default role when the persisted user payload is invalid.
       }
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { seasonApi } from '../../../api/service';
 import { SeasonDTO } from '../../../api/types';
 import { SeasonGroupAssignment } from '../utils/matchForm';
@@ -10,8 +10,12 @@ export function useMatchSeason(
   const [activeSeasons, setActiveSeasons] = useState<SeasonDTO[]>([]);
   const [activeSeason, setActiveSeason] = useState<SeasonDTO | null>(null);
   const [seasonGroups, setSeasonGroups] = useState<SeasonGroupAssignment[]>([]);
+  const callbacksRef = useRef({ setFormDataSeason, onSeasonChangeLoadTeams });
+  const activeSeasonsRef = useRef(activeSeasons);
+  callbacksRef.current = { setFormDataSeason, onSeasonChangeLoadTeams };
+  activeSeasonsRef.current = activeSeasons;
 
-  const loadActiveSeasons = async () => {
+  const loadActiveSeasons = useCallback(async () => {
     try {
       const allSeasons = await seasonApi.getAll();
       const actives = (allSeasons || []).filter((s: SeasonDTO) => s.status === 'active');
@@ -23,9 +27,9 @@ export function useMatchSeason(
 
         const stage = defaultSeason.type === 'CUP' ? 'GROUP' : 'LEAGUE';
         const groupName = defaultSeason.type === 'CUP' ? 'A' : '';
-        setFormDataSeason(defaultSeason.id, stage, groupName);
+        callbacksRef.current.setFormDataSeason(defaultSeason.id, stage, groupName);
 
-        await onSeasonChangeLoadTeams(defaultSeason.id);
+        await callbacksRef.current.onSeasonChangeLoadTeams(defaultSeason.id);
 
         if (defaultSeason.type === 'CUP') {
           const groups = await seasonApi.getGroups(defaultSeason.id);
@@ -35,18 +39,18 @@ export function useMatchSeason(
     } catch (err) {
       console.error('加载活跃赛季列表失败:', err);
     }
-  };
+  }, []);
 
-  const handleSeasonSelect = async (seasonId: string) => {
-    const selected = activeSeasons.find(s => s.id === seasonId);
+  const handleSeasonSelect = useCallback(async (seasonId: string) => {
+    const selected = activeSeasonsRef.current.find(s => s.id === seasonId);
     if (!selected) return;
 
     setActiveSeason(selected);
-    await onSeasonChangeLoadTeams(seasonId);
+    await callbacksRef.current.onSeasonChangeLoadTeams(seasonId);
 
     const stage = selected.type === 'CUP' ? 'GROUP' : 'LEAGUE';
     const groupName = selected.type === 'CUP' ? 'A' : '';
-    setFormDataSeason(seasonId, stage, groupName);
+    callbacksRef.current.setFormDataSeason(seasonId, stage, groupName);
 
     if (selected.type === 'CUP') {
       try {
@@ -58,11 +62,11 @@ export function useMatchSeason(
     } else {
       setSeasonGroups([]);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadActiveSeasons();
-  }, []);
+    void loadActiveSeasons();
+  }, [loadActiveSeasons]);
 
   return {
     activeSeasons,

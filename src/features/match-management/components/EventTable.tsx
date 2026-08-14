@@ -30,7 +30,6 @@ const EventTable: React.FC<EventTableProps> = ({
   handleEventPlayerSelect,
   handleSubPlayerSelect,
   handleAssistPlayerSelect,
-  isSuperAdmin = false,
 }) => {
   const isHome = teamType === 'home';
   const label = isHome ? '主队' : '客队';
