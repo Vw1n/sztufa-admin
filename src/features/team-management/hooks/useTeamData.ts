@@ -2,8 +2,9 @@ import { useTeamDirectory } from './useTeamDirectory';
 import { useTeamEditor } from './useTeamEditor';
 import { useTeamRosterImport } from './useTeamRosterImport';
 import { Team, Player } from '../../../types';
+import { User } from '../../../types/auth';
 
-export function useTeamData(user: any) {
+export function useTeamData(user?: User | null) {
   const directory = useTeamDirectory(user);
   const editor = useTeamEditor(directory.setError, directory.setIsLoading);
   const rosterImport = useTeamRosterImport(directory.setError);

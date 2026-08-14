@@ -235,7 +235,7 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
         loadBackups();
         setTimeout(() => setSuccessMessage(null), 4000);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('上传备份失败:', err);
       setError(err instanceof Error ? err.message : '上传备份失败');
     } finally {
@@ -271,7 +271,7 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
         loadBackups();
         setTimeout(() => setSuccessMessage(null), 3000);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('删除备份失败:', err);
       setError(err instanceof Error ? err.message : '删除备份失败');
     } finally {
@@ -315,7 +315,7 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
           loadBackups();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('保留策略清理失败:', err);
       setError(err instanceof Error ? err.message : '保留策略清理失败');
     } finally {

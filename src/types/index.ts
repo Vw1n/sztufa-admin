@@ -84,6 +84,8 @@ export interface MatchEvent {
   teamType: 'home' | 'away';
 }
 
+export type PlayerValue = Player[keyof Player];
+
 export type MatchEventValue = MatchEvent[keyof MatchEvent];
 
 export interface Match {
