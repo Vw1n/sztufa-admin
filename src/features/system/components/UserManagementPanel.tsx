@@ -2,14 +2,17 @@ import React from 'react';
 import { Plus, RefreshCw, Users, Key, Trash2 } from 'lucide-react';
 import { TeamDTO } from '../../../api/types';
 import { userApi } from '../../../api/auth.service';
+import { getErrorMessage } from '../../../utils/errors';
+import { UserSummary } from '../hooks/types';
 
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '--';
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
 interface UserManagementPanelProps {
-  users: any[];
+  users: UserSummary[];
   teams: TeamDTO[];
   isUsersLoading: boolean;
   userEdits: Record<string, { role: string; teamId: string | null }>;
@@ -225,7 +228,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                       <td data-label="角色权限">
                         <select
                           value={activeRole}
-                          onChange={(e) => onRoleChangeInRow(u.id, u.role, u.teamId, e.target.value)}
+                          onChange={(e) => onRoleChangeInRow(u.id, u.role, u.teamId || null, e.target.value)}
                           disabled={u.username === 'admin'}
                           className="form-select inline"
                           style={{ margin: 0, padding: '4px 8px', height: '32px', fontSize: '13px' }}
@@ -241,7 +244,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                         {activeRole === 'coach' ? (
                           <select
                             value={activeTeamId || ''}
-                            onChange={(e) => onTeamChangeInRow(u.id, u.role, u.teamId, e.target.value || null)}
+                            onChange={(e) => onTeamChangeInRow(u.id, u.role, u.teamId || null, e.target.value || null)}
                             className="form-select inline"
                             style={{ margin: 0, padding: '4px 8px', height: '32px', fontSize: '13px' }}
                             required
@@ -289,8 +292,8 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                                 await userApi.updateStudentId(u.id, trimmed);
                                 alert('修改学号成功！');
                                 onLoadUsers();
-                              } catch (err: any) {
-                                alert(err.message || '修改学号失败');
+                              } catch (err: unknown) {
+                                alert(getErrorMessage(err, '修改学号失败'));
                               }
                             }}
                             className="add-btn small"

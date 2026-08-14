@@ -9,7 +9,7 @@ export function useMatchSubmission() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifyingTeams, setIsVerifyingTeams] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [savedMatch, setSavedMatch] = useState<Match | null>(null);
+  const [savedMatch, setSavedMatch] = useState<Pick<Match, 'id'> | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
 
   const validateTeamId = async (teamId: string): Promise<boolean> => {
@@ -71,7 +71,7 @@ export function useMatchSubmission() {
 
         const matRes = await formDraftApi.materializeDraft(saveRes.draftId);
         if (matRes.success && matRes.officialRecordId) {
-          setSavedMatch({ id: matRes.officialRecordId } as any);
+          setSavedMatch({ id: matRes.officialRecordId });
           setIsSaved(true);
           if (onSuccess) onSuccess();
         } else {
@@ -104,7 +104,7 @@ export function useMatchSubmission() {
 
         const matchDTO = buildMatchDto(formData, lineups);
         const response = await matchApi.create(matchDTO);
-        setSavedMatch(response as any);
+        setSavedMatch({ id: response.id || '' });
         setIsSaved(true);
         if (onSuccess) onSuccess();
       }

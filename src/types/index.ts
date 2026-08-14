@@ -88,6 +88,14 @@ export type PlayerValue = Player[keyof Player];
 
 export type MatchEventValue = MatchEvent[keyof MatchEvent];
 
+export interface MatchLineup {
+  id?: string;
+  playerId: string;
+  player?: Pick<Player, 'name' | 'jerseyNumber'> & { id?: string };
+  teamType?: 'home' | 'away';
+  lineupType?: string;
+}
+
 export interface Match {
   id: string;
   matchName: string;
@@ -115,7 +123,7 @@ export interface Match {
   mvpPlayerId?: string | null;
   mvpPlayerName?: string | null;
   seasonId?: string;
-  lineups?: any[];
+  lineups?: MatchLineup[];
   stage?: string;
   groupName?: string;
   knockoutRound?: string;
