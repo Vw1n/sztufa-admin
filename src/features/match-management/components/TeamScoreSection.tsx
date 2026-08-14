@@ -22,7 +22,6 @@ const TeamScoreSection: React.FC<TeamScoreSectionProps> = ({
   getFilteredTeams,
   handleChange,
   handleTeamSelect,
-  isSuperAdmin = false,
 }) => {
   const penaltyScore = getPenaltyScoreFromEvents(formData.events);
 

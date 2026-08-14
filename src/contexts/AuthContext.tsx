@@ -8,7 +8,6 @@ import {
   setTokenExpiry,
   getTokenExpiry,
   removeTokenExpiry,
-  isTokenExpired,
 } from '../api/http';
 
 interface AuthContextType {
@@ -108,7 +107,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             sessionStorage.setItem('token', token);
             sessionStorage.setItem('tokenExpiry', expiryTime.toString());
           }
-        } catch (e) {
+        } catch {
           // JWT 解析失败，使用默认过期时间
           const expiryTime = Date.now() + 7 * 24 * 60 * 60 * 1000;
           if (rememberMe) {

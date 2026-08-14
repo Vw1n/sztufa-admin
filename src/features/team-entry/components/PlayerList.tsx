@@ -16,7 +16,6 @@ const PlayerList: React.FC<PlayerListProps> = ({
   onAddPlayer,
   onRemovePlayer,
   onUpdatePlayer,
-  isSuperAdmin = false,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayer, setNewPlayer] = useState<PlayerFormData>({

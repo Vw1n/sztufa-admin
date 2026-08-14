@@ -13,8 +13,8 @@ export function validateCommonTeamFields(team: Partial<Team | TeamFormData>): st
 }
 
 export function validatePlayerList(
-  players?: Player[],
-  options: { requireAtLeastOne?: boolean } = {}
+  _players?: Player[],
+  _options: { requireAtLeastOne?: boolean } = {}
 ): string | null {
   return null;
 }
@@ -31,7 +31,7 @@ export function validateTeamData(editData: Partial<Team>): string | null {
  */
 export function validateTeamCreation(
   team: TeamFormData,
-  players: Player[]
+  _players: Player[]
 ): string | null {
   return validateCommonTeamFields(team);
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { teamApi } from '../../../api/service';
 import { TeamDTO, PlayerDTO } from '../../../api/types';
 import { filterTeamsForGroup, SeasonGroupAssignment } from '../utils/matchForm';
@@ -16,28 +16,35 @@ export function useMatchTeams(
   const [availableTeams, setAvailableTeams] = useState<TeamDTO[]>([]);
   const [homeTeamPlayers, setHomeTeamPlayers] = useState<PlayerDTO[]>([]);
   const [awayTeamPlayers, setAwayTeamPlayers] = useState<PlayerDTO[]>([]);
+  const latestRef = useRef({ seasonId, availableTeams, setError });
+  const teamRequestSequence = useRef(0);
+  const playerRequestSequence = useRef({ home: 0, away: 0 });
+  latestRef.current = { seasonId, availableTeams, setError };
 
-  const loadTeams = async (targetSeasonId?: string) => {
+  const loadTeams = useCallback(async (targetSeasonId?: string) => {
+    const requestId = ++teamRequestSequence.current;
     try {
-      const response = await teamApi.getAll(1, 100, targetSeasonId || seasonId);
+      const response = await teamApi.getAll(1, 100, targetSeasonId || latestRef.current.seasonId);
+      if (requestId !== teamRequestSequence.current) return;
       setAvailableTeams(response.data);
     } catch (err) {
       console.error('加载球队列表失败:', err);
     }
-  };
+  }, []);
 
-  const loadTeamPlayers = async (teamId: string, teamType: 'home' | 'away') => {
+  const loadTeamPlayers = useCallback(async (teamId: string, teamType: 'home' | 'away') => {
+    const requestId = ++playerRequestSequence.current[teamType];
     if (!teamId) {
       if (teamType === 'home') setHomeTeamPlayers([]);
       else setAwayTeamPlayers([]);
       return;
     }
     try {
-      const players = await teamApi.getPlayers(teamId, seasonId || undefined);
+      const players = await teamApi.getPlayers(teamId, latestRef.current.seasonId || undefined);
       let playerList = Array.isArray(players) ? players : (players as { data?: PlayerDTO[] })?.data ?? [];
 
       if (playerList.length === 0) {
-        const cachedTeam = availableTeams.find(t => t.id === teamId);
+        const cachedTeam = latestRef.current.availableTeams.find(t => t.id === teamId);
         if (cachedTeam?.players && cachedTeam.players.length > 0) {
           playerList = cachedTeam.players;
         } else {
@@ -52,6 +59,7 @@ export function useMatchTeams(
         }
       }
 
+      if (requestId !== playerRequestSequence.current[teamType]) return;
       if (teamType === 'home') {
         setHomeTeamPlayers(playerList);
       } else {
@@ -59,22 +67,23 @@ export function useMatchTeams(
       }
     } catch (err) {
       console.error('加载球队球员失败:', err);
-      const cachedTeam = availableTeams.find(t => t.id === teamId);
+      if (requestId !== playerRequestSequence.current[teamType]) return;
+      const cachedTeam = latestRef.current.availableTeams.find(t => t.id === teamId);
       if (cachedTeam?.players && cachedTeam.players.length > 0) {
         if (teamType === 'home') {
           setHomeTeamPlayers(cachedTeam.players);
         } else {
           setAwayTeamPlayers(cachedTeam.players);
         }
-      } else if (setError) {
-        setError('加载球队名单失败，请检查是否已有活跃赛季，或球队是否已录入球员名册');
+      } else if (latestRef.current.setError) {
+        latestRef.current.setError('加载球队名单失败，请检查是否已有活跃赛季，或球队是否已录入球员名册');
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadTeams();
-  }, []);
+    void loadTeams();
+  }, [loadTeams]);
 
   useEffect(() => {
     if (homeTeamId) {
@@ -82,7 +91,7 @@ export function useMatchTeams(
     } else {
       setHomeTeamPlayers([]);
     }
-  }, [homeTeamId, seasonId, availableTeams]);
+  }, [homeTeamId, seasonId, availableTeams, loadTeamPlayers]);
 
   useEffect(() => {
     if (awayTeamId) {
@@ -90,7 +99,7 @@ export function useMatchTeams(
     } else {
       setAwayTeamPlayers([]);
     }
-  }, [awayTeamId, seasonId, availableTeams]);
+  }, [awayTeamId, seasonId, availableTeams, loadTeamPlayers]);
 
   const getFilteredTeams = (
     overrideSeasonType?: string,

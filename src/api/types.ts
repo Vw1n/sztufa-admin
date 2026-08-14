@@ -220,8 +220,8 @@ export interface UndoImportResult {
 
 export interface SeasonDeleteResponse {
   pending?: boolean;
-  approval?: Record<string, any>;
-  deleted?: { matches?: number; [key: string]: any };
+  approval?: Record<string, unknown>;
+  deleted?: { matches?: number; [key: string]: unknown };
   message?: string;
 }
 

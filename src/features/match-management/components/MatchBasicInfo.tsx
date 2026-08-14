@@ -14,7 +14,6 @@ const MatchBasicInfo: React.FC<MatchBasicInfoProps> = ({
   activeSeasons,
   handleChange,
   handleSeasonSelect,
-  isSuperAdmin = false,
 }) => {
   return (
     <div className="form-section">

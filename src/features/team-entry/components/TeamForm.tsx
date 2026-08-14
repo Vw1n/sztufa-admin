@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Upload, Image } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { TeamFormData } from '../../../types';
 import { SeasonDTO } from '../../../api/types';
 import { validateImageFile } from '../../../utils/imageUpload';
@@ -11,14 +11,15 @@ interface TeamFormProps {
   isSuperAdmin?: boolean;
 }
 
-const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons, isSuperAdmin = false }) => {
+const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) => {
   const [preview, setPreview] = useState<{ [key: string]: string }>({});
+  const { teamLogo, homeJersey, awayJersey } = data;
 
   useEffect(() => {
     const objectUrls: string[] = [];
     const nextPreview: { [key: string]: string } = {};
     for (const field of ['teamLogo', 'homeJersey', 'awayJersey'] as const) {
-      const image = data[field];
+      const image = { teamLogo, homeJersey, awayJersey }[field];
       if (image instanceof File) {
         const url = URL.createObjectURL(image);
         objectUrls.push(url);
@@ -29,13 +30,13 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons, isSu
     }
     setPreview(nextPreview);
     return () => objectUrls.forEach((url) => URL.revokeObjectURL(url));
-  }, [data.teamLogo, data.homeJersey, data.awayJersey]);
+  }, [teamLogo, homeJersey, awayJersey]);
 
   const handleFieldChange = (field: keyof TeamFormData, value: string) => {
     onChange({ ...data, [field]: value });
   };
 
-  const handleFileChange = async (
+  const handleFileChange = (
     field: 'teamLogo' | 'homeJersey' | 'awayJersey',
     file: File | null
   ) => {
@@ -46,8 +47,6 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons, isSu
         alert(error instanceof Error ? error.message : '图片校验失败');
         return;
       }
-      const base64 = await fileToBase64(file);
-      setPreview((prev) => ({ ...prev, [field]: base64 }));
     } else {
       setPreview((prev) => {
         const newPreview = { ...prev };
@@ -56,15 +55,6 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons, isSu
       });
     }
     onChange({ ...data, [field]: file });
-  };
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   };
 
   const renderImageUpload = (

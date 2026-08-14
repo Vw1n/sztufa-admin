@@ -175,7 +175,7 @@ export const TeamPlayerPanel: React.FC<TeamPlayerPanelProps> = ({
           {showPdfImporter && (
             <div style={{ marginTop: '20px' }}>
               <PdfImporter
-                onImportSuccess={(res) => {
+                onImportSuccess={() => {
                   setShowPdfImporter(false);
                   if (typeof window !== 'undefined') {
                     window.location.reload();
