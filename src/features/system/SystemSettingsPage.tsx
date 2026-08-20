@@ -108,7 +108,7 @@ const SystemSettingsPage: React.FC = () => {
         .season-table tr:hover {
           background-color: #f8f9fa;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 700px) {
           .season-card { padding: 16px; }
           .season-form { flex-direction: column; align-items: stretch; gap: 12px; }
           .season-form > div { width: 100% !important; }

@@ -1129,7 +1129,7 @@ body {
    响应式设计
    ======================================== */
 
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   .auth-card {
     padding: 30px 24px;
   }
@@ -1639,7 +1639,7 @@ body {
   border-color: #fed7d7;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .nav-user {
     gap: 12px;
   }
@@ -1979,7 +1979,7 @@ body {
   padding: 6px 12px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .table-pagination {
     align-items: flex-start;
     flex-direction: column;
@@ -2090,7 +2090,7 @@ body {
   padding: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   /* 导航栏汉堡包菜单移动端重构 */
   .menu-toggle-btn {
     display: flex;
@@ -2185,8 +2185,8 @@ body {
     margin-bottom: 16px;
   }
 
-  /* 表格自适应横向溢出 */
-  .player-table-wrapper {
+  /* 表格自适应横向溢出（排除事件录入表格，事件表格使用卡片化布局） */
+  .player-table-wrapper:not(.event-table-wrapper) {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     border-radius: 8px;
@@ -2194,8 +2194,35 @@ body {
     margin-top: 12px;
   }
 
-  .player-table {
+  .player-table:not(.events-input-table) {
     min-width: 850px;
+  }
+
+  .event-table-wrapper .player-table.events-input-table th,
+  .event-table-wrapper .player-table.events-input-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  /* 事件录入表格列宽（桌面端默认） */
+  .player-table.events-input-table th.col-time,
+  .player-table.events-input-table td.col-time { width: 120px; }
+  .player-table.events-input-table th.col-event-type,
+  .player-table.events-input-table td.col-event-type { width: 150px; }
+  .player-table.events-input-table th.col-players,
+  .player-table.events-input-table td.col-players { width: 220px; }
+  .player-table.events-input-table th.col-number,
+  .player-table.events-input-table td.col-number { width: 120px; }
+  .player-table.events-input-table th.col-desc,
+  .player-table.events-input-table td.col-desc { width: auto; }
+  .player-table.events-input-table th.col-action,
+  .player-table.events-input-table td.col-action { width: 80px; }
+
+  /* 事件录入表格在移动端强制收缩，去除桌面端 min-width 限制 */
+  .event-table-wrapper .player-table.events-input-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .player-table th,
@@ -2292,83 +2319,8 @@ body {
   }
 }
 
-/* 移动端比赛事件录入表格卡片化优化 */
-@media (max-width: 768px) {
-  .events-input-table,
-  .events-input-table thead,
-  .events-input-table tbody,
-  .events-input-table th,
-  .events-input-table td,
-  .events-input-table tr {
-    display: block !important;
-    width: 100% !important;
-  }
-  
-  .events-input-table thead {
-    display: none !important;
-  }
-  
-  .events-input-table tr {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    padding: 12px 14px !important;
-    margin-bottom: 16px !important;
-    background: #ffffff !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
-    box-sizing: border-box !important;
-  }
-  
-  .events-input-table td {
-    border: none !important;
-    padding: 6px 0 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    box-sizing: border-box !important;
-  }
-  
-  .events-input-table td::before {
-    content: attr(data-label) ":";
-    font-weight: 600 !important;
-    width: 80px !important;
-    min-width: 80px !important;
-    color: #4a5568 !important;
-    font-size: 0.85rem !important;
-    display: inline-block !important;
-  }
-  
-  .events-input-table td > input,
-  .events-input-table td > select,
-  .events-input-table td > div {
-    flex: 1 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  
-  .events-input-table td .delete-btn {
-    width: 100% !important;
-    padding: 8px 12px !important;
-    background-color: #fee2e2 !important;
-    color: #ef4444 !important;
-    border: 1px solid #fecaca !important;
-    border-radius: 6px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    cursor: pointer !important;
-  }
-  
-  .events-input-table td .delete-btn::after {
-    content: "删除此事件" !important;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-  }
-}
-
 /* 移动端阵容配置面板与筛选工具排版优化 */
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   /* 阵容双列网格自适应变垂直单列 */
   .lineups-admin-grid {
     grid-template-columns: 1fr !important;
@@ -2402,72 +2354,110 @@ body {
   }
 
   /* 移动端用户权限清单自适应卡片化 */
-  .users-input-table,
-  .users-input-table thead,
-  .users-input-table tbody,
-  .users-input-table th,
-  .users-input-table td,
-  .users-input-table tr {
+  .team-info-page .player-table.users-input-table,
+  .team-info-page .player-table.users-input-table thead,
+  .team-info-page .player-table.users-input-table tbody,
+  .team-info-page .player-table.users-input-table th,
+  .team-info-page .player-table.users-input-table td,
+  .team-info-page .player-table.users-input-table tr {
     display: block !important;
     width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* 用户权限清单表格卡片化时，禁用外层导轨和裁剪 */
+  .player-table-wrapper:has(.users-input-table) {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin-top: 12px !important;
+    max-width: 100% !important;
   }
   
-  .users-input-table thead {
+  .team-info-page .users-input-table thead {
     display: none !important;
   }
   
-  .users-input-table tr {
+  .team-info-page .users-input-table tr {
     border: 1px solid #e2e8f0 !important;
     border-radius: 8px !important;
-    padding: 12px 14px !important;
-    margin-bottom: 16px !important;
+    padding: 10px 12px !important;
+    margin-bottom: 12px !important;
     background: #ffffff !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
     box-sizing: border-box !important;
   }
   
-  .users-input-table td {
+  .team-info-page .users-input-table td {
     border: none !important;
-    padding: 8px 0 !important;
+    padding: 5px 0 !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: flex-start !important;
     box-sizing: border-box !important;
+    gap: 6px !important;
+    width: auto !important;
+    min-width: 0 !important;
   }
   
-  .users-input-table td::before {
+  .team-info-page .users-input-table td::before {
     content: attr(data-label) ":";
     font-weight: 600 !important;
-    width: 90px !important;
-    min-width: 90px !important;
+    width: 55px !important;
+    min-width: 55px !important;
     color: #4a5568 !important;
-    font-size: 0.85rem !important;
+    font-size: 0.7rem !important;
     display: inline-block !important;
+    flex-shrink: 0 !important;
   }
   
-  .users-input-table td > select,
-  .users-input-table td > input,
-  .users-input-table td > div {
-    flex: 1 !important;
-    width: 100% !important;
+  .team-info-page .users-input-table td > select,
+  .team-info-page .users-input-table td > input {
+    flex: 0 1 100px !important;
+    max-width: 140px !important;
+    min-width: 0 !important;
     box-sizing: border-box !important;
   }
 
-  .users-input-table td select.form-select.inline {
-    height: 36px !important;
-    padding: 6px 10px !important;
+  .team-info-page .users-input-table td > div {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+  }
+
+  .team-info-page .users-input-table td[data-label="操作"]::before {
+    align-self: center !important;
+  }
+
+  .team-info-page .users-input-table td select.form-select.inline {
+    height: 28px !important;
+    padding: 3px 4px !important;
+    font-size: 11px !important;
   }
   
-  .users-input-table td .add-btn.small,
-  .users-input-table td .delete-btn.small {
-    padding: 8px 16px !important;
-    font-size: 13px !important;
+  .team-info-page .users-input-table td .add-btn.small,
+  .team-info-page .users-input-table td .delete-btn.small {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 3px 1px !important;
+    font-size: 10px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 4px !important;
-    height: 36px !important;
+    gap: 1px !important;
+    height: 26px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    border-radius: 5px !important;
+    margin: 0 !important;
   }
 
   /* 移动端新建用户账号表单自适应排列 */
@@ -2480,10 +2470,28 @@ body {
     justify-content: center !important;
     margin-top: 8px !important;
   }
+
+  /* 备份与恢复操作：移动端自上而下排列 */
+  .backup-actions-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .backup-actions-grid > div {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* 备份与恢复操作：桌面端三列布局 */
+.backup-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
 }
 
 /* 移动端审计日志卡片自适应与文本换行优化 */
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .audit-logs-table,
   .audit-logs-table thead,
   .audit-logs-table tbody,
@@ -2625,7 +2633,7 @@ body {
 }
 
 /* 移动端适配 */
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .error-container {
     padding: 40px 20px;
   }
@@ -2876,7 +2884,7 @@ body {
 }
 
 /* 移动端适配 */
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .dialog-container {
     margin: 10px;
   }
@@ -3058,7 +3066,7 @@ body {
 }
 
 /* 移动端适配 */
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .loading-spinner,
   .empty-state,
   .error-state {
@@ -3195,4 +3203,893 @@ body {
     width: 100% !important;
     justify-content: center !important;
   }
+}
+
+/* ==========================================
+   移动端通用修复（≤768px）：编辑球队信息面板与内联样式覆盖
+   ========================================== */
+@media (max-width: 700px) {
+  /* 主 form-row（grid 布局）强制 1 列，优先级最高；覆盖 TeamDetailPanel 等组件中默认
+     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) 在窄屏仍生成 2 列的问题 */
+  .team-info-page .form-section .form-row,
+  .match-entry-page .form-section .form-row {
+    grid-template-columns: 1fr !important;
+    grid-auto-flow: row !important;
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  /* 强制覆盖 TeamDetailPanel / MatchManagement 等组件中的
+     style={{ gridColumn: 'span 3' }} 内联跨列，避免隐式生成 3 列撑破屏幕。
+     注：grid-column: auto 会同时覆盖 grid-column-start/end，不再让 grid 隐式扩列。 */
+  .team-info-page .form-row > [style*="grid-column: span 3"],
+  .team-info-page .form-row > [style*="grid-column:span 3"],
+  .match-entry-page .form-row > [style*="grid-column: span 3"],
+  .match-entry-page .form-row > [style*="grid-column:span 3"] {
+    grid-column: auto / auto !important;
+    grid-column-start: auto !important;
+    grid-column-end: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 图片上传 form-group：在 1 列布局中占满整行宽度，去掉左侧被图片元素压住 label 的隐患 */
+  .team-info-page .form-row > [style*="grid-column: span 3"] .form-group,
+  .team-info-page .form-row > [style*="grid-column:span 3"] .form-group {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 战绩走势条（非编辑态）在移动端改为竖排 */
+  .team-info-page .form-group[style*="grid-column: span 3"],
+  .team-info-page .form-group[style*="grid-column:span 3"] {
+    grid-column: auto / auto !important;
+  }
+  .team-info-page .form-group[style*="grid-column: span 3"] > div,
+  .team-info-page .form-group[style*="grid-column:span 3"] > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* 组别下拉框（内联 style 写死 width/height/padding）：在移动端用 important 兜底字号 */
+  .team-info-page select[style*="width: 100%"] {
+    font-size: 13px !important;
+    height: 40px !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+
+  /* 编辑球队信息面板：ImageUploadField 图片预览 + 上传按钮，在窄屏改为竖排
+     匹配内联 style="display:flex;align-items:center;..." 两种写法（有/无空格） */
+  .team-info-page .form-group > div[style*="display:flex"],
+  .team-info-page .form-group > div[style*="display: flex"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ImageUploadField 的上传按钮（add-btn small）：在超窄屏强制占满整行，
+     避免文字长（如"上传主场球衣"）+ padding 使按钮整体宽度超过 100% 容器 */
+  .team-info-page .form-group label.add-btn.small,
+  .team-info-page .form-group .add-btn.small {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* ImageUploadField 图片预览占位框：不再和按钮并排，居中对齐、宽度收敛 */
+  .team-info-page .form-group > div[style*="display:flex"] > div:first-child,
+  .team-info-page .form-group > div[style*="display: flex"] > div:first-child,
+  .team-info-page .form-group > div[style*="display:flex"] > img,
+  .team-info-page .form-group > div[style*="display: flex"] > img {
+    align-self: flex-start !important;
+  }
+
+  /* section 之间的间距兜底：防止编辑球队信息 section 与球员名单 section 视觉上堆叠 */
+  .team-info-page .page-content > .form-section,
+  .team-info-page .page-content > .player-section,
+  .team-info-page .page-content > .importer-section {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* ==========================================
+   超小屏专项（≤480px）适配优化
+   覆盖：球队信息录入、比赛信息录入、编辑球队信息
+   ========================================== */
+@media (max-width: 700px) {
+  /* ---------- 全局头部/间距 ---------- */
+  .header-content h1 {
+    font-size: 20px !important;
+    gap: 8px !important;
+  }
+  .header-content p {
+    font-size: 12px !important;
+  }
+  .page-content {
+    padding: 16px 10px !important;
+  }
+  .form-section,
+  .player-section,
+  .importer-section {
+    padding: 14px 12px !important;
+    margin-bottom: 14px !important;
+    border-radius: 10px !important;
+  }
+  .form-title {
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .form-row {
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* ---------- 球队录入：PDF 导入区 ---------- */
+  .team-info-page .form-section:nth-child(1),
+  .team-info-page > .page-content > section:nth-child(1) {
+    padding: 14px 12px !important;
+  }
+
+  /* ---------- 球队录入：上传区 padding 减小 ---------- */
+  .drop-zone {
+    padding: 20px 12px !important;
+  }
+  .drop-zone .hint {
+    font-size: 11px !important;
+  }
+
+  /* ---------- 球队录入：图片上传三列 ---------- */
+  .image-group {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .image-upload .upload-area {
+    height: 100px !important;
+  }
+
+  /* ---------- 球队录入：球员表 ---------- */
+  .player-table-wrapper {
+    margin-top: 10px !important;
+  }
+  .team-info-page .player-table {
+    min-width: 680px !important;
+  }
+  .player-table th,
+  .player-table td {
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+  }
+
+  /* ---------- 球队录入：Excel importer 底部 ---------- */
+  .template-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .download-template-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .preview-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .preview-header > div:last-child {
+    width: 100% !important;
+  }
+  .preview-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .preview-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .preview-table-wrapper {
+    overflow-x: auto !important;
+  }
+  .preview-table {
+    min-width: 520px !important;
+  }
+  .preview-table th,
+  .preview-table td {
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+  }
+  .file-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    word-break: break-all !important;
+  }
+  .remove-file {
+    align-self: stretch !important;
+    text-align: center !important;
+  }
+
+  /* ---------- 比赛录入：VS 对阵面板超小屏 ---------- */
+  .match-score-container {
+    padding: 12px 10px !important;
+    gap: 12px !important;
+  }
+  .team-select-wrapper,
+  .team-input-wrapper,
+  .team-id-wrapper {
+    max-width: 100% !important;
+  }
+  .vs-divider {
+    padding: 6px 0 !important;
+    transform: scale(1) !important;
+  }
+  .vs-circle {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .vs-circle .vs-text {
+    font-size: 13px !important;
+  }
+  .score-input {
+    font-size: 20px !important;
+    padding: 10px 8px !important;
+  }
+  .score-input-wrapper {
+    max-width: 72px !important;
+  }
+
+  /* ---------- 比赛录入：快捷弃赛按钮 ---------- */
+  .quick-forfeit-wrapper {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .quick-forfeit-wrapper > span {
+    text-align: left !important;
+  }
+  .quick-forfeit-wrapper button {
+    width: 100% !important;
+  }
+
+  /* ---------- 比赛录入：点球大战提示 ---------- */
+  .admin-penalty-score {
+    width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+
+  /* ---------- 页脚导出/保存按钮 ---------- */
+  .page-footer {
+    padding: 14px 10px !important;
+  }
+  .footer-actions {
+    gap: 8px !important;
+  }
+  .export-btn,
+  .save-btn {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* ---------- 长输入框 placeholder 字号缩小 ---------- */
+  .form-group input::placeholder,
+  .form-input::placeholder,
+  .form-select {
+    font-size: 13px !important;
+  }
+  .form-group label {
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+  }
+  .form-group input,
+  .form-input,
+  .form-select {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* ---------- 添加球员表单确认/取消按钮占满 ---------- */
+  .form-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .form-actions .submit-btn,
+  .form-actions .cancel-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ---------- 防止 body/document 横向滚动全局兜底 ---------- */
+  body,
+  html {
+    overflow-x: hidden !important;
+  }
+  .app,
+  .team-info-page,
+  .match-entry-page {
+    overflow-x: hidden !important;
+  }
+  .form-section,
+  .player-section,
+  .importer-section {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ---------- 球员名单：移动端隐藏表格，显示简化列表 ---------- */
+  .player-table-wrapper.player-table-desktop-only {
+    display: none !important;
+  }
+  .player-list-mobile {
+    display: flex !important;
+  }
+
+  /* ---------- 事件录入表格：最终强制卡片化（覆盖所有之前的规则） ---------- */
+  /* 1. 去掉外层导轨和裁剪 */
+  .event-table-wrapper {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin-top: 12px !important;
+    max-width: 100% !important;
+  }
+
+  /* 2. 表格本体：去除 min-width，100% 宽度 */
+  .event-table-wrapper .events-input-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  /* 3. 隐藏表头，卡片化布局 */
+  .event-table-wrapper .events-input-table thead {
+    display: none !important;
+  }
+
+  /* 4. 每行变成卡片 */
+  .event-table-wrapper .events-input-table tbody,
+  .event-table-wrapper .events-input-table tr {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .event-table-wrapper .events-input-table tr {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 12px !important;
+    background: #fff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  /* 5. 每个 td 变成 flex 行：label + 内容 */
+  .event-table-wrapper .events-input-table th,
+  .event-table-wrapper .events-input-table td {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 6px 0 !important;
+    font-size: 13px !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    gap: 6px !important;
+    overflow: visible !important;
+    white-space: normal !important;
+  }
+
+  /* 6. 覆盖桌面端列宽 class */
+  .event-table-wrapper .events-input-table th.col-time,
+  .event-table-wrapper .events-input-table td.col-time,
+  .event-table-wrapper .events-input-table th.col-event-type,
+  .event-table-wrapper .events-input-table td.col-event-type,
+  .event-table-wrapper .events-input-table th.col-players,
+  .event-table-wrapper .events-input-table td.col-players,
+  .event-table-wrapper .events-input-table th.col-number,
+  .event-table-wrapper .events-input-table td.col-number,
+  .event-table-wrapper .events-input-table th.col-desc,
+  .event-table-wrapper .events-input-table td.col-desc,
+  .event-table-wrapper .events-input-table th.col-action,
+  .event-table-wrapper .events-input-table td.col-action {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* 7. td::before 显示标签名 */
+  .event-table-wrapper .events-input-table td::before {
+    content: attr(data-label) "" !important;
+    font-weight: 600 !important;
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+    color: #4a5568 !important;
+    display: inline-block !important;
+  }
+
+  /* 8. td 内的 input/select/div 自适应 */
+  .event-table-wrapper .events-input-table td > input,
+  .event-table-wrapper .events-input-table td > select,
+  .event-table-wrapper .events-input-table td > div {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 78px) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 9. 球员列内两个 select 纵向堆叠 */
+  .event-table-wrapper .events-input-table td[data-label="球员"] > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 100% !important;
+    max-width: calc(100% - 78px) !important;
+  }
+  .event-table-wrapper .events-input-table td[data-label="球员"] > div > select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 10. 删除按钮占满 */
+  .event-table-wrapper .events-input-table td .delete-btn {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+    border: 1px solid #fecaca !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 11. form-input/form-select inline 覆盖 */
+  .event-table-wrapper .events-input-table .form-input.inline,
+  .event-table-wrapper .events-input-table .form-select.inline {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 12. 删除按钮追加“删除此事件”文字，便于移动端识别 */
+  .event-table-wrapper .events-input-table td .delete-btn::after {
+    content: "删除此事件" !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+  }
+
+  /* 13. 隐藏自定义导轨、左右箭头按钮等控件 */
+  .event-table-wrapper::before,
+  .event-table-wrapper::after,
+  .player-table-wrapper::before,
+  .player-table-wrapper::after {
+    content: none !important;
+    display: none !important;
+  }
+  .event-table-wrapper > [class*="scroll"]:not(table):not(tbody):not(thead):not(tr):not(td):not(th),
+  .event-table-wrapper > [class*="arrow"]:not(table):not(tbody):not(thead):not(tr):not(td):not(th) {
+    display: none !important;
+  }
+}
+
+/* ============================================================
+   球员名单：移动端简化列表（头像 + 姓名）+ 详情卡片 Modal
+   （默认桌面端：显示原表格，隐藏移动端列表/卡片）
+   ============================================================ */
+.player-list-mobile {
+  display: none;
+  list-style: none;
+  margin: 12px 0 0 0;
+  padding: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.player-list-item:active {
+  background: #f1f3f5;
+  border-color: #ced4da;
+}
+.player-list-item.suspended {
+  background: #fff5f5;
+  border-color: #ffc9c9;
+}
+
+.player-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+}
+.player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.avatar-placeholder {
+  font-size: 16px;
+  font-weight: 600;
+  color: #868e96;
+}
+
+.player-name-row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.player-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #212529;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.player-jersey-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 2px 8px;
+  background: #3b5bdb;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+.player-suspended-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: #ffe3e3;
+  color: #fa5252;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+.player-chevron {
+  flex-shrink: 0;
+  font-size: 24px;
+  color: #adb5bd;
+  line-height: 1;
+  margin-left: auto;
+}
+
+/* ---------- 详情卡片 Modal ---------- */
+.player-card-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: playerCardFadeIn 0.15s ease-out;
+}
+@keyframes playerCardFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.player-card-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: playerCardPop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  box-sizing: border-box;
+}
+@keyframes playerCardPop {
+  from { transform: scale(0.92) translateY(8px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.player-card-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  color: #495057;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.player-card-close:active {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.player-card-header {
+  padding: 24px 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f8f9fa 100%);
+  border-bottom: 1px solid #e9ecef;
+}
+.player-card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(59, 91, 219, 0.15);
+}
+.player-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.player-card-avatar .avatar-placeholder {
+  font-size: 28px;
+  font-weight: 700;
+  color: #495057;
+}
+
+.player-card-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.player-card-title h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+}
+.player-card-jersey {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px 10px;
+  background: #3b5bdb;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+.player-card-status {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.player-card-status.active {
+  background: #d3f9d8;
+  color: #2b8a3e;
+}
+.player-card-status.suspended {
+  background: #ffe3e3;
+  color: #c92a2a;
+}
+
+.player-card-body {
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.player-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+.player-info-label {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #868e96;
+  font-weight: 500;
+}
+.player-info-value {
+  flex: 1;
+  text-align: right;
+  font-size: 14px;
+  color: #212529;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+/* ---------- 球队录入页：移动端简化列表删除按钮 ---------- */
+.player-mobile-delete {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-left: 4px;
+  padding: 0;
+  background: #fff5f5;
+  color: #c92a2a;
+  border: 1px solid #ffc9c9;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.player-mobile-delete:active {
+  background: #ffe3e3;
+}
+
+/* ---------- 球队录入页：卡片照片拍摄按钮（覆盖在头像右下） ---------- */
+.player-card-avatar.editable {
+  position: relative;
+}
+.player-card-photo-picker {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #3b5bdb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+.player-card-photo-picker:active {
+  transform: scale(0.94);
+}
+
+/* ---------- 球队录入页：卡片内表单字段 ---------- */
+.team-entry-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.team-entry-card-field > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #868e96;
+  letter-spacing: 0.3px;
+  padding-left: 2px;
+}
+.team-entry-card-field > .form-input {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  height: auto;
+  border-radius: 10px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+.team-entry-card-field > .form-input:focus {
+  background: #fff;
+  border-color: #3b5bdb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.1);
+}
+
+/* ---------- 球队录入页：卡片底部动作按钮 ---------- */
+.team-entry-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.team-entry-card-actions .cancel-btn,
+.team-entry-card-actions .submit-btn {
+  flex: 1;
+  justify-content: center;
+  padding: 10px 12px;
+  height: auto;
+  font-size: 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ---------- 牌数徽章（黄/红），用于简化列表行内展示 ---------- */
+.player-card-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.player-card-chip.yellow {
+  background: #fff9db;
+  color: #f08c00;
+}
+.player-card-chip.red {
+  background: #ffe3e3;
+  color: #fa5252;
 }

@@ -104,7 +104,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
           grid-template-columns: 1fr 1fr;
           gap: 15px;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 700px) {
           .news-modal-grid {
             grid-template-columns: 1fr;
             gap: 12px;

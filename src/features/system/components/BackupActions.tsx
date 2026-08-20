@@ -43,7 +43,7 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
         </h2>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+      <div className="backup-actions-grid">
         {/* 手动全量备份卡片 */}
         <div style={{ background: '#fcfcfc', border: '1px solid #eee', padding: '16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
