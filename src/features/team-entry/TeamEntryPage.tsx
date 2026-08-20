@@ -35,7 +35,7 @@ const TeamEntryPage: React.FC = () => {
     handleExportExcel,
   } = useTeamEntry();
 
-  if (user && user.role === 'coach' && user.teamId) {
+  if (user?.role === 'coach') {
     return <CoachAssignedNotice />;
   }
 

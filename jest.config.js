@@ -12,5 +12,8 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '\\.(css)$': '<rootDir>/src/test/styleMock.js',
+  },
   verbose: true,
 };

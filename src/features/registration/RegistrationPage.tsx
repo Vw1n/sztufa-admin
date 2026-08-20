@@ -14,6 +14,7 @@ const RegistrationPage: React.FC = () => {
     saving,
     submitting,
     error,
+    hasBoundTeam,
     activeSeasons,
     selectedSeasonId,
     setSelectedSeasonId,
@@ -83,8 +84,18 @@ const RegistrationPage: React.FC = () => {
         </div>
       )}
 
-      {/* 无草稿空状态 */}
-      {!registration && (
+      {!hasBoundTeam && (
+        <div className="empty-registration-state">
+          <AlertTriangle size={48} color="#fa8c16" style={{ marginBottom: '16px' }} />
+          <h2>尚未绑定球队</h2>
+          <p style={{ color: '#666', marginBottom: 0 }}>
+            教练不能自行创建球队。请联系超级管理员先创建球队并绑定到您的账号，绑定后即可在这里填写和修改报名资料。
+          </p>
+        </div>
+      )}
+
+      {/* 已绑定球队但尚无报名草稿 */}
+      {hasBoundTeam && !registration && (
         <div className="empty-registration-state">
           <FileText size={48} color="#1890ff" style={{ marginBottom: '16px' }} />
           <h2>尚未创建本赛季报名信息</h2>
@@ -102,7 +113,7 @@ const RegistrationPage: React.FC = () => {
       )}
 
       {/* 报名表单内容 */}
-      {registration && (
+      {hasBoundTeam && registration && (
         <>
           {/* 退回修改提示框 */}
           {registration.status === 'CHANGES_REQUESTED' && registration.reviewComment && (

@@ -18,6 +18,7 @@ describe('RegistrationPage Component', () => {
     saving: false,
     submitting: false,
     error: null,
+    hasBoundTeam: true,
     activeSeasons: [{ id: 'season-1', name: '2026 活跃赛季', status: 'active' }],
     selectedSeasonId: 'season-1',
     setSelectedSeasonId: jest.fn(),
@@ -48,6 +49,30 @@ describe('RegistrationPage Component', () => {
     handleUpdatePlayer: jest.fn(),
     handleImportPlayers: jest.fn(),
   };
+
+  it('未绑定球队时提示联系超级管理员且不显示填报按钮', async () => {
+    mockUseRegistration.mockReturnValue({
+      ...baseMockHook,
+      hasBoundTeam: false,
+      registration: null,
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(<RegistrationPage />);
+    });
+
+    expect(container.textContent).toContain('尚未绑定球队');
+    expect(container.textContent).toContain('教练不能自行创建球队');
+    expect(container.textContent).not.toContain('开始填报本赛季报名');
+
+    await act(async () => {
+      root.unmount();
+    });
+    document.body.removeChild(container);
+  });
 
   it('renders empty draft state when registration is null', async () => {
     mockUseRegistration.mockReturnValue({ ...baseMockHook, registration: null });

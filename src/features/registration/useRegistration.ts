@@ -10,8 +10,11 @@ import {
   TeamRegistrationDTO,
 } from './registration.types';
 import { ApiError } from '../../api/http';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function useRegistration() {
+  const { user } = useAuth();
+  const hasBoundTeam = Boolean(user?.teamId);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -49,9 +52,13 @@ export function useRegistration() {
         setActiveSeasons(active);
         if (active.length > 0) {
           setSelectedSeasonId(active[0].id);
+        } else {
+          setLoading(false);
         }
       } catch (err) {
         console.error('获取赛季失败:', err);
+        setError(err instanceof Error ? err.message : '获取活跃赛季失败');
+        setLoading(false);
       }
     };
     fetchSeasons();
@@ -115,10 +122,16 @@ export function useRegistration() {
   }, []);
 
   useEffect(() => {
+    if (!hasBoundTeam) {
+      setRegistration(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     if (selectedSeasonId) {
       loadRegistration(selectedSeasonId);
     }
-  }, [selectedSeasonId, loadRegistration]);
+  }, [selectedSeasonId, loadRegistration, hasBoundTeam]);
 
   // Create Draft if not exists
   const handleCreateDraft = async () => {
@@ -133,7 +146,6 @@ export function useRegistration() {
       populateFromRegistration(created);
     } catch (err) {
       const msg = err instanceof Error ? err.message : '创建草稿失败';
-      alert(msg);
       setError(msg);
     } finally {
       setLoading(false);
@@ -320,6 +332,7 @@ export function useRegistration() {
     saving,
     submitting,
     error,
+    hasBoundTeam,
     activeSeasons,
     selectedSeasonId,
     setSelectedSeasonId,
