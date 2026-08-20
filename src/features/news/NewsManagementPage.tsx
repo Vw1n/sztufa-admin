@@ -147,7 +147,7 @@ const NewsManagementPage: React.FC = () => {
         .mobile-news-view {
           display: none;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 700px) {
           .desktop-news-view {
             display: none;
           }
