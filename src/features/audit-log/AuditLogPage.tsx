@@ -91,7 +91,7 @@ const AuditLogPage: React.FC = () => {
           white-space: nowrap !important;
           display: inline-block;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 700px) {
           .desktop-audit-view {
             display: none;
           }

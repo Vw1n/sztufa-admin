@@ -45,16 +45,16 @@ export const MatchEventTable: React.FC<MatchEventTableProps> = ({
           </button>
         )}
       </div>
-      <div className="player-table-wrapper">
+      <div className="player-table-wrapper event-table-wrapper">
         <table className="player-table events-input-table">
           <thead>
             <tr>
-              <th style={{ width: '120px' }}>时间</th>
-              <th style={{ width: '150px' }}>事件类型</th>
-              <th style={{ width: '220px' }}>球员</th>
-              <th style={{ width: '120px' }}>号码</th>
-              <th>事件描述</th>
-              {isEditing && <th style={{ width: '60px' }}>操作</th>}
+              <th className="col-time">时间</th>
+              <th className="col-event-type">事件类型</th>
+              <th className="col-players">球员</th>
+              <th className="col-number">号码</th>
+              <th className="col-desc">事件描述</th>
+              {isEditing && <th className="col-action">操作</th>}
             </tr>
           </thead>
           <tbody>
