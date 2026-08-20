@@ -1,6 +1,6 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Trophy, Calendar, BarChart3, Users, LogOut, ShieldAlert, Database, Menu, X, FileText } from 'lucide-react';
+import { Trophy, Calendar, BarChart3, Users, LogOut, ShieldAlert, Database, Menu, X, FileText, ClipboardList, CheckSquare } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './components/ToastContainer';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -16,9 +16,13 @@ const SystemSettingsPage = lazy(() => import('./pages/SystemSettingsPage'));
 const NewsManagementPage = lazy(() => import('./pages/NewsManagementPage'));
 const ForbiddenPage = lazy(() => import('./pages/ForbiddenPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const RegistrationPage = lazy(() => import('./features/registration/RegistrationPage'));
+const RegistrationReviewPage = lazy(() => import('./features/registration-review/RegistrationReviewPage'));
 
 const navItems = [
   { path: '/', label: '球队信息录入', icon: Trophy },
+  { path: '/registration', label: '赛季报名', icon: ClipboardList },
+  { path: '/registration-review', label: '报名审核', icon: CheckSquare },
   { path: '/teams', label: '比赛信息录入', icon: Calendar },
   { path: '/schedule', label: '球队与球员管理', icon: Users },
   { path: '/statistics', label: '比赛结果管理', icon: BarChart3 },
@@ -54,7 +58,7 @@ const Navigation: React.FC = () => {
   const filteredNavItems = navItems.filter((item) => {
     if (!user) return false;
     if (user.role === 'super_admin') {
-      return true;
+      return item.path !== '/registration';
     }
     if (user.role === 'match_scorer') {
       return item.path === '/teams' || item.path === '/statistics' || item.path === '/news';
@@ -63,7 +67,7 @@ const Navigation: React.FC = () => {
       return item.path === '/news';
     }
     if (user.role === 'coach') {
-      return item.path === '/schedule';
+      return item.path === '/registration' || item.path === '/schedule';
     }
     // 普通用户 (user) 仅限只读访问球队信息管理
     return item.path === '/schedule';
@@ -164,6 +168,9 @@ const HomeRedirect: React.FC = () => {
   if (user.role === 'news_editor') {
     return <Navigate to="/news" replace />;
   }
+  if (user.role === 'coach') {
+    return <Navigate to="/registration" replace />;
+  }
   return <Navigate to="/schedule" replace />;
 };
 
@@ -190,6 +197,8 @@ const AppContent: React.FC = () => {
                   <Suspense fallback={<LoadingSpinner text="加载页面中..." />}>
                     <Routes>
                        <Route path="/" element={<HomeRedirect />} />
+                       <Route path="/registration" element={<RoleGuardRoute allowedRoles={['coach']}><RegistrationPage /></RoleGuardRoute>} />
+                       <Route path="/registration-review" element={<RoleGuardRoute allowedRoles={['super_admin']}><RegistrationReviewPage /></RoleGuardRoute>} />
                        <Route path="/teams" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><TeamManagementPage /></RoleGuardRoute>} />
                        <Route path="/schedule" element={<MatchSchedulePage />} />
                        <Route path="/statistics" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><ScoreStatisticsPage /></RoleGuardRoute>} />

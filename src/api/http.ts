@@ -109,6 +109,15 @@ export const createHeaders = (multipart = false): Headers => {
   return headers;
 };
 
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 export const handleResponse = async <T>(response: Response): Promise<T> => {
   const isOk = response.ok;
   const status = response.status;
@@ -120,8 +129,8 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
   let responseText: string;
   try {
     responseText = await response.text();
-  } catch (textErr) {
-    throw new Error(`无法读取服务器响应: ${status}`, { cause: textErr });
+  } catch {
+    throw new ApiError(`无法读取服务器响应: ${status}`, status);
   }
 
   let data: { message?: string | string[] } | null = null;
@@ -138,26 +147,26 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
       const errorMessage = Array.isArray(data.message) 
         ? data.message.join(', ') 
         : (data.message || (status === 401 ? '登录状态失效，请重新登录' : '请求失败'));
-      throw new Error(errorMessage);
+      throw new ApiError(errorMessage, status);
     } else {
       if (status === 502 || status === 504) {
-        throw new Error('服务器网关或代理超时异常 (502/504)，请稍后再试');
+        throw new ApiError('服务器网关或代理超时异常 (502/504)，请稍后再试', status);
       }
       if (status === 500) {
-        throw new Error('服务器内部逻辑发生错误 (500)，请联系系统管理员');
+        throw new ApiError('服务器内部逻辑发生错误 (500)，请联系系统管理员', status);
       }
       if (status === 403) {
-        throw new Error('您无权执行此操作 (403)');
+        throw new ApiError('您无权执行此操作 (403)', status);
       }
       if (status === 404) {
-        throw new Error('请求的接口资源未找到 (404)');
+        throw new ApiError('请求的接口资源未找到 (404)', status);
       }
-      throw new Error(`服务器响应失败，状态码: ${status}`);
+      throw new ApiError(`服务器响应失败，状态码: ${status}`, status);
     }
   }
 
   if (!isJson) {
-    throw new Error('服务器返回的响应格式不正确，期望 JSON 数据');
+    throw new ApiError('服务器返回的响应格式不正确，期望 JSON 数据', status);
   }
 
   return data as T;

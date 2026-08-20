@@ -6,6 +6,7 @@ export interface Player {
   photo: string | null;
   /** 新建球队时暂存的本地照片，保存成功后不会写入接口数据。 */
   photoFile?: File | null;
+  legacyKey?: string;
   status?: string;
   yellowCards?: number;
   redCards?: number;

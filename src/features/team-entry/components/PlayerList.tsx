@@ -9,6 +9,7 @@ interface PlayerListProps {
   onRemovePlayer: (id: string) => void;
   onUpdatePlayer: (id: string, updates: Partial<Player>) => void;
   isSuperAdmin?: boolean;
+  disabled?: boolean;
 }
 
 const PlayerList: React.FC<PlayerListProps> = ({
@@ -16,6 +17,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
   onAddPlayer,
   onRemovePlayer,
   onUpdatePlayer,
+  disabled = false,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayer, setNewPlayer] = useState<PlayerFormData>({
@@ -35,6 +37,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
   const activePlayer = mobileCardId ? players.find((p) => p.id === mobileCardId) : null;
 
   const openPlayerCard = (player: Player) => {
+    if (disabled) return;
     setMobileCardId(player.id);
     setCardDraft({ ...player });
     setCardPreview(player.photo || null);
@@ -55,6 +58,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
     };
     if (cardPreview !== cardDraft.photo) {
       updates.photo = cardPreview;
+      updates.photoFile = cardDraft.photoFile;
     }
     onUpdatePlayer(cardDraft.id, updates);
     closePlayerCard();
@@ -133,10 +137,12 @@ const PlayerList: React.FC<PlayerListProps> = ({
         <h2 className="form-title">
           <span className="icon">👥</span> 参赛队员 ({players.length})
         </h2>
-        <button onClick={() => setIsAdding(!isAdding)} className="add-btn">
-          <Plus size={20} />
-          添加球员
-        </button>
+        {!disabled && (
+          <button onClick={() => setIsAdding(!isAdding)} className="add-btn">
+            <Plus size={20} />
+            添加球员
+          </button>
+        )}
       </div>
 
       {isAdding && (
@@ -235,25 +241,29 @@ const PlayerList: React.FC<PlayerListProps> = ({
                             <User size={24} />
                           </div>
                         )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handlePlayerPhotoChange(player.id, e.target.files?.[0] || null)}
-                          className="file-input"
-                          title="点击上传照片"
-                        />
+                        {!disabled && (
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handlePlayerPhotoChange(player.id, e.target.files?.[0] || null)}
+                            className="file-input"
+                            title="点击上传照片"
+                          />
+                        )}
                       </div>
                     </td>
                     <td>{player.name}</td>
                     <td>{player.studentId}</td>
                     <td>{player.jerseyNumber}</td>
                     <td style={{ textAlign: 'center' }}>
-                      <button
-                        onClick={() => onRemovePlayer(player.id)}
-                        className="delete-btn"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {!disabled && (
+                        <button
+                          onClick={() => onRemovePlayer(player.id)}
+                          className="delete-btn"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -267,7 +277,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
               <li
                 key={player.id}
                 className="player-list-item"
-                onClick={() => openPlayerCard(player)}
+                onClick={() => !disabled && openPlayerCard(player)}
               >
                 <div className="player-avatar">
                   {player.photo ? (
@@ -284,19 +294,21 @@ const PlayerList: React.FC<PlayerListProps> = ({
                     <span className="player-jersey-badge">#{player.jerseyNumber}</span>
                   )}
                 </div>
-                <button
-                  type="button"
-                  className="player-mobile-delete"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm(`确定删除球员「${player.name}」吗？`)) {
-                      onRemovePlayer(player.id);
-                    }
-                  }}
-                  aria-label={`删除${player.name}`}
-                >
-                  <Trash2 size={16} />
-                </button>
+                {!disabled && (
+                  <button
+                    type="button"
+                    className="player-mobile-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`确定删除球员「${player.name}」吗？`)) {
+                        onRemovePlayer(player.id);
+                      }
+                    }}
+                    aria-label={`删除${player.name}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
