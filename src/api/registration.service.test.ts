@@ -31,6 +31,16 @@ describe('registrationApi', () => {
     expect(result).toEqual(mockData);
   });
 
+  it('getMine treats a successful empty response as no registration', async () => {
+    (global as any).fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => '',
+    });
+
+    await expect(registrationApi.getMine('season-1')).resolves.toBeNull();
+  });
+
   it('create calls POST /registrations with seasonId', async () => {
     const mockData = { id: 'reg-1', seasonId: 'season-1', status: 'DRAFT' };
     (global as any).fetch.mockResolvedValueOnce({

@@ -133,6 +133,12 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
     throw new ApiError(`无法读取服务器响应: ${status}`, status);
   }
 
+  // NestJS 在控制器返回 null 时会发送 200 + 空响应体。
+  // 对成功的空响应统一按 null 处理，避免“暂无数据”被误报为 JSON 格式错误。
+  if (isOk && responseText.trim() === '') {
+    return null as T;
+  }
+
   let data: { message?: string | string[] } | null = null;
   let isJson = false;
   try {
