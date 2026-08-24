@@ -9,9 +9,10 @@ interface TeamFormProps {
   onChange: (data: TeamFormData) => void;
   activeSeasons: SeasonDTO[];
   isSuperAdmin?: boolean;
+  disabled?: boolean;
 }
 
-const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) => {
+const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons, disabled = false }) => {
   const [preview, setPreview] = useState<{ [key: string]: string }>({});
   const { teamLogo, homeJersey, awayJersey } = data;
 
@@ -33,6 +34,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
   }, [teamLogo, homeJersey, awayJersey]);
 
   const handleFieldChange = (field: keyof TeamFormData, value: string) => {
+    if (disabled) return;
     onChange({ ...data, [field]: value });
   };
 
@@ -40,6 +42,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
     field: 'teamLogo' | 'homeJersey' | 'awayJersey',
     file: File | null
   ) => {
+    if (disabled) return;
     if (file) {
       try {
         validateImageFile(file, '球队图片');
@@ -63,21 +66,23 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
   ) => (
     <div className="image-upload">
       <label>{label}</label>
-      <div className="upload-area">
+      <div className={`upload-area ${disabled ? 'disabled' : ''}`}>
         {preview[field] ? (
           <img src={preview[field]} alt={label} className="preview-image" />
         ) : (
           <div className="upload-placeholder">
             <Upload size={32} />
-            <span>点击上传图片</span>
+            <span>{disabled ? '未提供图片' : '点击上传图片'}</span>
           </div>
         )}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
-          className="file-input"
-        />
+        {!disabled && (
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
+            className="file-input"
+          />
+        )}
       </div>
     </div>
   );
@@ -94,6 +99,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="text"
             value={data.teamName}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('teamName', e.target.value)}
             placeholder="请输入队伍名称"
             maxLength={100}
@@ -103,6 +109,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <label>球队组别</label>
           <select
             value={data.gender || 'MALE'}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('gender', e.target.value)}
             style={{ width: '100%', height: '42px', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#fff' }}
           >
@@ -114,6 +121,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <label>所属活跃赛季</label>
           <select
             value={data.seasonId}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('seasonId', e.target.value)}
             style={{ width: '100%', height: '42px', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#fff' }}
           >
@@ -133,6 +141,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="text"
             value={data.headCoach}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('headCoach', e.target.value)}
             placeholder="请输入主教练姓名"
           />
@@ -142,6 +151,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="text"
             value={data.teamLeader}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('teamLeader', e.target.value)}
             placeholder="请输入领队姓名"
           />
@@ -151,6 +161,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="text"
             value={data.teamDoctor}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('teamDoctor', e.target.value)}
             placeholder="请输入队医姓名"
           />
@@ -163,6 +174,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="tel"
             value={data.coachPhone}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('coachPhone', e.target.value)}
             placeholder="请输入主教练手机号"
           />
@@ -172,6 +184,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="tel"
             value={data.leaderPhone}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('leaderPhone', e.target.value)}
             placeholder="请输入领队手机号"
           />
@@ -184,6 +197,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="text"
             value={data.homeJerseyColor}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('homeJerseyColor', e.target.value)}
             placeholder="请输入主队球衣颜色，如：蓝色、红色"
           />
@@ -193,6 +207,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ data, onChange, activeSeasons }) =>
           <input
             type="text"
             value={data.awayJerseyColor}
+            disabled={disabled}
             onChange={(e) => handleFieldChange('awayJerseyColor', e.target.value)}
             placeholder="请输入客队球衣颜色，如：白色、黑色"
           />

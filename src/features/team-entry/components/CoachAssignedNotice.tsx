@@ -33,11 +33,11 @@ export const CoachAssignedNotice: React.FC = () => {
         >
           <AlertCircle size={48} color="#e67e22" style={{ stroke: '#e67e22' }} />
           <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#333', marginTop: '10px' }}>
-            您已拥有绑定的球队
+            球队需由超级管理员创建
           </h2>
           <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6' }}>
-            系统检测到您已分配或注册了所辖球队。如需修改球员名单、球衣颜色、联系方式或日常名单维护，请直接前往左侧导航的{' '}
-            <strong>【球队信息管理】</strong> 菜单。
+            教练账号不能自行创建球队。请先联系超级管理员创建球队并绑定到您的账号；绑定完成后，请前往{' '}
+            <strong>【赛季报名】</strong> 填写或修改本队报名资料。
           </p>
         </div>
       </main>

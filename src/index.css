@@ -2490,6 +2490,70 @@ body {
   gap: 16px;
 }
 
+/* ===== 报名审核列表：桌面端显示表格，隐藏移动端卡片 ===== */
+.registration-review-table { display: block; }
+.registration-review-mobile-list { display: none; }
+
+/* ===== 报名审核列表：移动端卡片化 ===== */
+@media (max-width: 700px) {
+  .registration-review-table { display: none !important; }
+
+  .registration-review-mobile-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+
+  .registration-review-mobile-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    cursor: pointer;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .reg-mobile-team-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .reg-mobile-team-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+  }
+
+  .reg-mobile-team-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .reg-mobile-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .reg-mobile-chevron { color: #999; }
+}
+
 /* 移动端审计日志卡片自适应与文本换行优化 */
 @media (max-width: 700px) {
   .audit-logs-table,
