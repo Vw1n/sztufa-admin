@@ -2488,7 +2488,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
-<<<<<<< HEAD
 }
 
 /* ===== 报名审核列表：桌面端显示表格，隐藏移动端卡片 ===== */
