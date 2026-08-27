@@ -120,7 +120,7 @@ export interface Match {
   events: MatchEvent[];
   matchDate?: string;
   location: string;
-  status: 'scheduled' | 'ongoing' | 'finished' | 'cancelled' | 'completed';
+  status: 'scheduled' | 'ongoing' | 'finished' | 'cancelled' | 'completed' | 'void';
   mvpPlayerId?: string | null;
   mvpPlayerName?: string | null;
   seasonId?: string;

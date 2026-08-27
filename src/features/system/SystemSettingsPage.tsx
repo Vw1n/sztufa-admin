@@ -1,22 +1,29 @@
-import React, { useCallback, useState } from 'react';
-import { CheckCircle2, Database, FileCheck } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import React, { lazy, Suspense, useCallback, useState } from 'react';
+import { Database, FileCheck } from 'lucide-react';
 import {
   CupGroupPanel,
   HistoryImportPanel,
   SeasonBackupPanel,
-  UserManagementPanel,
 } from './components';
-import ConfirmDialog from '../../components/ConfirmDialog';
-import PasswordDialog from '../../components/PasswordDialog';
 import {
   useCupGroupSettings,
   useHistoryImport,
   useSeasonBackupSettings,
   useSystemTeams,
-  useUserManagement,
 } from './hooks';
 
-type SettingsTab = 'backup' | 'groups' | 'history-import' | 'users';
+const MemberAccountsPage = lazy(() => import('../accounts/MemberAccountsPage'));
+const StaffAccountsPage = lazy(() => import('../accounts/StaffAccountsPage'));
+const settingsTabs = [
+  { id: 'backup', label: '💾 数据灾备与归档' },
+  { id: 'groups', label: '🏆 赛季分组配置' },
+  { id: 'history-import', label: '📥 历史 JSON 导入' },
+  { id: 'members', label: '网页用户审核' },
+  { id: 'staff', label: '后台账号' },
+] as const;
+type SettingsTab = typeof settingsTabs[number]['id'];
+type DataSettingsTab = Exclude<SettingsTab, 'members' | 'staff'>;
 
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: '8px 18px',
@@ -30,23 +37,14 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
 });
 
 const SystemSettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('backup');
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const feedback = { setError, setSuccessMessage };
-
-  const seasonBackup = useSeasonBackupSettings(feedback);
-  const { loadAllSeasons } = seasonBackup;
-  const handleHistoryImported = useCallback((message: string) => {
-    setSuccessMessage(message);
-    void loadAllSeasons();
-    setTimeout(() => setSuccessMessage(null), 5000);
-  }, [loadAllSeasons]);
-  const historyImport = useHistoryImport(handleHistoryImported);
-  const { teams } = useSystemTeams();
-  const { teams: activeSeasonTeams } = useSystemTeams(seasonBackup.activeSeason?.id, true);
-  const cupGroups = useCupGroupSettings(seasonBackup.activeSeason, feedback);
-  const userManagement = useUserManagement(teams, activeTab === 'users');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const activeTab: SettingsTab = settingsTabs.find(tab => tab.id === requestedTab)?.id || 'backup';
+  const setActiveTab = (tab: SettingsTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', tab);
+    setSearchParams(next);
+  };
 
   return (
     <div className="team-info-page">
@@ -122,26 +120,48 @@ const SystemSettingsPage: React.FC = () => {
             <Database className="trophy-icon" />
             系统设置与安全中心
           </h1>
-          <p>管理全站赛季、历史数据导入、灾备数据备份，以及后台管理员与各学院教练的精细化权限分配</p>
+          <p>管理网页用户审核、后台账号权限、赛季配置、历史数据导入与灾备备份</p>
         </div>
       </header>
 
       <main className="page-content">
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', borderBottom: '1px solid #e9ecef', paddingBottom: '12px' }}>
-          <button onClick={() => setActiveTab('backup')} style={tabButtonStyle(activeTab === 'backup')}>
-            💾 数据灾备与归档
-          </button>
-          <button onClick={() => setActiveTab('groups')} style={tabButtonStyle(activeTab === 'groups')}>
-            🏆 赛季分组配置
-          </button>
-          <button onClick={() => setActiveTab('history-import')} style={tabButtonStyle(activeTab === 'history-import')}>
-            📥 历史 JSON 导入
-          </button>
-          <button onClick={() => setActiveTab('users')} style={tabButtonStyle(activeTab === 'users')}>
-            👥 用户权限管理
-          </button>
-        </div>
+        <nav aria-label="系统设置分类" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '25px', borderBottom: '1px solid #e9ecef', paddingBottom: '12px' }}>
+          {settingsTabs.map(tab => (
+            <button key={tab.id} type="button" aria-pressed={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} style={tabButtonStyle(activeTab === tab.id)}>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
 
+        <Suspense fallback={<p role="status">加载设置内容…</p>}>
+          {activeTab === 'members' ? <MemberAccountsPage /> :
+            activeTab === 'staff' ? <StaffAccountsPage /> :
+              <SystemDataSettings activeTab={activeTab} />}
+        </Suspense>
+
+      </main>
+
+    </div>
+  );
+};
+
+const SystemDataSettings: React.FC<{ activeTab: DataSettingsTab }> = ({ activeTab }) => {
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const feedback = { setError, setSuccessMessage };
+
+  const seasonBackup = useSeasonBackupSettings(feedback);
+  const { loadAllSeasons } = seasonBackup;
+  const handleHistoryImported = useCallback((message: string) => {
+    setSuccessMessage(message);
+    void loadAllSeasons();
+    setTimeout(() => setSuccessMessage(null), 5000);
+  }, [loadAllSeasons]);
+  const historyImport = useHistoryImport(handleHistoryImported);
+  const { teams: activeSeasonTeams } = useSystemTeams(seasonBackup.activeSeason?.id, true);
+  const cupGroups = useCupGroupSettings(seasonBackup.activeSeason, feedback);
+
+  return (<>
         {error && (
           <div className="error-message" style={{ marginBottom: '20px' }}>
             <span>{error}</span>
@@ -153,18 +173,6 @@ const SystemSettingsPage: React.FC = () => {
             <span>{successMessage}</span>
           </div>
         )}
-        {userManagement.userError && (
-          <div className="error-message">
-            <span>{userManagement.userError}</span>
-          </div>
-        )}
-        {userManagement.userSuccess && (
-          <div className="save-success" style={{ display: 'flex', marginBottom: '20px' }}>
-            <CheckCircle2 size={20} style={{ color: '#2b8a3e' }} />
-            <span>{userManagement.userSuccess}</span>
-          </div>
-        )}
-
         {activeTab === 'backup' && (
           <SeasonBackupPanel
             seasons={seasonBackup.seasons}
@@ -220,53 +228,7 @@ const SystemSettingsPage: React.FC = () => {
           <HistoryImportPanel historyImport={historyImport} />
         )}
 
-        {activeTab === 'users' && (
-          <UserManagementPanel
-            users={userManagement.users}
-            teams={teams}
-            isUsersLoading={userManagement.isUsersLoading}
-            userEdits={userManagement.userEdits}
-            newUsername={userManagement.newUsername}
-            newPassword={userManagement.newPassword}
-            newRole={userManagement.newRole}
-            newTeamId={userManagement.newTeamId}
-            newStudentId={userManagement.newStudentId}
-            isCreatingUser={userManagement.isCreatingUser}
-            onNewUsernameChange={userManagement.setNewUsername}
-            onNewPasswordChange={userManagement.setNewPassword}
-            onNewRoleChange={userManagement.setNewRole}
-            onNewTeamIdChange={userManagement.setNewTeamId}
-            onNewStudentIdChange={userManagement.setNewStudentId}
-            onCreateUser={userManagement.handleCreateUser}
-            onRoleChangeInRow={userManagement.handleRoleChangeInRow}
-            onTeamChangeInRow={userManagement.handleTeamChangeInRow}
-            onUpdateUserRole={userManagement.handleUpdateUserRole}
-            onResetPassword={userManagement.handleResetPassword}
-            onDeleteUser={userManagement.handleDeleteUser}
-            onLoadUsers={userManagement.loadUsers}
-          />
-        )}
-      </main>
-
-      <ConfirmDialog
-        isOpen={userManagement.confirmDialog.isOpen}
-        onClose={userManagement.closeConfirmDialog}
-        onConfirm={userManagement.confirmDialog.onConfirm}
-        title={userManagement.confirmDialog.title}
-        message={userManagement.confirmDialog.message}
-        type={userManagement.confirmDialog.type}
-        confirmText="确认删除"
-        cancelText="取消"
-      />
-
-      <PasswordDialog
-        isOpen={userManagement.passwordDialog.isOpen}
-        onClose={userManagement.closePasswordDialog}
-        onSubmit={userManagement.handlePasswordSubmit}
-        username={userManagement.passwordDialog.username}
-      />
-    </div>
-  );
+  </>);
 };
 
 export default SystemSettingsPage;

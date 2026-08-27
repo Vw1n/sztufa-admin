@@ -33,21 +33,21 @@ const navItems = [
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return <LoadingSpinner fullScreen text="加载中..." />;
   }
-  
+
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return <LoadingSpinner fullScreen text="加载中..." />;
   }
-  
+
   return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
@@ -72,7 +72,7 @@ const Navigation: React.FC = () => {
     // 普通用户 (user) 仅限只读访问球队信息管理
     return item.path === '/schedule';
   });
-  
+
   return (
     <nav className="main-nav" role="navigation" aria-label="主导航">
       <div className="nav-container">
@@ -80,10 +80,10 @@ const Navigation: React.FC = () => {
           <Trophy size={24} />
           <span>校园足球赛事系统</span>
         </div>
-        
+
         {/* 移动端汉堡包切换按钮 */}
-        <button 
-          className="menu-toggle-btn" 
+        <button
+          className="menu-toggle-btn"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="切换菜单"
           aria-expanded={isMenuOpen}
@@ -92,7 +92,7 @@ const Navigation: React.FC = () => {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        <div 
+        <div
           id="nav-menu"
           className={`nav-menu-wrapper ${isMenuOpen ? 'active' : ''}`}
           role="menu"
@@ -102,8 +102,8 @@ const Navigation: React.FC = () => {
               const Icon = item.icon;
               return (
                 <li key={item.path} role="none">
-                  <Link 
-                    to={item.path} 
+                  <Link
+                    to={item.path}
                     onClick={() => setIsMenuOpen(false)}
                     role="menuitem"
                     aria-current={window.location.pathname === item.path ? 'page' : undefined}
@@ -117,13 +117,13 @@ const Navigation: React.FC = () => {
           </ul>
           <div className="nav-user" role="group" aria-label="用户信息">
             <span className="user-name">
-              {user?.username || '用户'} 
+              {user?.username || '用户'}
               <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '5px', padding: '2px 6px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px' }}>
                 {user?.role === 'super_admin' ? '超管' : user?.role === 'match_scorer' ? '记录员' : user?.role === 'coach' ? '教练' : user?.role === 'news_editor' ? '新闻录入员' : '普通用户'}
               </span>
             </span>
-            <button 
-              className="logout-btn" 
+            <button
+              className="logout-btn"
               onClick={() => { logout(); setIsMenuOpen(false); }}
               aria-label="退出登录"
             >
@@ -139,26 +139,26 @@ const Navigation: React.FC = () => {
 
 const RoleGuardRoute: React.FC<{ allowedRoles: string[]; children: React.ReactNode }> = ({ allowedRoles, children }) => {
   const { user, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return <LoadingSpinner text="正在验证访问权限..." />;
   }
-  
+
   if (!user || !allowedRoles.includes(user.role)) {
     // P1-4: 权限不足时显示 403 页面，不再静默跳回首页
     return <ForbiddenPage />;
   }
-  
+
   return <>{children}</>;
 };
 
 const HomeRedirect: React.FC = () => {
   const { user } = useAuth();
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (user.role === 'super_admin') {
     return <TeamInfoPage />;
   }
@@ -204,6 +204,8 @@ const AppContent: React.FC = () => {
                        <Route path="/statistics" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer']}><ScoreStatisticsPage /></RoleGuardRoute>} />
                        <Route path="/news" element={<RoleGuardRoute allowedRoles={['super_admin', 'match_scorer', 'news_editor']}><NewsManagementPage /></RoleGuardRoute>} />
                        <Route path="/audit-logs" element={<RoleGuardRoute allowedRoles={['super_admin']}><AuditLogPage /></RoleGuardRoute>} />
+                       <Route path="/accounts/members" element={<RoleGuardRoute allowedRoles={['super_admin']}><Navigate to="/settings?tab=members" replace /></RoleGuardRoute>} />
+                       <Route path="/accounts/staff" element={<RoleGuardRoute allowedRoles={['super_admin']}><Navigate to="/settings?tab=staff" replace /></RoleGuardRoute>} />
                        <Route path="/settings" element={<RoleGuardRoute allowedRoles={['super_admin']}><SystemSettingsPage /></RoleGuardRoute>} />
                        {/* P1-4: 添加通配路由，显示 404 页面 */}
                        <Route path="*" element={<NotFoundPage />} />

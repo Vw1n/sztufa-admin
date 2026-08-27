@@ -1,5 +1,6 @@
 import { teamApi, matchApi, playerApi, authApi, importApi, validateResponse } from './service';
 import { ApiResponse, TeamDTO, MatchDTO, PlayerDTO } from './types';
+import { diagnoseApi } from './diagnostics';
 
 type MockFetchResponse = {
   ok: boolean;
@@ -60,6 +61,34 @@ describe('API Service Tests', () => {
         error: 'Bad Request',
       };
       expect(validateResponse(errorResponse)).toBe(false);
+    });
+  });
+
+  describe('API 连通诊断', () => {
+    it('空赛季列表仍判定为连通，不依赖活跃赛季', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: jest.fn().mockResolvedValue([]) });
+      expect((await diagnoseApi()).message).toContain('尚无活跃赛季');
+      expect(fetch).toHaveBeenCalledWith('https://api.sztufa.xyz/api/v1/seasons', expect.objectContaining({ cache: 'no-store' }));
+    });
+    it('展示活动赛季', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: jest.fn().mockResolvedValue([{ name: '演示赛季', status: 'active' }]) });
+      expect((await diagnoseApi()).message).toContain('当前活动赛季：演示赛季');
+    });
+    it('业务错误不误报为连接失败', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 400 });
+      expect((await diagnoseApi()).message).toContain('已收到 HTTP 400 响应');
+    });
+    it('网关故障提示后端和代理检查', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 502 });
+      expect((await diagnoseApi()).message).toContain('网关无法正常访问后端');
+    });
+    it('错误的响应结构不能判为 API 连通成功', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: jest.fn().mockResolvedValue({}) });
+      expect((await diagnoseApi()).message).toContain('不是预期的赛季列表');
+    });
+    it('网络拒绝时报告没有取得 API 响应', async () => {
+      (fetch as jest.Mock).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+      expect((await diagnoseApi()).message).toContain('未能取得 API 响应');
     });
   });
 
@@ -484,7 +513,7 @@ describe('API Service Tests', () => {
       const result = await authApi.login({ username: 'admin', password: 'password123' });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://api.sztufa.xyz/api/v1/auth/login',
+        'https://api.sztufa.xyz/api/v1/staff-auth/login',
         {
           method: 'POST',
           headers: expect.any(Headers),
@@ -509,7 +538,7 @@ describe('API Service Tests', () => {
       const result = await authApi.createUser({ username: 'admin', password: 'password123', role: 'admin' });
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://api.sztufa.xyz/api/v1/auth/register',
+        'https://api.sztufa.xyz/api/v1/staff-auth/register',
         {
           method: 'POST',
           headers: expect.any(Headers),

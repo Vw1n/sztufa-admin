@@ -129,7 +129,7 @@ export interface MatchDTO {
   decidedBy?: 'REGULAR' | 'EXTRA_TIME' | 'PENALTIES' | null;
   matchDate: string;
   location: string;
-  status?: 'scheduled' | 'ongoing' | 'finished' | 'cancelled' | 'completed';
+  status?: 'scheduled' | 'ongoing' | 'finished' | 'cancelled' | 'completed' | 'void';
   homeTeam?: TeamDTO;
   awayTeam?: TeamDTO;
   goals?: GoalDTO[];
