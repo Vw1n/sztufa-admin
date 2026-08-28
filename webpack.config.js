@@ -7,6 +7,7 @@ module.exports = {
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'build'),
+    publicPath: '/',
     filename: '[name].[contenthash:8].js',
     clean: true,
   },
