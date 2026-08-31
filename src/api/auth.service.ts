@@ -5,8 +5,8 @@ export const authApi = {
   login: async (credentials: { username: string; password: string }): Promise<AuthResponse> => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
-    
-    const response = await fetch(`${BASE_URL}/auth/login`, {
+
+    const response = await fetch(`${BASE_URL}/staff-auth/login`, {
       method: 'POST',
       headers,
       body: JSON.stringify(credentials),
@@ -15,18 +15,18 @@ export const authApi = {
   },
 
   // 管理员创建用户（需要携带 Token）
-  createUser: async (credentials: { username: string; password: string; role?: string; teamId?: string; studentId?: string }): Promise<AuthResponse> => {
-    const response = await fetch(`${BASE_URL}/auth/register`, {
+  createUser: async (credentials: { username: string; password: string; role?: string; teamId?: string; studentId?: string }): Promise<{ user: AuthUser }> => {
+    const response = await fetch(`${BASE_URL}/staff-auth/register`, {
       method: 'POST',
       headers: createHeaders(),
       body: JSON.stringify(credentials),
     });
-    return handleResponse<AuthResponse>(response);
+    return handleResponse<{ user: AuthUser }>(response);
   },
 
   // 获取当前登录用户信息
   getCurrentUser: async (): Promise<AuthUser> => {
-    const response = await fetch(`${BASE_URL}/auth/me`, {
+    const response = await fetch(`${BASE_URL}/staff-auth/me`, {
       method: 'GET',
       headers: createHeaders(),
     });
@@ -36,7 +36,7 @@ export const authApi = {
 
 export const userApi = {
   getAll: async (): Promise<AuthUser[]> => {
-    const response = await fetch(`${BASE_URL}/auth/users`, {
+    const response = await fetch(`${BASE_URL}/staff-auth/users`, {
       method: 'GET',
       headers: createHeaders(),
     });
@@ -44,7 +44,7 @@ export const userApi = {
   },
 
   updateRole: async (id: string, role: string, teamId: string | null): Promise<AuthUser> => {
-    const response = await fetch(`${BASE_URL}/auth/users/${id}/role`, {
+    const response = await fetch(`${BASE_URL}/staff-auth/users/${id}/role`, {
       method: 'PATCH',
       headers: createHeaders(),
       body: JSON.stringify({ role, teamId }),
@@ -53,7 +53,7 @@ export const userApi = {
   },
 
   delete: async (id: string): Promise<{ message?: string }> => {
-    const response = await fetch(`${BASE_URL}/auth/users/${id}`, {
+    const response = await fetch(`${BASE_URL}/staff-auth/users/${id}`, {
       method: 'DELETE',
       headers: createHeaders(),
     });
@@ -61,7 +61,7 @@ export const userApi = {
   },
 
   resetPassword: async (id: string, password: string): Promise<{ message?: string }> => {
-    const response = await fetch(`${BASE_URL}/auth/users/${id}/reset-password`, {
+    const response = await fetch(`${BASE_URL}/staff-auth/users/${id}/reset-password`, {
       method: 'PATCH',
       headers: createHeaders(),
       body: JSON.stringify({ password }),
@@ -70,7 +70,7 @@ export const userApi = {
   },
 
   updateStudentId: async (id: string, studentId: string): Promise<AuthUser> => {
-    const response = await fetch(`${BASE_URL}/auth/users/${id}/student-id`, {
+    const response = await fetch(`${BASE_URL}/staff-auth/users/${id}/student-id`, {
       method: 'PATCH',
       headers: createHeaders(),
       body: JSON.stringify({ studentId }),

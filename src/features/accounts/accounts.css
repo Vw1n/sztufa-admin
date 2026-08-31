@@ -1,0 +1,151 @@
+.accounts-page {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  color: #1e293b;
+}
+.accounts-page h1,
+.accounts-page h2 {
+  margin: 0 0 16px;
+}
+.accounts-page p {
+  line-height: 1.8;
+}
+.account-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.accounts-page input,
+.accounts-page select,
+.accounts-page textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 10px;
+  font: inherit;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.accounts-page label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+.accounts-page button {
+  border: 1px solid #93b7ef;
+  border-radius: 6px;
+  padding: 9px 14px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  cursor: pointer;
+}
+.accounts-page button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.account-table-wrap {
+  overflow: auto;
+}
+.accounts-page table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+.accounts-page th,
+.accounts-page td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+.accounts-page small {
+  display: block;
+  color: #64748b;
+}
+.account-detail {
+  border: 1px solid #cbd5e1;
+  padding: 20px;
+  margin-top: 24px;
+  border-radius: 8px;
+}
+.card-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 520px;
+  margin: 16px 0;
+}
+.account-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  padding: 12px;
+}
+.review-guide {
+  padding: 18px 20px;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+.review-guide ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 36px;
+  margin: 12px 0 0;
+  padding-left: 20px;
+}
+.accounts-page .review-primary,
+.review-filters button[aria-pressed="true"] {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+  font-weight: 600;
+}
+.accounts-page .review-return {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #9a3412;
+}
+.review-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+}
+.review-status-pending { background: #fff7ed; color: #9a3412; }
+.review-status-approved { background: #ecfdf5; color: #166534; }
+.review-status-changes_requested { background: #fef2f2; color: #991b1b; }
+.review-empty { padding: 24px; text-align: center; background: #f8fafc; }
+.account-detail { scroll-margin-top: 24px; border: 2px solid #93b7ef; }
+.account-detail:focus { outline: 2px solid #1d4ed8; outline-offset: 4px; }
+.review-account-settings { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e2e8f0; }
+.review-account-settings summary { cursor: pointer; font-weight: 600; margin-bottom: 16px; }
+.account-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.account-form button {
+  align-self: end;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) {
+  .accounts-page {
+    margin: 12px 0;
+    padding: 16px;
+  }
+  .account-detail {
+    padding: 12px;
+  }
+  .account-toolbar > * {
+    max-width: 100%;
+  }
+  .accounts-page button {
+    min-height: 44px;
+  }
+}

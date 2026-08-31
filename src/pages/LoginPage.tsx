@@ -4,6 +4,7 @@ import { Eye, EyeOff, Trophy, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ValidationErrors } from '../types/auth';
 import { BASE_URL } from '../api/http';
+import { diagnoseApi } from '../api/diagnostics';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -217,38 +218,20 @@ const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={async () => {
-                  const btn = document.getElementById('diagnose-btn');
+                  const btn = document.getElementById('diagnose-btn') as HTMLButtonElement | null;
                   const resultDiv = document.getElementById('diagnose-result');
                   if (btn && resultDiv) {
                     btn.innerText = '诊断中...';
+                    btn.disabled = true;
                     resultDiv.innerText = '';
                     try {
-                      const start = Date.now();
-                      const res = await fetch(`${BASE_URL}/seasons/active`);
-                      const responseText = await res.text();
-
-                      if (!res.ok) {
-                        if (res.status === 502 || res.status === 504) {
-                          throw new Error(`本地后端未启动或无法连接（HTTP ${res.status}，请检查 localhost:3000）`);
-                        }
-                        throw new Error(`API 请求失败（HTTP ${res.status}）${responseText ? `：${responseText.slice(0, 120)}` : ''}`);
-                      }
-
-                      let data: { name?: string };
-                      try {
-                        data = JSON.parse(responseText) as { name?: string };
-                      } catch {
-                        throw new Error('API 已响应，但返回内容不是有效的 JSON');
-                      }
-
-                      const latency = Date.now() - start;
-                      resultDiv.style.color = '#2b8a3e';
-                      resultDiv.innerText = `✅ 连通成功! 响应时长: ${latency}ms\n当前活动赛季: ${data.name || '未命名'}`;
-                    } catch (e) {
-                      resultDiv.style.color = '#c92a2a';
-                      resultDiv.innerText = `❌ 连通失败! 错误: ${e instanceof Error ? e.message : String(e)}`;
+                      const result = await diagnoseApi();
+                      resultDiv.style.color = result.color;
+                      resultDiv.innerText = result.message;
+                    } finally {
+                      btn.disabled = false;
+                      btn.innerText = '一键测试 API 连通性';
                     }
-                    btn.innerText = '一键测试 API 连通性';
                   }
                 }}
                 id="diagnose-btn"
@@ -256,7 +239,7 @@ const LoginPage: React.FC = () => {
               >
                 一键测试 API 连通性
               </button>
-              <div id="diagnose-result" style={{ marginTop: '8px', padding: '6px', borderRadius: '4px', background: '#fff', border: '1px dashed #ced4da', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}></div>
+              <div id="diagnose-result" role="status" aria-live="polite" style={{ marginTop: '8px', padding: '6px', borderRadius: '4px', background: '#fff', border: '1px dashed #ced4da', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}></div>
             </div>
           )}
         </div>
