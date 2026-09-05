@@ -154,12 +154,12 @@ const AutomationReportPanel: React.FC = () => (
         <h2 id="automation-report-title" style={{ margin: 0 }}>自动化测试报告</h2>
         <p style={{ margin: '6px 0 0', color: '#64748b' }}>查看最新测试结果、通过率、执行耗时与用例详情。</p>
       </div>
-      <a href="/automation-report.html?v=20260906-1" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', fontWeight: 600 }}>
+      <a href="/automation-report.html?v=20260906-2" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', fontWeight: 600 }}>
         在新窗口打开
       </a>
     </div>
     <iframe
-      src="/automation-report.html?v=20260906-1"
+      src="/automation-report.html?v=20260906-2"
       title="自动化测试可视化报告"
       style={{ width: '100%', height: '75vh', minHeight: '680px', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#fff' }}
     />
