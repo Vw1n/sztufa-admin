@@ -57,4 +57,15 @@ describe('系统设置内账号管理', () => {
       expect(mockBackupSettings).not.toHaveBeenCalled();
     } finally { await act(async () => root.unmount()); }
   });
+  it('可从自动化测试页签直接查看内嵌报告', async () => {
+    mockInitialSearch = 'tab=automation';
+    const host = document.createElement('div');
+    const root = createRoot(host);
+    try {
+      await act(async () => root.render(<SystemSettingsPage />));
+      const report = host.querySelector('iframe[title="自动化测试可视化报告"]');
+      expect(report?.getAttribute('src')).toBe('/automation-report.html');
+      expect(mockBackupSettings).not.toHaveBeenCalled();
+    } finally { await act(async () => root.unmount()); }
+  });
 });

@@ -19,11 +19,12 @@ const settingsTabs = [
   { id: 'backup', label: '💾 数据灾备与归档' },
   { id: 'groups', label: '🏆 赛季分组配置' },
   { id: 'history-import', label: '📥 历史 JSON 导入' },
+  { id: 'automation', label: '🧪 自动化测试' },
   { id: 'members', label: '网页用户审核' },
   { id: 'staff', label: '后台账号' },
 ] as const;
 type SettingsTab = typeof settingsTabs[number]['id'];
-type DataSettingsTab = Exclude<SettingsTab, 'members' | 'staff'>;
+type DataSettingsTab = Exclude<SettingsTab, 'members' | 'staff' | 'automation'>;
 
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: '8px 18px',
@@ -120,7 +121,7 @@ const SystemSettingsPage: React.FC = () => {
             <Database className="trophy-icon" />
             系统设置与安全中心
           </h1>
-          <p>管理网页用户审核、后台账号权限、赛季配置、历史数据导入与灾备备份</p>
+          <p>管理网页用户审核、后台账号权限、赛季配置、自动化测试、历史数据导入与灾备备份</p>
         </div>
       </header>
 
@@ -136,7 +137,8 @@ const SystemSettingsPage: React.FC = () => {
         <Suspense fallback={<p role="status">加载设置内容…</p>}>
           {activeTab === 'members' ? <MemberAccountsPage /> :
             activeTab === 'staff' ? <StaffAccountsPage /> :
-              <SystemDataSettings activeTab={activeTab} />}
+              activeTab === 'automation' ? <AutomationReportPanel /> :
+                <SystemDataSettings activeTab={activeTab} />}
         </Suspense>
 
       </main>
@@ -144,6 +146,25 @@ const SystemSettingsPage: React.FC = () => {
     </div>
   );
 };
+
+const AutomationReportPanel: React.FC = () => (
+  <section className="season-card" aria-labelledby="automation-report-title">
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div>
+        <h2 id="automation-report-title" style={{ margin: 0 }}>自动化测试报告</h2>
+        <p style={{ margin: '6px 0 0', color: '#64748b' }}>查看最新测试结果、通过率、执行耗时与用例详情。</p>
+      </div>
+      <a href="/automation-report.html" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', fontWeight: 600 }}>
+        在新窗口打开
+      </a>
+    </div>
+    <iframe
+      src="/automation-report.html"
+      title="自动化测试可视化报告"
+      style={{ width: '100%', height: '75vh', minHeight: '680px', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#fff' }}
+    />
+  </section>
+);
 
 const SystemDataSettings: React.FC<{ activeTab: DataSettingsTab }> = ({ activeTab }) => {
   const [error, setError] = useState<string | null>(null);

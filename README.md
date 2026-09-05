@@ -56,3 +56,9 @@ npm start
 npm run build
 ```
 编译产物会输出至 `build/` 目录。
+
+## 自动化测试可视化报告
+
+管理端部署后，开发人员可直接访问 `/automation-report.html`，无需下载自动化测试项目或安装测试依赖。超级管理员登录后也可通过顶部“自动化测试”菜单进入。
+
+自动化测试项目执行 `npm run report:visual` 时，会生成最新中文报告，并自动同步到本项目的 `public/automation-report.html`。随后重新部署管理端即可发布最新结果。

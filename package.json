@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack serve",
-    "build": "webpack --mode production && node scripts/check-bundle-budget.js",
+    "build": "webpack --mode production && node scripts/copy-public-assets.js && node scripts/check-bundle-budget.js",
     "check:budget": "node scripts/check-bundle-budget.js",
     "test": "jest --config jest.config.js",
     "lint": "eslint src",
