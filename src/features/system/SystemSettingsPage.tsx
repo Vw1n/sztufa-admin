@@ -154,15 +154,15 @@ const AutomationReportPanel: React.FC = () => (
         <h2 id="automation-report-title" style={{ margin: 0 }}>自动化测试报告</h2>
         <p style={{ margin: '6px 0 0', color: '#64748b' }}>查看最新测试结果、通过率、执行耗时与用例详情。</p>
       </div>
-      <a href="/automation-report.html?v=20260906-3" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', fontWeight: 600 }}>
+      <a href="/automation-report.html?v=20260906-4" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', fontWeight: 600 }}>
         在新窗口打开
       </a>
     </div>
     <div role="status" style={{ marginBottom: '14px', padding: '10px 14px', borderRadius: '8px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
-      当前为 develop 安全模式：仅连接开发环境；未确认数据库隔离前，所有写数据测试自动跳过。
+      当前仅连接 develop 独立 API 与数据库；写入用例只操作带本次运行标识的测试数据，并在结束后精确清理。
     </div>
     <iframe
-      src="/automation-report.html?v=20260906-3"
+      src="/automation-report.html?v=20260906-4"
       title="自动化测试可视化报告"
       style={{ width: '100%', height: '75vh', minHeight: '680px', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#fff' }}
     />

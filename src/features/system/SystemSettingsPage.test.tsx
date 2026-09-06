@@ -64,8 +64,8 @@ describe('系统设置内账号管理', () => {
     try {
       await act(async () => root.render(<SystemSettingsPage />));
       const report = host.querySelector('iframe[title="自动化测试可视化报告"]');
-      expect(report?.getAttribute('src')).toBe('/automation-report.html?v=20260906-3');
-      expect(host.textContent).toContain('当前为 develop 安全模式');
+      expect(report?.getAttribute('src')).toBe('/automation-report.html?v=20260906-4');
+      expect(host.textContent).toContain('当前仅连接 develop 独立 API 与数据库');
       expect(mockBackupSettings).not.toHaveBeenCalled();
     } finally { await act(async () => root.unmount()); }
   });
