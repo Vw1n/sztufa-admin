@@ -49,7 +49,7 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
           <div>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>手动执行全站备份</h3>
             <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
-              导出 17 张数据表并流式生成紧凑 GZIP 压缩文件 (`.json.gz`) 推送至 Cloudflare R2 冷备。
+              导出当前 18 张核心业务数据表并流式生成紧凑 GZIP 压缩文件 (`.json.gz`) 推送至 Cloudflare R2 冷备。
             </p>
           </div>
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
