@@ -1,7 +1,10 @@
 import { AuthResponse, AuthUser } from './types';
 import { BASE_URL, createHeaders, handleResponse } from './http';
+import { parseResponse } from './core/response-parser';
 
 export const authApi = {
+  // 登录请求走纯解析器：401 只抛 ApiError，不触发会话过期跳转，
+  // 让登录页能正常显示"密码错误"等业务提示。
   login: async (credentials: { username: string; password: string }): Promise<AuthResponse> => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
@@ -11,7 +14,7 @@ export const authApi = {
       headers,
       body: JSON.stringify(credentials),
     });
-    return handleResponse<AuthResponse>(response);
+    return parseResponse<AuthResponse>(response);
   },
 
   // 管理员创建用户（需要携带 Token）
