@@ -39,6 +39,7 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
 
   const totalBytes = backups.reduce((acc, cur) => acc + (cur.size || 0), 0);
+  const newestFullBackupKey = backups.find((backup) => !backup.scope || backup.scope === 'full')?.key;
 
   const handleDownload = async (key: string) => {
     setDownloadingKey(key);
@@ -105,9 +106,10 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
               </tr>
             </thead>
             <tbody>
-              {backups.map((bk, index) => {
-                const isNewest = index === 0;
+              {backups.map((bk) => {
+                const isNewest = bk.key === newestFullBackupKey;
                 const isGzip = bk.filename.endsWith('.json.gz');
+                const canRestore = bk.restoreSupported ?? (!bk.scope || bk.scope === 'full');
 
                 return (
                   <tr key={bk.key}>
@@ -123,7 +125,7 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                     </td>
                     <td>
                       <span style={{ fontSize: '12px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: isGzip ? '#ecfdf5' : '#f3f4f6', color: isGzip ? '#047857' : '#374151' }}>
-                        {isGzip ? 'V3.0 GZIP' : 'V2.0 JSON'}
+                        {bk.formatVersion ? `V${bk.formatVersion}` : isGzip ? 'V3.0' : 'V2.0'} {isGzip ? 'GZIP' : 'JSON'}{bk.module ? ` · ${bk.module}` : ''}
                       </span>
                     </td>
                     <td style={{ color: '#666' }}>{formatSize(bk.size)}</td>
@@ -141,7 +143,8 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                         </button>
                         <button
                           onClick={() => handleRestore(bk.key)}
-                          disabled={isRestoring !== null || isBackingUp}
+                          disabled={!canRestore || isRestoring !== null || isBackingUp}
+                          title={canRestore ? '覆盖还原全站备份' : '模块备份当前仅支持下载，暂未开放恢复'}
                           className="add-btn small refresh-btn"
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', height: 'auto', background: '#ffebeb', color: '#d93838', borderColor: '#ffd1d1' }}
                         >
@@ -153,7 +156,7 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                           ) : (
                             <>
                               <RotateCcw size={12} />
-                              覆盖还原
+                              {canRestore ? '覆盖还原' : '暂不支持还原'}
                             </>
                           )}
                         </button>

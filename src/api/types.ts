@@ -260,6 +260,11 @@ export interface BackupDTO {
   purpose?: string;
   protected?: boolean;
   validated?: boolean;
+  scope?: 'full' | 'season' | 'module';
+  seasonId?: string;
+  module?: 'season' | 'staff' | 'members' | 'content' | 'operations';
+  selector?: Record<string, string>;
+  restoreSupported?: boolean;
 }
 
 

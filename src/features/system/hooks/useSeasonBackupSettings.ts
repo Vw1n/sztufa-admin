@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { backupApi, seasonApi } from '../../../api/service';
 import { BackupDTO } from '../../../api/types';
+import { BackupCreateRequest } from '../../../api/backup.service';
 import { SeasonSummary, SystemFeedback } from './types';
 
 const computeFileSha256 = async (file: File): Promise<string> => {
@@ -162,14 +163,16 @@ export const useSeasonBackupSettings = ({ setError, setSuccessMessage }: SystemF
     }
   };
 
-  const handleCreateBackup = async () => {
+  const handleCreateBackup = async (request: BackupCreateRequest = { scope: 'full' }) => {
     setIsBackingUp(true);
     setError(null);
     setSuccessMessage(null);
     try {
-      const response = await backupApi.create();
+      const response = await backupApi.create(request);
       if (response.success) {
-        setSuccessMessage('数据库成功生成 V3.0 GZIP 备份并上传至 Cloudflare R2！');
+        setSuccessMessage(request.scope === 'module'
+          ? '模块数据成功生成 V4.0 GZIP 备份并上传至 Cloudflare R2！'
+          : '数据库成功生成 V3.0 GZIP 备份并上传至 Cloudflare R2！');
         loadBackups();
         setTimeout(() => setSuccessMessage(null), 4000);
       }

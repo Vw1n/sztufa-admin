@@ -16,11 +16,17 @@ export interface RetentionResult {
   deletedCount: number;
 }
 
+export type BackupCreateRequest =
+  | { scope: 'full' }
+  | { scope: 'module'; module: 'season'; selector: { seasonId: string } }
+  | { scope: 'module'; module: 'staff' | 'members' | 'content' | 'operations'; selector: Record<string, never> };
+
 export const backupApi = {
-  create: async (): Promise<{ success: boolean; data: BackupDTO }> => {
+  create: async (request: BackupCreateRequest = { scope: 'full' }): Promise<{ success: boolean; data: BackupDTO }> => {
     const response = await fetch(`${BASE_URL}/backups/create`, {
       method: 'POST',
       headers: createHeaders(),
+      body: JSON.stringify(request),
     });
     return handleResponse<{ success: boolean; data: BackupDTO }>(response);
   },
