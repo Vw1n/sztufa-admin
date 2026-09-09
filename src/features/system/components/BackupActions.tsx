@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Database, RefreshCw, UploadCloud, ShieldCheck, Trash2 } from 'lucide-react';
+import { BackupCreateRequest } from '../../../api/backup.service';
 
 interface BackupActionsProps {
   isBackingUp: boolean;
@@ -7,7 +8,8 @@ interface BackupActionsProps {
   isUploading: boolean;
   isCleaningRetention?: boolean;
   uploadProgress: string | null;
-  onCreateBackup: () => void;
+  activeSeason?: { id: string; name: string } | null;
+  onCreateBackup: (request?: BackupCreateRequest) => void;
   onUploadFile: (file: File) => void;
   onCleanRetention?: (dryRun: boolean) => void;
 }
@@ -18,11 +20,22 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
   isUploading,
   isCleaningRetention,
   uploadProgress,
+  activeSeason,
   onCreateBackup,
   onUploadFile,
   onCleanRetention,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [backupTarget, setBackupTarget] = useState('full');
+  const createSelectedBackup = () => {
+    if (backupTarget === 'season' && activeSeason) {
+      return onCreateBackup({ scope: 'module', module: 'season', selector: { seasonId: activeSeason.id } });
+    }
+    if (backupTarget !== 'full' && backupTarget !== 'season') {
+      return onCreateBackup({ scope: 'module', module: backupTarget as 'staff' | 'members' | 'content' | 'operations', selector: {} });
+    }
+    onCreateBackup({ scope: 'full' });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -47,14 +60,20 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
         {/* 手动全量备份卡片 */}
         <div style={{ background: '#fcfcfc', border: '1px solid #eee', padding: '16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>手动执行全站备份</h3>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>手动执行数据备份</h3>
             <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
-              导出当前 18 张核心业务数据表并流式生成紧凑 GZIP 压缩文件 (`.json.gz`) 推送至 Cloudflare R2 冷备。
+              可按全站、当前赛季或业务模块生成 GZIP 备份，模块备份只传输所需数据。
             </p>
+            <select value={backupTarget} onChange={(e) => setBackupTarget(e.target.value)} disabled={isBackingUp} className="form-select" style={{ marginTop: '12px', width: '100%' }}>
+              <option value="full">全站灾备（V3）</option>
+              <option value="season" disabled={!activeSeason}>当前赛季{activeSeason ? `：${activeSeason.name}` : '（无活跃赛季）'}</option>
+              <option value="staff">管理员数据</option><option value="members">成员账号</option>
+              <option value="content">新闻内容</option><option value="operations">运维记录</option>
+            </select>
           </div>
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
             <button
-              onClick={onCreateBackup}
+              onClick={createSelectedBackup}
               disabled={isBackingUp || isRestoring !== null || isUploading || isCleaningRetention}
               className="save-btn"
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '13px', height: 'auto', margin: 0 }}
@@ -67,7 +86,7 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
               ) : (
                 <>
                   <Database size={16} />
-                  立即执行备份 (V3 GZIP)
+                  立即执行备份
                 </>
               )}
             </button>
