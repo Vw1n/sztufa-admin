@@ -39,9 +39,6 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
 
   const isArchivedSelected = backupTarget.startsWith('archived-season:');
   const selectedArchivedSeasonId = isArchivedSelected ? backupTarget.replace('archived-season:', '') : null;
-  const selectedArchivedSeason = selectedArchivedSeasonId
-    ? seasons.find((s) => s.id === selectedArchivedSeasonId)
-    : null;
 
   const createSelectedBackup = () => {
     if (backupTarget === 'full') {

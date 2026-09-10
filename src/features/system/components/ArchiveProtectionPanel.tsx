@@ -6,20 +6,20 @@ import {
   RefreshCw,
   Play,
   CheckCircle2,
-  XCircle,
   FileCheck2,
-  HardDrive,
 } from 'lucide-react';
 import {
   backupApi,
   ArchiveCoverageSummary,
   ArchiveBackfillPreviewResult,
-  ArchiveBackfillExecuteResult,
 } from '../../../api/backup.service';
 
 interface ArchiveProtectionPanelProps {
   onBackfillSuccess?: () => void;
 }
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
   onBackfillSuccess,
@@ -34,7 +34,6 @@ export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
   const [previewing, setPreviewing] = useState(false);
   const [previewData, setPreviewData] = useState<ArchiveBackfillPreviewResult | null>(null);
   const [executing, setExecuting] = useState(false);
-  const [executeResult, setExecuteResult] = useState<ArchiveBackfillExecuteResult | null>(null);
   const [retryingId, setRetryingId] = useState<string | null>(null);
 
   const fetchCoverage = useCallback(async () => {
@@ -45,8 +44,8 @@ export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
       if (res.success && res.data) {
         setCoverage(res.data);
       }
-    } catch (err: any) {
-      setError(err.message || '获取归档保护覆盖状态失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '获取归档保护覆盖状态失败'));
     } finally {
       setLoading(false);
     }
@@ -89,8 +88,8 @@ export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
       if (res.success && res.data) {
         setPreviewData(res.data);
       }
-    } catch (err: any) {
-      setError(err.message || '获取补建预检信息失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '获取补建预检信息失败'));
     } finally {
       setPreviewing(false);
     }
@@ -104,7 +103,6 @@ export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
       const targetIds = previewData.missingSeasons.map((s) => s.id);
       const res = await backupApi.executeArchiveBackfill(previewData.backfillToken, targetIds);
       if (res.success && res.data) {
-        setExecuteResult(res.data);
         setPreviewData(null);
         setSelectedSeasonIds([]);
         setSuccessMsg(
@@ -113,8 +111,8 @@ export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
         fetchCoverage();
         onBackfillSuccess?.();
       }
-    } catch (err: any) {
-      setError(err.message || '执行补建备份失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '执行补建备份失败'));
     } finally {
       setExecuting(false);
     }
@@ -130,8 +128,8 @@ export const ArchiveProtectionPanel: React.FC<ArchiveProtectionPanelProps> = ({
         fetchCoverage();
         onBackfillSuccess?.();
       }
-    } catch (err: any) {
-      setError(err.message || '单赛季归档重试失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, '单赛季归档重试失败'));
     } finally {
       setRetryingId(null);
     }
