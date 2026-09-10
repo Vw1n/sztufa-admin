@@ -22,13 +22,63 @@ export interface RetentionResult {
 }
 
 export type BackupCreateRequest =
-  | { scope: "full" }
-  | { scope: "module"; module: "season"; selector: { seasonId: string } }
+  | { scope: "full"; protected?: boolean }
+  | {
+      scope: "module";
+      module: "season";
+      selector: { seasonId: string };
+      purpose?: "manual" | "archive";
+      protected?: boolean;
+    }
   | {
       scope: "module";
       module: "staff" | "members" | "content" | "operations";
       selector: Record<string, never>;
+      protected?: boolean;
     };
+
+export interface ArchiveSeasonCoverage {
+  id: string;
+  name: string;
+  archivedAt: string | null;
+  hasProtectedBackup: boolean;
+  isCorrupt?: boolean;
+  backupKey?: string | null;
+  objectSize?: number | null;
+  verifiedAt?: string | null;
+  lastError?: string | null;
+}
+
+export interface ArchiveCoverageSummary {
+  total: number;
+  protected: number;
+  missing: number;
+  corrupt: number;
+  seasons: ArchiveSeasonCoverage[];
+}
+
+export interface ArchiveBackfillPreviewResult {
+  missingSeasons: Array<{ id: string; name: string; archivedAt: string | null }>;
+  affectedTables: readonly string[];
+  estimatedRows: null;
+  estimatedBytes: null;
+  notice: string;
+  backfillToken: string;
+}
+
+export interface ArchiveBackfillExecuteResult {
+  total: number;
+  succeeded: number;
+  skipped: number;
+  failed: number;
+  items: Array<{
+    seasonId: string;
+    status: "succeeded" | "skipped" | "failed";
+    reason?: string;
+    backupKey?: string;
+    error?: string;
+  }>;
+}
 
 export interface BackupRestorePreview {
   key: string;
@@ -154,5 +204,80 @@ export const backupApi = {
     return handleResponse<{ success: boolean; data: RetentionResult }>(
       response,
     );
+  },
+  getArchiveCoverage: async (): Promise<{
+    success: boolean;
+    data: ArchiveCoverageSummary;
+  }> => {
+    const response = await fetch(`${BASE_URL}/backups/archive-coverage`, {
+      method: "GET",
+      headers: createHeaders(),
+    });
+    return handleResponse<{ success: boolean; data: ArchiveCoverageSummary }>(
+      response,
+    );
+  },
+  previewArchiveBackfill: async (
+    seasonIds?: string[],
+  ): Promise<{ success: boolean; data: ArchiveBackfillPreviewResult }> => {
+    const response = await fetch(
+      `${BASE_URL}/backups/archive-backfill/preview`,
+      {
+        method: "POST",
+        headers: createHeaders(),
+        body: JSON.stringify({ seasonIds }),
+      },
+    );
+    return handleResponse<{
+      success: boolean;
+      data: ArchiveBackfillPreviewResult;
+    }>(response);
+  },
+  executeArchiveBackfill: async (
+    backfillToken: string,
+    seasonIds?: string[],
+  ): Promise<{ success: boolean; data: ArchiveBackfillExecuteResult }> => {
+    const response = await fetch(
+      `${BASE_URL}/backups/archive-backfill/execute`,
+      {
+        method: "POST",
+        headers: createHeaders(),
+        body: JSON.stringify({ backfillToken, seasonIds }),
+      },
+    );
+    return handleResponse<{
+      success: boolean;
+      data: ArchiveBackfillExecuteResult;
+    }>(response);
+  },
+  retryArchiveSeasonBackfill: async (
+    seasonId: string,
+  ): Promise<{
+    success: boolean;
+    data: {
+      seasonId: string;
+      status: "succeeded" | "skipped" | "failed";
+      reason?: string;
+      backupKey?: string;
+      error?: string;
+    };
+  }> => {
+    const response = await fetch(
+      `${BASE_URL}/backups/archive-backfill/${seasonId}/retry`,
+      {
+        method: "POST",
+        headers: createHeaders(),
+      },
+    );
+    return handleResponse<{
+      success: boolean;
+      data: {
+        seasonId: string;
+        status: "succeeded" | "skipped" | "failed";
+        reason?: string;
+        backupKey?: string;
+        error?: string;
+      };
+    }>(response);
   },
 };

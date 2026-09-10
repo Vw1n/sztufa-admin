@@ -9,6 +9,7 @@ interface BackupActionsProps {
   isCleaningRetention?: boolean;
   uploadProgress: string | null;
   activeSeason?: { id: string; name: string } | null;
+  seasons?: Array<{ id: string; name: string; status: string; archivedAt?: string | null }>;
   onCreateBackup: (request?: BackupCreateRequest) => void;
   onUploadFile: (file: File) => void;
   onCleanRetention?: (dryRun: boolean) => void;
@@ -21,6 +22,7 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
   isCleaningRetention,
   uploadProgress,
   activeSeason,
+  seasons = [],
   onCreateBackup,
   onUploadFile,
   onCleanRetention,
@@ -35,6 +37,9 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
     }
   }, [activeSeason, hasManuallySelected]);
 
+  const isArchivedSelected = backupTarget.startsWith('archived-season:');
+  const selectedArchivedSeasonId = isArchivedSelected ? backupTarget.replace('archived-season:', '') : null;
+
   const createSelectedBackup = () => {
     if (backupTarget === 'full') {
       const confirmed = window.confirm(
@@ -45,10 +50,19 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
       }
       return onCreateBackup({ scope: 'full' });
     }
+    if (isArchivedSelected && selectedArchivedSeasonId) {
+      return onCreateBackup({
+        scope: 'module',
+        module: 'season',
+        selector: { seasonId: selectedArchivedSeasonId },
+        purpose: 'archive',
+        protected: true,
+      });
+    }
     if (backupTarget === 'season' && activeSeason) {
       return onCreateBackup({ scope: 'module', module: 'season', selector: { seasonId: activeSeason.id } });
     }
-    if (backupTarget !== 'season') {
+    if (backupTarget !== 'season' && !isArchivedSelected) {
       return onCreateBackup({ scope: 'module', module: backupTarget as 'staff' | 'members' | 'content' | 'operations', selector: {} });
     }
   };
@@ -62,6 +76,8 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
       }
     }
   };
+
+  const archivedSeasons = seasons.filter((s) => s.status === 'archived');
 
   return (
     <div className="form-section">
@@ -90,13 +106,51 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
               className="form-select"
               style={{ marginTop: '12px', width: '100%' }}
             >
-              <option value="season" disabled={!activeSeason}>当前赛季{activeSeason ? `：${activeSeason.name}` : '（无活跃赛季）'}</option>
-              <option value="staff">管理员数据</option>
-              <option value="members">成员账号</option>
-              <option value="content">新闻内容</option>
-              <option value="operations">运维记录</option>
-              <option value="full">全站灾备（V3，高流量开销）</option>
+              <optgroup label="活跃赛季">
+                <option value="season" disabled={!activeSeason}>
+                  当前赛季{activeSeason ? `：${activeSeason.name}` : '（无活跃赛季）'}
+                </option>
+              </optgroup>
+              {archivedSeasons.length > 0 && (
+                <optgroup label="历史已归档赛季（受保护归档备份）">
+                  {archivedSeasons.map((s) => (
+                    <option key={s.id} value={`archived-season:${s.id}`}>
+                      {s.name} (已归档{s.archivedAt ? ` · ${new Date(s.archivedAt).toLocaleDateString('zh-CN')}` : ''})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="系统功能模块">
+                <option value="staff">管理员数据</option>
+                <option value="members">成员账号</option>
+                <option value="content">新闻内容</option>
+                <option value="operations">运维记录</option>
+              </optgroup>
+              <optgroup label="灾备基线">
+                <option value="full">全站灾备（V3，高流量开销）</option>
+              </optgroup>
             </select>
+            {isArchivedSelected && (
+              <div
+                style={{
+                  marginTop: '10px',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  backgroundColor: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  fontSize: '12px',
+                  color: '#1d4ed8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <ShieldCheck size={16} />
+                <span>
+                  已归档赛季备份将<strong>永久标记为受保护（Protected）</strong>，防保留策略清理误删。
+                </span>
+              </div>
+            )}
           </div>
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
             <button
