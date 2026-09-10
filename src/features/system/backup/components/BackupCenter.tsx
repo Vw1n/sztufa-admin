@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./BackupCenter.css";
 import {
   Activity,
   HardDrive,
@@ -100,7 +101,7 @@ export const BackupCenter: React.FC<BackupCenterProps> = ({
   };
 
   return (
-    <div className="space-y-6 mt-6" data-testid="backup-center">
+    <div className="backup-center space-y-6 mt-6" data-testid="backup-center">
       {/* 备份中心顶部子导航 */}
       <div className="bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
         <nav
