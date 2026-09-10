@@ -276,7 +276,7 @@ export interface BackupDTO {
   restoreSupported?: boolean;
   databaseBytesEstimated?: number;
   uncompressedBytes?: number;
-  uploadedBytes?: number;
+  uploadedBytes?: number | null;
   databaseRowsRead?: number;
   tablesProcessed?: number;
   peakRssBytes?: number;
