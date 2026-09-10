@@ -46,6 +46,7 @@ export interface SeasonDTO {
   name: string;
   status: string;
   type: string;
+  archivedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

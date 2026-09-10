@@ -6,6 +6,7 @@ import { SeasonManagementPanel } from "./SeasonManagementPanel";
 import { SeasonTable } from "./SeasonTable";
 import { BackupActions } from "./BackupActions";
 import { BackupHistoryPanel } from "./BackupHistoryPanel";
+import { ArchiveProtectionPanel } from "./ArchiveProtectionPanel";
 import { BackupCreateRequest } from "../../../api/backup.service";
 
 interface SeasonBackupPanelProps {
@@ -99,10 +100,13 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
         isCleaningRetention={isCleaningRetention}
         uploadProgress={uploadProgress}
         activeSeason={activeSeason}
+        seasons={seasons}
         onCreateBackup={onCreateBackup}
         onUploadFile={onUploadFile}
         onCleanRetention={onCleanRetention}
       />
+
+      <ArchiveProtectionPanel onBackfillSuccess={onLoadBackups} />
 
       <BackupHistoryPanel
         backups={backups}

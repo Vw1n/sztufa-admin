@@ -260,4 +260,60 @@ describe('BackupActions 组件行为测试', () => {
       root.unmount();
     });
   });
+
+  it('选中已归档赛季时自动添加 purpose: archive 与 protected: true 保护标记', async () => {
+    const onCreateBackup = jest.fn();
+    const onUploadFile = jest.fn();
+    const seasons = [
+      { id: 'season-act', name: '2026超级杯', status: 'active' },
+      { id: 'season-arc', name: '2025联赛', status: 'archived', archivedAt: '2025-12-01T00:00:00.000Z' },
+    ];
+
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <BackupActions
+          isBackingUp={false}
+          isRestoring={null}
+          isUploading={false}
+          uploadProgress={null}
+          activeSeason={seasons[0]}
+          seasons={seasons}
+          onCreateBackup={onCreateBackup}
+          onUploadFile={onUploadFile}
+        />,
+      );
+    });
+
+    const select = container.querySelector('select') as HTMLSelectElement;
+    const optgroup = container.querySelector('optgroup[label="历史已归档赛季（受保护归档备份）"]');
+    expect(optgroup).not.toBeNull();
+
+    await act(async () => {
+      select.value = 'archived-season:season-arc';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    expect(container.textContent).toContain('已归档赛季备份将永久标记为受保护（Protected）');
+
+    const backupButton = [...container.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('立即执行备份'),
+    )!;
+
+    await act(async () => {
+      backupButton.click();
+    });
+
+    expect(onCreateBackup).toHaveBeenCalledWith({
+      scope: 'module',
+      module: 'season',
+      selector: { seasonId: 'season-arc' },
+      purpose: 'archive',
+      protected: true,
+    });
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });
