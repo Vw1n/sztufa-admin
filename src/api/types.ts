@@ -250,6 +250,14 @@ export interface AuditLogDTO {
   subLogs?: { id: string; details: string; createdAt: string }[];
 }
 
+export interface BackupRunMetrics {
+  databaseBytesEstimated: string | null;
+  uncompressedBytes: string | null;
+  uploadedBytes: string | null;
+  databaseRowsRead: number | null;
+  peakRssBytes: string | null;
+}
+
 export interface BackupDTO {
   key: string;
   filename: string;
@@ -266,6 +274,13 @@ export interface BackupDTO {
   module?: 'season' | 'staff' | 'members' | 'content' | 'operations';
   selector?: Record<string, string>;
   restoreSupported?: boolean;
+  databaseBytesEstimated?: number;
+  uncompressedBytes?: number;
+  uploadedBytes?: number;
+  databaseRowsRead?: number;
+  tablesProcessed?: number;
+  peakRssBytes?: number;
+  runMetrics?: BackupRunMetrics | null;
 }
 
 

@@ -6,6 +6,7 @@ import {
   RotateCcw,
   Trash2,
   ShieldCheck,
+  Info,
 } from "lucide-react";
 import { BackupDTO } from "../../../api/types";
 import { backupApi } from "../../../api/backup.service";
@@ -18,6 +19,7 @@ interface BackupHistoryPanelProps {
   onRestoreBackup: (backup: BackupDTO) => void;
   onDeleteBackup: (key: string, isNewest: boolean) => void;
   onLoadBackups: () => void;
+  onViewDetail?: (backup: BackupDTO) => void;
 }
 
 const formatSize = (bytes: number) => {
@@ -42,6 +44,7 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
   onRestoreBackup,
   onDeleteBackup,
   onLoadBackups,
+  onViewDetail,
 }) => {
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
 
@@ -143,7 +146,7 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                 <th>格式 / 类型</th>
                 <th>文件大小</th>
                 <th>创建时间</th>
-                <th style={{ width: "280px", textAlign: "center" }}>操作</th>
+                <th style={{ width: "320px", textAlign: "center" }}>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -202,6 +205,37 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                         {isGzip ? "GZIP" : "JSON"}
                         {bk.module ? ` · ${bk.module}` : ""}
                       </span>
+                      {bk.runMetrics ? (
+                        <span
+                          title="已记录三段出口流量与内存审计指标"
+                          style={{
+                            marginLeft: "6px",
+                            fontSize: "11px",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            background: "#eff6ff",
+                            color: "#1d4ed8",
+                            fontWeight: 500,
+                          }}
+                        >
+                          已采集
+                        </span>
+                      ) : (
+                        <span
+                          title="历史备份未采集三段指标（绝不以 0 字节伪装）"
+                          style={{
+                            marginLeft: "6px",
+                            fontSize: "11px",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            background: "#f3f4f6",
+                            color: "#9ca3af",
+                            fontWeight: 500,
+                          }}
+                        >
+                          未采集
+                        </span>
+                      )}
                     </td>
                     <td style={{ color: "#666" }}>{formatSize(bk.size)}</td>
                     <td style={{ color: "#666" }}>
@@ -215,6 +249,25 @@ export const BackupHistoryPanel: React.FC<BackupHistoryPanelProps> = ({
                           justifyContent: "center",
                         }}
                       >
+                        {onViewDetail && (
+                          <button
+                            type="button"
+                            onClick={() => onViewDetail(bk)}
+                            className="add-btn small btn-secondary"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "5px 10px",
+                              height: "auto",
+                              cursor: "pointer",
+                            }}
+                            title="查看备份详情与三段流量指标"
+                          >
+                            <Info size={12} />
+                            详情
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDownload(bk.key)}
                           disabled={downloadingKey === bk.key}

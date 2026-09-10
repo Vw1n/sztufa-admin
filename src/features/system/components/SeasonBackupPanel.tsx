@@ -4,9 +4,7 @@ import { BackupDTO } from "../../../api/types";
 import { SeasonSummary } from "../hooks/types";
 import { SeasonManagementPanel } from "./SeasonManagementPanel";
 import { SeasonTable } from "./SeasonTable";
-import { BackupActions } from "./BackupActions";
-import { BackupHistoryPanel } from "./BackupHistoryPanel";
-import { ArchiveProtectionPanel } from "./ArchiveProtectionPanel";
+import { BackupCenter } from "../backup/components/BackupCenter";
 import { BackupCreateRequest } from "../../../api/backup.service";
 
 interface SeasonBackupPanelProps {
@@ -93,7 +91,9 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
         onDeleteSeason={onDeleteSeason}
       />
 
-      <BackupActions
+      <BackupCenter
+        backups={backups}
+        isLoading={isLoading}
         isBackingUp={isBackingUp}
         isRestoring={isRestoring}
         isUploading={isUploading}
@@ -103,18 +103,9 @@ export const SeasonBackupPanel: React.FC<SeasonBackupPanelProps> = ({
         seasons={seasons}
         onCreateBackup={onCreateBackup}
         onUploadFile={onUploadFile}
-        onCleanRetention={onCleanRetention}
-      />
-
-      <ArchiveProtectionPanel onBackfillSuccess={onLoadBackups} />
-
-      <BackupHistoryPanel
-        backups={backups}
-        isLoading={isLoading}
-        isBackingUp={isBackingUp}
-        isRestoring={isRestoring}
-        onRestoreBackup={onRestoreBackup}
         onDeleteBackup={onDeleteBackup}
+        onCleanRetention={onCleanRetention}
+        onRestoreBackup={onRestoreBackup}
         onLoadBackups={onLoadBackups}
       />
 
