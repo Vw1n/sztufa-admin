@@ -26,15 +26,31 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
   onCleanRetention,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [backupTarget, setBackupTarget] = useState('full');
+  const [backupTarget, setBackupTarget] = useState<string>(activeSeason ? 'season' : 'staff');
+  const [hasManuallySelected, setHasManuallySelected] = useState(false);
+
+  React.useEffect(() => {
+    if (!hasManuallySelected && activeSeason) {
+      setBackupTarget('season');
+    }
+  }, [activeSeason, hasManuallySelected]);
+
   const createSelectedBackup = () => {
+    if (backupTarget === 'full') {
+      const confirmed = window.confirm(
+        '⚠️ 警告：全站灾备将导出全库所有业务表，可能产生大量 Neon 流量消耗（免费版月出口上限仅为 5GB）。\n\n自动备份已全面转为月度轻量模块快照，全量备份仅推荐用于灾备基线采样。\n\n是否确认继续？',
+      );
+      if (!confirmed) {
+        return;
+      }
+      return onCreateBackup({ scope: 'full' });
+    }
     if (backupTarget === 'season' && activeSeason) {
       return onCreateBackup({ scope: 'module', module: 'season', selector: { seasonId: activeSeason.id } });
     }
-    if (backupTarget !== 'full' && backupTarget !== 'season') {
+    if (backupTarget !== 'season') {
       return onCreateBackup({ scope: 'module', module: backupTarget as 'staff' | 'members' | 'content' | 'operations', selector: {} });
     }
-    onCreateBackup({ scope: 'full' });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,18 +73,29 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
       </div>
 
       <div className="backup-actions-grid">
-        {/* 手动全量备份卡片 */}
+        {/* 手动全量/模块备份卡片 */}
         <div style={{ background: '#fcfcfc', border: '1px solid #eee', padding: '16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>手动执行数据备份</h3>
             <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
-              可按全站、当前赛季或业务模块生成 GZIP 备份，模块备份只传输所需数据。
+              推荐按业务模块执行轻量备份（大幅降低 Neon 流量消耗）。全站灾备仅建议低频用于灾备基线采样。
             </p>
-            <select value={backupTarget} onChange={(e) => setBackupTarget(e.target.value)} disabled={isBackingUp} className="form-select" style={{ marginTop: '12px', width: '100%' }}>
-              <option value="full">全站灾备（V3）</option>
+            <select
+              value={backupTarget}
+              onChange={(e) => {
+                setHasManuallySelected(true);
+                setBackupTarget(e.target.value);
+              }}
+              disabled={isBackingUp}
+              className="form-select"
+              style={{ marginTop: '12px', width: '100%' }}
+            >
               <option value="season" disabled={!activeSeason}>当前赛季{activeSeason ? `：${activeSeason.name}` : '（无活跃赛季）'}</option>
-              <option value="staff">管理员数据</option><option value="members">成员账号</option>
-              <option value="content">新闻内容</option><option value="operations">运维记录</option>
+              <option value="staff">管理员数据</option>
+              <option value="members">成员账号</option>
+              <option value="content">新闻内容</option>
+              <option value="operations">运维记录</option>
+              <option value="full">全站灾备（V3，高流量开销）</option>
             </select>
           </div>
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -96,13 +123,14 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
         {/* 本地直传上传卡片 */}
         <div style={{ background: '#fcfcfc', border: '1px solid #eee', padding: '16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>上传本地备份文件</h3>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>上传已有备份 (直传 R2)</h3>
             <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
-              支持 `.json.gz` (上限 100 MB) 与 `.json` (上限 200 MB)，浏览器直传 R2，服务端重算 Hash 并全量校验。
+              通过预签名 URL 直传 R2 存储桶，支持断点补录与异地冷备恢复，自动校验签名哈希与结构。
             </p>
             {uploadProgress && (
-              <div style={{ marginTop: '6px', fontSize: '12px', color: '#2563eb', fontWeight: 500 }}>
-                进度：{uploadProgress}
+              <div style={{ marginTop: '10px', fontSize: '12px', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <RefreshCw size={14} className="spinning" />
+                {uploadProgress}
               </div>
             )}
           </div>
@@ -111,13 +139,13 @@ export const BackupActions: React.FC<BackupActionsProps> = ({
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept=".json,.json.gz"
+              accept=".gz,.json"
               style={{ display: 'none' }}
             />
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isBackingUp || isRestoring !== null || isUploading || isCleaningRetention}
-              className="add-btn btn-secondary"
+              className="add-btn"
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '13px', height: 'auto', margin: 0 }}
             >
               {isUploading ? (
