@@ -280,4 +280,219 @@ export const backupApi = {
       };
     }>(response);
   },
+  getDashboard: async (): Promise<{
+    success: boolean;
+    data: BackupDashboardDTO;
+  }> => {
+    const response = await fetch(`${BASE_URL}/backups/dashboard`, {
+      method: "GET",
+      headers: createHeaders(),
+    });
+    return handleResponse<{ success: boolean; data: BackupDashboardDTO }>(
+      response,
+    );
+  },
+  getMetricsSummary: async (
+    periodKey?: string,
+  ): Promise<{
+    success: boolean;
+    data: BackupMetricsSummaryDTO;
+  }> => {
+    const query = periodKey ? `?periodKey=${encodeURIComponent(periodKey)}` : "";
+    const response = await fetch(`${BASE_URL}/backups/metrics/summary${query}`, {
+      method: "GET",
+      headers: createHeaders(),
+    });
+    return handleResponse<{ success: boolean; data: BackupMetricsSummaryDTO }>(
+      response,
+    );
+  },
+  getMetricsTimeseries: async (
+    months?: number,
+  ): Promise<{
+    success: boolean;
+    data: BackupMetricsTimeseriesPoint[];
+  }> => {
+    const query = months ? `?months=${months}` : "";
+    const response = await fetch(
+      `${BASE_URL}/backups/metrics/timeseries${query}`,
+      {
+        method: "GET",
+        headers: createHeaders(),
+      },
+    );
+    return handleResponse<{
+      success: boolean;
+      data: BackupMetricsTimeseriesPoint[];
+    }>(response);
+  },
+  listRuns: async (
+    query: BackupRunListQuery = {},
+  ): Promise<{
+    success: boolean;
+    data: BackupRunListResponse;
+  }> => {
+    const params = new URLSearchParams();
+    if (query.module) params.append("module", query.module);
+    if (query.status) params.append("status", query.status);
+    if (query.trigger) params.append("trigger", query.trigger);
+    if (query.batchId) params.append("batchId", query.batchId);
+    if (query.selectorKey) params.append("selectorKey", query.selectorKey);
+    if (query.backupKey) params.append("backupKey", query.backupKey);
+    if (query.limit !== undefined) params.append("limit", String(query.limit));
+    if (query.offset !== undefined) params.append("offset", String(query.offset));
+
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    const response = await fetch(`${BASE_URL}/backups/runs${qs}`, {
+      method: "GET",
+      headers: createHeaders(),
+    });
+    return handleResponse<{ success: boolean; data: BackupRunListResponse }>(
+      response,
+    );
+  },
+  retryRun: async (
+    runId: string,
+  ): Promise<{
+    success: boolean;
+    data: BackupRunDTO;
+  }> => {
+    const response = await fetch(`${BASE_URL}/backups/runs/${runId}/retry`, {
+      method: "POST",
+      headers: createHeaders(),
+    });
+    return handleResponse<{ success: boolean; data: BackupRunDTO }>(response);
+  },
 };
+
+export interface BackupDashboardDTO {
+  applicationBudget: {
+    usedBytes: string;
+    limitBytes: string;
+    warningBytes: string;
+    criticalBytes: string;
+    alertLevel: "normal" | "warning" | "critical";
+    percent: number;
+  };
+  neonOfficial: {
+    status: "configured" | "not_configured" | "unavailable";
+    dataTransferBytes: string | null;
+    limitBytes: string;
+    warningBytes: string;
+    criticalBytes: string;
+    alertLevel: "normal" | "warning" | "critical" | "unknown";
+    billingPeriod: string | null;
+    capturedAt: string | null;
+    stale: boolean;
+  };
+  storageUploaded: {
+    usedBytes: string;
+  };
+  moduleHealth: Array<{
+    module: "season" | "staff" | "members" | "content" | "operations";
+    lastRunStatus: string | null;
+    lastRunAt: string | null;
+    lastSuccessfulBackupKey: string | null;
+    lastSuccessfulAt: string | null;
+    fingerprint: string | null;
+  }>;
+  nextScheduledAt: string;
+  currentMonthStats: {
+    periodKey: string;
+    totalRuns: number;
+    succeededRuns: number;
+    failedRuns: number;
+    skippedRuns: number;
+    hasFailedRuns: boolean;
+    recentFailedRuns: Array<{
+      id: string;
+      module: string;
+      selectorKey: string;
+      trigger: string;
+      failureCode: string | null;
+      failureMessage: string | null;
+      createdAt: string;
+    }>;
+  };
+}
+
+export interface BaselineDimensionComparison {
+  baselineAvailable: boolean;
+  baselineBytes: string | null;
+  currentBytes: string;
+  savedBytes: string | null;
+  percentSaved: number | null;
+  baselineSource: "monthly_manual_full" | "historical_full" | "none";
+  baselineBackupKey: string | null;
+}
+
+export interface BackupMetricsSummaryDTO {
+  periodKey: string;
+  databaseExport: BaselineDimensionComparison;
+  storageUpload: BaselineDimensionComparison;
+  totals: {
+    databaseBytesEstimated: string;
+    uncompressedBytes: string;
+    uploadedBytes: string;
+    runsCount: number;
+  };
+  hasIncompleteBatches: boolean;
+}
+
+export interface BackupMetricsTimeseriesPoint {
+  periodKey: string;
+  databaseBytesEstimated: string;
+  uncompressedBytes: string;
+  uploadedBytes: string;
+  totalRuns: number;
+  succeededRuns: number;
+  failedRuns: number;
+}
+
+export interface BackupRunDTO {
+  id: string;
+  batchId?: string | null;
+  taskKey?: string | null;
+  trigger: string;
+  scope: string;
+  module: string;
+  selectorKey: string;
+  purpose: string;
+  status: "pending" | "running" | "succeeded" | "skipped" | "failed";
+  skipReason?: string | null;
+  failureCode?: string | null;
+  failureMessage?: string | null;
+  backupKey?: string | null;
+  checksum?: string | null;
+  objectSize?: string | null;
+  fingerprintBefore?: string | null;
+  fingerprintAfter?: string | null;
+  attempts: number;
+  databaseRowsRead?: number | null;
+  databaseBytesEstimated?: string | null;
+  uncompressedBytes?: string | null;
+  uploadedBytes?: string | null;
+  peakRssBytes?: string | null;
+  durationMs?: number | null;
+  startedAt: string;
+  finishedAt?: string | null;
+  createdAt: string;
+}
+
+export interface BackupRunListQuery {
+  module?: string;
+  status?: string;
+  trigger?: string;
+  batchId?: string;
+  selectorKey?: string;
+  backupKey?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface BackupRunListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  items: BackupRunDTO[];
+}
