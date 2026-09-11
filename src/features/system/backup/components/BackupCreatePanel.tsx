@@ -1,16 +1,34 @@
 import React, { useState } from "react";
 import { Database, ShieldCheck, AlertCircle, CheckCircle, RotateCw } from "lucide-react";
-import { backupApi, BackupCreateRequest } from "../../../../api/backup.service";
+import {
+  backupApi,
+  BackupCreateRequest,
+  BackupDashboardDTO,
+} from "../../../../api/backup.service";
+import { useBackupDashboard } from "../hooks/useBackupDashboard";
 
-interface BackupCreatePanelProps {
+export interface BackupCreatePanelProps {
   onSuccess?: () => void;
   activeSeasonId?: string | null;
+  dashboard?: BackupDashboardDTO | null;
 }
 
 export const BackupCreatePanel: React.FC<BackupCreatePanelProps> = ({
   onSuccess,
   activeSeasonId,
+  dashboard: propDashboard,
 }) => {
+  const { dashboard: hookDashboard } = useBackupDashboard();
+  const dashboard = propDashboard !== undefined ? propDashboard : hookDashboard;
+
+  const isNeonCritical =
+    dashboard?.neonOfficial?.status === "configured" &&
+    !dashboard.neonOfficial.stale &&
+    (dashboard.neonOfficial.alertLevel === "critical" ||
+      (dashboard.neonOfficial.dataTransferBytes !== null &&
+        BigInt(dashboard.neonOfficial.dataTransferBytes) >=
+          BigInt(dashboard.neonOfficial.criticalBytes)));
+
   const [scope, setScope] = useState<"module" | "full">("module");
   const [moduleType, setModuleType] = useState<"season" | "staff" | "members" | "content" | "operations">("season");
   const [seasonId, setSeasonId] = useState<string>(activeSeasonId || "");
@@ -25,6 +43,13 @@ export const BackupCreatePanel: React.FC<BackupCreatePanelProps> = ({
     e.preventDefault();
     setErrorMessage(null);
     setResultMessage(null);
+
+    if (isNeonCritical) {
+      const ok = window.confirm(
+        "🚨 高危警告：本月 Neon 官方用量已达到 4.0GB 红色预警上限！继续执行备份将产生额外公网出口流量。\n\n是否确认仍要执行？",
+      );
+      if (!ok) return;
+    }
 
     if (scope === "full") {
       const ok = window.confirm(
@@ -82,6 +107,23 @@ export const BackupCreatePanel: React.FC<BackupCreatePanelProps> = ({
         <Database className="w-5 h-5 text-blue-600" />
         <h3 className="font-semibold text-gray-800 text-sm">按需创建即时备份</h3>
       </div>
+
+      {isNeonCritical && (
+        <div
+          role="alert"
+          className="p-3.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800 flex items-start space-x-2.5 shadow-sm"
+        >
+          <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="font-semibold text-red-900">
+              🚨 高危告警：Neon 官方流量已达 4.0GB 红色预警上限
+            </div>
+            <div className="text-red-700 leading-relaxed">
+              当前月度官方数据传输量已达到或超过 4.0GB 警戒阈值。继续手动执行备份将产生额外公网出口流量，请谨慎操作。
+            </div>
+          </div>
+        </div>
+      )}
 
       {resultMessage && (
         <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-xs text-green-800 flex items-center space-x-2">
