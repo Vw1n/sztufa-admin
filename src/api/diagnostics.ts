@@ -1,4 +1,4 @@
-import { BASE_URL } from './http';
+import { BASE_URL } from './core/api-config';
 
 export async function diagnoseApi(): Promise<{ color: string; message: string }> {
   const controller = new AbortController();
