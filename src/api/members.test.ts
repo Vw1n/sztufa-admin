@@ -1,5 +1,5 @@
 import { memberRequest, cardPreview } from './members';
-import { BASE_URL } from './http';
+import { BASE_URL } from './core';
 
 describe('Admin Members API 客户端测试', () => {
   beforeEach(() => {

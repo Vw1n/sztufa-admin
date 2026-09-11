@@ -1,5 +1,5 @@
 import { pdfImportApi } from './pdf-import.service';
-import { setAuthToken, setTokenExpiry } from './http';
+import { setAuthToken, setTokenExpiry } from './core';
 
 global.fetch = jest.fn();
 
