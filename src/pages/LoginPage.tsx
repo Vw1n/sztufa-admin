@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Trophy, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ValidationErrors } from '../types/auth';
-import { BASE_URL } from '../api/http';
+import { BASE_URL } from '../api/core';
 import { diagnoseApi } from '../api/diagnostics';
 
 const LoginPage: React.FC = () => {

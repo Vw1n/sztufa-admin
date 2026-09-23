@@ -1,65 +1,49 @@
 import { CreateTeamWithPlayersDTO, TeamDTO, TeamListResponse, PlayerDTO } from './types';
-import { BASE_URL, createHeaders, handleResponse } from './http';
+import { authenticatedRequest } from './core';
 
 type TeamPlayerUpdatePayload = Omit<PlayerDTO, 'teamId'> & { id?: string };
 
 export const teamApi = {
   createWithPlayers: async (teamData: CreateTeamWithPlayersDTO): Promise<TeamDTO> => {
-    const response = await fetch(`${BASE_URL}/teams/with-players`, {
+    return authenticatedRequest<TeamDTO>('/teams/with-players', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify(teamData),
     });
-    return handleResponse<TeamDTO>(response);
   },
 
   create: async (teamData: TeamDTO): Promise<TeamDTO> => {
-    const response = await fetch(`${BASE_URL}/teams`, {
+    return authenticatedRequest<TeamDTO>('/teams', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify(teamData),
     });
-    return handleResponse<TeamDTO>(response);
   },
 
   getAll: async (page = 1, limit = 10, seasonId?: string, gender?: string): Promise<TeamListResponse> => {
-    let url = `${BASE_URL}/teams/admin/manage?page=${page}&limit=${limit}`;
+    let url = `/teams/admin/manage?page=${page}&limit=${limit}`;
     if (seasonId) {
       url += `&seasonId=${seasonId}`;
     }
     if (gender) {
       url += `&gender=${gender}`;
     }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-    return handleResponse<TeamListResponse>(response);
+    return authenticatedRequest<TeamListResponse>(url, { method: 'GET' });
   },
 
   search: async (name: string): Promise<TeamDTO[]> => {
-    const response = await fetch(`${BASE_URL}/teams/search?name=${encodeURIComponent(name)}`, {
+    return authenticatedRequest<TeamDTO[]>(`/teams/search?name=${encodeURIComponent(name)}`, {
       method: 'GET',
-      headers: createHeaders(),
     });
-    return handleResponse<TeamDTO[]>(response);
   },
 
   getById: async (id: string): Promise<TeamDTO> => {
-    const response = await fetch(`${BASE_URL}/teams/${id}`, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-    return handleResponse<TeamDTO>(response);
+    return authenticatedRequest<TeamDTO>(`/teams/${id}`, { method: 'GET' });
   },
 
   update: async (id: string, teamData: Partial<TeamDTO>): Promise<TeamDTO> => {
-    const response = await fetch(`${BASE_URL}/teams/${id}`, {
+    return authenticatedRequest<TeamDTO>(`/teams/${id}`, {
       method: 'PATCH',
-      headers: createHeaders(),
       body: JSON.stringify(teamData),
     });
-    return handleResponse<TeamDTO>(response);
   },
 
   updateWithPlayers: async (
@@ -82,31 +66,21 @@ export const teamApi = {
       deletePlayerIds?: string[];
     }
   ): Promise<TeamDTO> => {
-    const response = await fetch(`${BASE_URL}/teams/${id}/with-players`, {
+    return authenticatedRequest<TeamDTO>(`/teams/${id}/with-players`, {
       method: 'PATCH',
-      headers: createHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse<TeamDTO>(response);
   },
 
   delete: async (id: string): Promise<TeamDTO> => {
-    const response = await fetch(`${BASE_URL}/teams/${id}`, {
-      method: 'DELETE',
-      headers: createHeaders(),
-    });
-    return handleResponse<TeamDTO>(response);
+    return authenticatedRequest<TeamDTO>(`/teams/${id}`, { method: 'DELETE' });
   },
 
   getPlayers: async (id: string, seasonId?: string): Promise<PlayerDTO[]> => {
-    let url = `${BASE_URL}/teams/${id}/players`;
+    let url = `/teams/${id}/players`;
     if (seasonId) {
       url += `?seasonId=${seasonId}`;
     }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-    return handleResponse<PlayerDTO[]>(response);
+    return authenticatedRequest<PlayerDTO[]>(url, { method: 'GET' });
   },
 };

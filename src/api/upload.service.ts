@@ -5,19 +5,17 @@ import {
   LastImportBatch,
   UndoImportResult,
 } from './types';
-import { BASE_URL, handleResponse, createHeaders } from './http';
+import { authenticatedRequest } from './core';
 
 export const importApi = {
   preview: async (files: File[]): Promise<ImportPreview> => {
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
 
-    const response = await fetch(`${BASE_URL}/import/json/preview`, {
+    return authenticatedRequest<ImportPreview>('/import/json/preview', {
       method: 'POST',
-      headers: createHeaders(true),
       body: formData,
-    });
-    return handleResponse<ImportPreview>(response);
+    }, { multipart: true });
   },
 
   execute: async (
@@ -28,28 +26,24 @@ export const importApi = {
     files.forEach((file) => formData.append('files', file));
     formData.append('expectedDigest', expectedDigest);
 
-    const response = await fetch(`${BASE_URL}/import/json`, {
-      method: 'POST',
-      headers: createHeaders(true),
-      body: formData,
-    });
-    return handleResponse<{ message: string; result: ImportExecutionResult }>(response);
+    return authenticatedRequest<{ message: string; result: ImportExecutionResult }>(
+      '/import/json',
+      { method: 'POST', body: formData },
+      { multipart: true },
+    );
   },
 
   getLast: async (): Promise<LastImportBatch | null> => {
-    const response = await fetch(`${BASE_URL}/import/json/last`, {
+    return authenticatedRequest<LastImportBatch | null>('/import/json/last', {
       method: 'GET',
-      headers: createHeaders(),
     });
-    return handleResponse<LastImportBatch | null>(response);
   },
 
   undoLast: async (): Promise<{ message: string; result: UndoImportResult }> => {
-    const response = await fetch(`${BASE_URL}/import/json/undo`, {
-      method: 'POST',
-      headers: createHeaders(),
-    });
-    return handleResponse<{ message: string; result: UndoImportResult }>(response);
+    return authenticatedRequest<{ message: string; result: UndoImportResult }>(
+      '/import/json/undo',
+      { method: 'POST' },
+    );
   },
 };
 
@@ -57,22 +51,19 @@ export const uploadApi = {
   upload: async (file: File): Promise<ApiResponse<{ url: string }>> => {
     const formData = new FormData();
     formData.append('file', file);
-    
-    const response = await fetch(`${BASE_URL}/upload`, {
-      method: 'POST',
-      headers: createHeaders(true), // multipart = true
-      body: formData,
-    });
-    return handleResponse<ApiResponse<{ url: string }>>(response);
+
+    return authenticatedRequest<ApiResponse<{ url: string }>>(
+      '/upload',
+      { method: 'POST', body: formData },
+      { multipart: true },
+    );
   },
 
   cleanupTempKeys: async (keys: string[]): Promise<{ cleanedCount: number }> => {
     if (!keys || keys.length === 0) return { cleanedCount: 0 };
-    const response = await fetch(`${BASE_URL}/upload/cleanup-temp`, {
+    return authenticatedRequest<{ cleanedCount: number }>('/upload/cleanup-temp', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ keys }),
     });
-    return handleResponse<{ cleanedCount: number }>(response);
   },
 };

@@ -1,4 +1,4 @@
-import { BASE_URL, createHeaders, handleResponse } from './http';
+import { BASE_URL, authenticatedRequest, buildAuthHeaders, parseResponse } from './core';
 
 export interface ParsedField<T = string> {
   value: T | null;
@@ -55,16 +55,17 @@ interface PdfUploadUrlResponse {
 export const pdfImportApi = {
   preview: async (file: File): Promise<PdfPreviewResponse> => {
     const mimeType = file.type || 'application/pdf';
-    const uploadUrlResponse = await fetch(`${BASE_URL}/import/pdf/upload-url`, {
-      method: 'POST',
-      headers: createHeaders(),
-      body: JSON.stringify({
-        fileName: file.name,
-        fileSize: file.size,
-        mimeType,
-      }),
-    });
-    const upload = await handleResponse<PdfUploadUrlResponse>(uploadUrlResponse);
+    const upload = await authenticatedRequest<PdfUploadUrlResponse>(
+      '/import/pdf/upload-url',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType,
+        }),
+      },
+    );
 
     let directUploadResponse: Response;
     try {
@@ -84,16 +85,14 @@ export const pdfImportApi = {
       throw new Error(`PDF 直传对象存储失败（${directUploadResponse.status}）`);
     }
 
-    const response = await fetch(`${BASE_URL}/import/pdf/preview-uploaded`, {
+    return authenticatedRequest<PdfPreviewResponse>('/import/pdf/preview-uploaded', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({
         objectKey: upload.objectKey,
         fileName: file.name,
         fileSize: file.size,
       }),
     });
-    return handleResponse<PdfPreviewResponse>(response);
   },
 
   commit: async (
@@ -101,43 +100,39 @@ export const pdfImportApi = {
     teams: ParsedTeam[],
     seasonId?: string,
   ): Promise<PdfCommitResponse> => {
-    const response = await fetch(`${BASE_URL}/import/pdf/${batchId}/commit`, {
+    return authenticatedRequest<PdfCommitResponse>(`/import/pdf/${batchId}/commit`, {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ teams, seasonId }),
     });
-    return handleResponse<PdfCommitResponse>(response);
   },
 
   uploadPhoto: async (batchId: string, file: File): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${BASE_URL}/import/pdf/${batchId}/photo`, {
-      method: 'POST',
-      headers: createHeaders(true),
-      body: formData,
-    });
-    return handleResponse<{ url: string }>(response);
+    return authenticatedRequest<{ url: string }>(
+      `/import/pdf/${batchId}/photo`,
+      { method: 'POST', body: formData },
+      { multipart: true },
+    );
   },
 
   downloadAsset: async (batchId: string, url: string): Promise<Blob> => {
     const response = await fetch(`${BASE_URL}/import/pdf/${batchId}/asset`, {
       method: 'POST',
-      headers: createHeaders(),
+      headers: buildAuthHeaders(),
       body: JSON.stringify({ url }),
     });
     if (!response.ok) {
-      await handleResponse(response);
+      await parseResponse(response);
     }
     return response.blob();
   },
 
   cancel: async (batchId: string): Promise<{ message: string; batchId: string }> => {
-    const response = await fetch(`${BASE_URL}/import/pdf/${batchId}/cancel`, {
-      method: 'POST',
-      headers: createHeaders(),
-    });
-    return handleResponse<{ message: string; batchId: string }>(response);
+    return authenticatedRequest<{ message: string; batchId: string }>(
+      `/import/pdf/${batchId}/cancel`,
+      { method: 'POST' },
+    );
   },
 };

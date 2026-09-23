@@ -1,71 +1,56 @@
-import { BASE_URL, createHeaders, handleResponse } from './http';
 import { SeasonDTO, SeasonDeleteResponse, SeasonGroupDTO } from './types';
+import { request, authenticatedRequest } from './core';
 
 export const seasonApi = {
+  // 以下两个只读接口历史上不携带认证头，保持现状（公开赛季元数据）。
   getAll: async (): Promise<SeasonDTO[]> => {
-    const response = await fetch(`${BASE_URL}/seasons`);
-    return handleResponse<SeasonDTO[]>(response);
+    return request<SeasonDTO[]>('/seasons');
   },
   getActive: async (): Promise<SeasonDTO | null> => {
-    const response = await fetch(`${BASE_URL}/seasons/active`);
-    return handleResponse<SeasonDTO | null>(response);
+    return request<SeasonDTO | null>('/seasons/active');
   },
   archive: async (name: string, type: string): Promise<SeasonDTO> => {
-    const response = await fetch(`${BASE_URL}/seasons/archive`, {
+    return authenticatedRequest<SeasonDTO>('/seasons/archive', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ name, type }),
     });
-    return handleResponse<SeasonDTO>(response);
   },
   create: async (name: string, type: string): Promise<SeasonDTO> => {
-    const response = await fetch(`${BASE_URL}/seasons`, {
+    return authenticatedRequest<SeasonDTO>('/seasons', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ name, type }),
     });
-    return handleResponse<SeasonDTO>(response);
   },
   updateStatus: async (id: string, status: string): Promise<SeasonDTO> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}/status`, {
+    return authenticatedRequest<SeasonDTO>(`/seasons/${id}/status`, {
       method: 'PATCH',
-      headers: createHeaders(),
       body: JSON.stringify({ status }),
     });
-    return handleResponse<SeasonDTO>(response);
   },
   rename: async (id: string, name: string): Promise<SeasonDTO> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}`, {
+    return authenticatedRequest<SeasonDTO>(`/seasons/${id}`, {
       method: 'PATCH',
-      headers: createHeaders(),
       body: JSON.stringify({ name }),
     });
-    return handleResponse<SeasonDTO>(response);
   },
   delete: async (id: string): Promise<SeasonDeleteResponse> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}`, {
+    return authenticatedRequest<SeasonDeleteResponse>(`/seasons/${id}`, {
       method: 'DELETE',
-      headers: createHeaders(),
     });
-    return handleResponse<SeasonDeleteResponse>(response);
   },
   getGroups: async (id: string): Promise<SeasonGroupDTO[]> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}/groups`);
-    return handleResponse<SeasonGroupDTO[]>(response);
+    return request<SeasonGroupDTO[]>(`/seasons/${id}/groups`);
   },
   updateGroups: async (id: string, groups: { teamId: string; groupName: string }[]): Promise<{ count?: number; message?: string }> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}/groups`, {
+    return authenticatedRequest<{ count?: number; message?: string }>(`/seasons/${id}/groups`, {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ groups }),
     });
-    return handleResponse<{ count?: number; message?: string }>(response);
   },
   generateKnockout: async (id: string): Promise<{ round?: string; countCreated?: number; countUpdated?: number; createdCount?: number; message?: string }> => {
-    const response = await fetch(`${BASE_URL}/seasons/${id}/generate-knockout`, {
-      method: 'POST',
-      headers: createHeaders(),
-    });
-    return handleResponse<{ round?: string; countCreated?: number; countUpdated?: number; createdCount?: number; message?: string }>(response);
+    return authenticatedRequest<{ round?: string; countCreated?: number; countUpdated?: number; createdCount?: number; message?: string }>(
+      `/seasons/${id}/generate-knockout`,
+      { method: 'POST' },
+    );
   },
 };

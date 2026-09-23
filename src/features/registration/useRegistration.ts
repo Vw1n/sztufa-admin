@@ -9,7 +9,7 @@ import {
   RegistrationStatusType,
   TeamRegistrationDTO,
 } from './registration.types';
-import { ApiError } from '../../api/http';
+import { ApiError } from '../../api/core';
 import { useAuth } from '../../contexts/AuthContext';
 
 export function useRegistration() {

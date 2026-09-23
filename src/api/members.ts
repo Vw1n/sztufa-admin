@@ -1,4 +1,4 @@
-import { BASE_URL, createHeaders, handleResponse } from "./http";
+import { authenticatedRequest, buildAuthHeaders, parseResponse, BASE_URL } from "./core";
 export interface Member {
   id: string;
   username: string;
@@ -25,21 +25,21 @@ export async function memberRequest<T>(
   method = "GET",
   body?: unknown,
 ): Promise<T> {
-  return handleResponse<T>(
-    await fetch(`${BASE_URL}/admin/members${path}`, {
+  return authenticatedRequest<T>(
+    `/admin/members${path}`,
+    {
       method,
-      headers: createHeaders(),
       ...(body ? { body: JSON.stringify(body) } : {}),
-    }),
+    },
   );
 }
 export async function cardPreview(memberId: string, assetId: string) {
   const response = await fetch(
     `${BASE_URL}/admin/members/${memberId}/cards/${assetId}`,
-    { headers: createHeaders(), cache: "no-store" },
+    { headers: buildAuthHeaders(), cache: "no-store" },
   );
   if (!response.ok) {
-    await handleResponse(response);
+    await parseResponse(response);
     throw new Error("材料不可查看");
   }
   return response.blob();

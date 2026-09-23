@@ -1,4 +1,4 @@
-import { BASE_URL, createHeaders, handleResponse } from './http';
+import { authenticatedRequest } from './core';
 import {
   RegistrationListResponseDTO,
   RegistrationQueryFilter,
@@ -10,37 +10,30 @@ import {
 export const registrationApi = {
   async getMine(seasonId?: string): Promise<TeamRegistrationDTO | null> {
     const query = seasonId ? `?seasonId=${encodeURIComponent(seasonId)}` : '';
-    const res = await fetch(`${BASE_URL}/registrations/me${query}`, {
-      headers: createHeaders(),
+    return authenticatedRequest<TeamRegistrationDTO | null>(`/registrations/me${query}`, {
+      method: 'GET',
     });
-    return handleResponse<TeamRegistrationDTO | null>(res);
   },
 
   async create(seasonId: string): Promise<TeamRegistrationDTO> {
-    const res = await fetch(`${BASE_URL}/registrations`, {
+    return authenticatedRequest<TeamRegistrationDTO>('/registrations', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ seasonId }),
     });
-    return handleResponse<TeamRegistrationDTO>(res);
   },
 
   async save(id: string, payload: SaveRegistrationPayload): Promise<TeamRegistrationDTO> {
-    const res = await fetch(`${BASE_URL}/registrations/${id}`, {
+    return authenticatedRequest<TeamRegistrationDTO>(`/registrations/${id}`, {
       method: 'PATCH',
-      headers: createHeaders(),
       body: JSON.stringify(payload),
     });
-    return handleResponse<TeamRegistrationDTO>(res);
   },
 
   async submit(id: string, comment?: string): Promise<TeamRegistrationDTO> {
-    const res = await fetch(`${BASE_URL}/registrations/${id}/submit`, {
+    return authenticatedRequest<TeamRegistrationDTO>(`/registrations/${id}/submit`, {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify({ comment }),
     });
-    return handleResponse<TeamRegistrationDTO>(res);
   },
 
   async getAdminList(filter: RegistrationQueryFilter = {}): Promise<RegistrationListResponseDTO> {
@@ -51,36 +44,30 @@ export const registrationApi = {
     if (filter.pageSize) params.append('pageSize', String(filter.pageSize));
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    const res = await fetch(`${BASE_URL}/registrations/admin${queryString}`, {
-      headers: createHeaders(),
+    return authenticatedRequest<RegistrationListResponseDTO>(`/registrations/admin${queryString}`, {
+      method: 'GET',
     });
-    return handleResponse<RegistrationListResponseDTO>(res);
   },
 
   async getDetail(id: string): Promise<TeamRegistrationDTO> {
-    const res = await fetch(`${BASE_URL}/registrations/${id}`, {
-      headers: createHeaders(),
+    return authenticatedRequest<TeamRegistrationDTO>(`/registrations/${id}`, {
+      method: 'GET',
     });
-    return handleResponse<TeamRegistrationDTO>(res);
   },
 
   async approve(id: string, reviewComment?: string): Promise<TeamRegistrationDTO> {
     const payload: ReviewRegistrationPayload = { reviewComment };
-    const res = await fetch(`${BASE_URL}/registrations/${id}/approve`, {
+    return authenticatedRequest<TeamRegistrationDTO>(`/registrations/${id}/approve`, {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify(payload),
     });
-    return handleResponse<TeamRegistrationDTO>(res);
   },
 
   async requestChanges(id: string, reviewComment?: string): Promise<TeamRegistrationDTO> {
     const payload: ReviewRegistrationPayload = { reviewComment };
-    const res = await fetch(`${BASE_URL}/registrations/${id}/request-changes`, {
+    return authenticatedRequest<TeamRegistrationDTO>(`/registrations/${id}/request-changes`, {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify(payload),
     });
-    return handleResponse<TeamRegistrationDTO>(res);
   },
 };

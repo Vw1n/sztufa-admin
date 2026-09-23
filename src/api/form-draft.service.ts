@@ -1,4 +1,4 @@
-import { BASE_URL, createHeaders, handleResponse } from './http';
+import { authenticatedRequest } from './core';
 
 export interface AdminFormDraftDTO {
   id?: string;
@@ -24,46 +24,35 @@ export interface SaveDraftResponse {
 export const formDraftApi = {
   saveDraft: async (data: Partial<AdminFormDraftDTO>, draftId?: string): Promise<SaveDraftResponse> => {
     const targetId = data.draftId || draftId;
-    const url = targetId ? `${BASE_URL}/admin/form-drafts/${targetId}` : `${BASE_URL}/admin/form-drafts`;
+    const url = targetId ? `/admin/form-drafts/${targetId}` : '/admin/form-drafts';
     const method = targetId ? 'PATCH' : 'POST';
-    const response = await fetch(url, {
+    return authenticatedRequest<SaveDraftResponse>(url, {
       method,
-      headers: createHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse<SaveDraftResponse>(response);
   },
 
   getDraft: async (id: string): Promise<AdminFormDraftDTO> => {
-    const response = await fetch(`${BASE_URL}/admin/form-drafts/${id}`, {
+    return authenticatedRequest<AdminFormDraftDTO>(`/admin/form-drafts/${id}`, {
       method: 'GET',
-      headers: createHeaders(),
     });
-    return handleResponse<AdminFormDraftDTO>(response);
   },
 
   listDrafts: async (formType?: 'TEAM' | 'MATCH'): Promise<AdminFormDraftDTO[]> => {
-    const url = formType ? `${BASE_URL}/admin/form-drafts?formType=${formType}` : `${BASE_URL}/admin/form-drafts`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-    return handleResponse<AdminFormDraftDTO[]>(response);
+    const url = formType ? `/admin/form-drafts?formType=${formType}` : '/admin/form-drafts';
+    return authenticatedRequest<AdminFormDraftDTO[]>(url, { method: 'GET' });
   },
 
   materializeDraft: async (id: string): Promise<{ success: boolean; officialRecordId?: string; error?: string }> => {
-    const response = await fetch(`${BASE_URL}/admin/form-drafts/${id}/materialize`, {
-      method: 'POST',
-      headers: createHeaders(),
-    });
-    return handleResponse<{ success: boolean; officialRecordId?: string; error?: string }>(response);
+    return authenticatedRequest<{ success: boolean; officialRecordId?: string; error?: string }>(
+      `/admin/form-drafts/${id}/materialize`,
+      { method: 'POST' },
+    );
   },
 
   deleteDraft: async (id: string): Promise<{ success: boolean }> => {
-    const response = await fetch(`${BASE_URL}/admin/form-drafts/${id}`, {
+    return authenticatedRequest<{ success: boolean }>(`/admin/form-drafts/${id}`, {
       method: 'DELETE',
-      headers: createHeaders(),
     });
-    return handleResponse<{ success: boolean }>(response);
   },
 };

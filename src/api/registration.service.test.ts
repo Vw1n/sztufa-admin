@@ -1,5 +1,5 @@
 import { registrationApi } from './registration.service';
-import { ApiError } from './http';
+import { ApiError } from './core';
 
 describe('registrationApi', () => {
   beforeEach(() => {

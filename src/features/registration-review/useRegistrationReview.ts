@@ -7,7 +7,7 @@ import {
   RegistrationStatusType,
   TeamRegistrationDTO,
 } from '../registration/registration.types';
-import { ApiError } from '../../api/http';
+import { ApiError } from '../../api/core';
 
 export function useRegistrationReview() {
   const [loading, setLoading] = useState<boolean>(true);

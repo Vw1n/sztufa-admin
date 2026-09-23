@@ -1,14 +1,12 @@
 import { MatchDTO, MatchListResponse } from './types';
-import { BASE_URL, createHeaders, handleResponse } from './http';
+import { authenticatedRequest } from './core';
 
 export const matchApi = {
   create: async (matchData: MatchDTO): Promise<MatchDTO> => {
-    const response = await fetch(`${BASE_URL}/matches`, {
+    return authenticatedRequest<MatchDTO>('/matches', {
       method: 'POST',
-      headers: createHeaders(),
       body: JSON.stringify(matchData),
     });
-    return handleResponse<MatchDTO>(response);
   },
 
   getAll: async (
@@ -20,7 +18,7 @@ export const matchApi = {
     groupName?: string,
     knockoutRound?: string
   ): Promise<MatchListResponse> => {
-    let url = `${BASE_URL}/matches?page=${page}&limit=${limit}`;
+    let url = `/matches?page=${page}&limit=${limit}`;
     if (teamId) {
       url += `&teamId=${teamId}`;
     }
@@ -36,51 +34,35 @@ export const matchApi = {
     if (knockoutRound) {
       url += `&knockoutRound=${knockoutRound}`;
     }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-    return handleResponse<MatchListResponse>(response);
+    return authenticatedRequest<MatchListResponse>(url, { method: 'GET' });
   },
 
   getById: async (id: string): Promise<MatchDTO> => {
-    const response = await fetch(`${BASE_URL}/matches/${id}`, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-    return handleResponse<MatchDTO>(response);
+    return authenticatedRequest<MatchDTO>(`/matches/${id}`, { method: 'GET' });
   },
 
   update: async (id: string, matchData: Partial<MatchDTO>): Promise<MatchDTO> => {
-    const response = await fetch(`${BASE_URL}/matches/${id}`, {
+    return authenticatedRequest<MatchDTO>(`/matches/${id}`, {
       method: 'PATCH',
-      headers: createHeaders(),
       body: JSON.stringify(matchData),
     });
-    return handleResponse<MatchDTO>(response);
   },
 
   delete: async (id: string): Promise<MatchDTO> => {
-    const response = await fetch(`${BASE_URL}/matches/${id}`, {
-      method: 'DELETE',
-      headers: createHeaders(),
-    });
-    return handleResponse<MatchDTO>(response);
+    return authenticatedRequest<MatchDTO>(`/matches/${id}`, { method: 'DELETE' });
   },
 
   recalculatePredictions: async (matchId: string): Promise<{ settledCount?: number; count?: number; message?: string }> => {
-    const response = await fetch(`${BASE_URL}/predictions/matches/${matchId}/recalculate`, {
-      method: 'POST',
-      headers: createHeaders(),
-    });
-    return handleResponse<{ settledCount?: number; count?: number; message?: string }>(response);
+    return authenticatedRequest<{ settledCount?: number; count?: number; message?: string }>(
+      `/predictions/matches/${matchId}/recalculate`,
+      { method: 'POST' },
+    );
   },
 
   voidPredictions: async (matchId: string): Promise<{ voidedCount?: number; count?: number; message?: string }> => {
-    const response = await fetch(`${BASE_URL}/predictions/matches/${matchId}/void`, {
-      method: 'POST',
-      headers: createHeaders(),
-    });
-    return handleResponse<{ voidedCount?: number; count?: number; message?: string }>(response);
+    return authenticatedRequest<{ voidedCount?: number; count?: number; message?: string }>(
+      `/predictions/matches/${matchId}/void`,
+      { method: 'POST' },
+    );
   },
 };

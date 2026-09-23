@@ -8,7 +8,9 @@ import {
   setTokenExpiry,
   getTokenExpiry,
   removeTokenExpiry,
-} from '../api/http';
+  clearAuthStorage,
+  AUTH_EXPIRED_EVENT,
+} from '../api/core';
 
 interface AuthContextType {
   user: User | null;
@@ -31,11 +33,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const checkTokenExpiry = useCallback((): boolean => {
     const token = getAuthToken();
     const expiry = getTokenExpiry();
-    
+
     if (!token || !expiry) {
       return false;
     }
-    
+
     return Date.now() <= expiry;
   }, []);
 
@@ -47,6 +49,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('tokenExpiry');
     setUser(null);
+  }, []);
+
+  // 受保护接口 401 时由 authenticated-fetch 派发一次 auth-expired 事件，
+  // 这里统一清理会话并跳转登录页（API 层不再直接 window.location）。
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      clearAuthStorage();
+      setUser(null);
+      setIsLoading(false);
+      if (typeof window !== 'undefined') {
+        window.location.assign('/login?expired=true');
+      }
+    };
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
   }, []);
 
   useEffect(() => {
@@ -78,25 +95,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       setIsLoading(false);
     };
-    
+
     initAuth();
   }, [checkTokenExpiry, performLogout]);
 
   const login = async (username: string, password: string, rememberMe: boolean = false) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await authApi.login({ username, password });
-      
+
       if (response && response.token) {
         const { token, user: userData } = response;
-        
+
         // 解析 JWT 获取过期时间
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           const expiryTime = payload.exp ? payload.exp * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000;
-          
+
           // P1-1: 根据"记住我"选项选择存储位置
           if (rememberMe) {
             // 勾选"记住我"：存入 localStorage，关闭浏览器后仍可恢复
@@ -118,14 +135,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             sessionStorage.setItem('tokenExpiry', expiryTime.toString());
           }
         }
-        
+
         const userInfo: User = {
           id: (userData as { id: string })?.id || '',
           username: (userData as { username: string })?.username || username,
           role: (userData as { role: string })?.role || 'user',
           teamId: (userData as { teamId?: string })?.teamId,
         };
-        
+
         localStorage.setItem('user', JSON.stringify(userInfo));
         setUser(userInfo);
       } else {
