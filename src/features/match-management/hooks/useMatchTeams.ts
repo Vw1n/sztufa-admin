@@ -23,8 +23,13 @@ export function useMatchTeams(
 
   const loadTeams = useCallback(async (targetSeasonId?: string) => {
     const requestId = ++teamRequestSequence.current;
+    const selectedSeasonId = targetSeasonId || latestRef.current.seasonId;
+    if (!selectedSeasonId) {
+      setAvailableTeams([]);
+      return;
+    }
     try {
-      const response = await teamApi.getAll(1, 100, targetSeasonId || latestRef.current.seasonId);
+      const response = await teamApi.getAll(1, 100, selectedSeasonId);
       if (requestId !== teamRequestSequence.current) return;
       setAvailableTeams(response.data);
     } catch (err) {

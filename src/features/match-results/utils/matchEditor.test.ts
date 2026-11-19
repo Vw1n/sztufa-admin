@@ -28,6 +28,10 @@ const match = (overrides: Partial<Match> = {}): Match => ({
 });
 
 describe('matchEditor', () => {
+  it('does not truncate decimal scores even for historical matches without events', () => {
+    expect(validateMatchEdit(match({ homeScore: 1.5, events: [] }))).toBe('主队得分必须是非负整数');
+    expect(validateMatchEdit(match({ awayScore: -1, events: [], stage: 'KNOCKOUT', knockoutRound: '5TH' }))).toBe('客队得分必须是非负整数');
+  });
   it('validates scores against goal events', () => {
     expect(validateMatchEdit(match({ homeScore: 2 }))).toContain('与主队得分(2)不一致');
   });

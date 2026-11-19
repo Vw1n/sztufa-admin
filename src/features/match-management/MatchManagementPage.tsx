@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Save, Loader2, AlertCircle } from 'lucide-react';
 import { useMatchForm } from './hooks/useMatchForm';
 import MatchBasicInfo from './components/MatchBasicInfo';
@@ -51,6 +52,10 @@ const MatchManagementPage: React.FC = () => {
       </header>
 
       <main className="page-content">
+        {!activeSeason && <div className="form-section" role="status">
+          <p>当前没有可录入比赛的活跃赛季，请先创建或激活赛季。</p>
+          {user?.role === 'super_admin' && <Link to="/settings?tab=backup">前往赛季管理</Link>}
+        </div>}
         {isSaved && <SuccessToast message="赛事信息录入成功！" />}
 
         {error && (
@@ -61,6 +66,7 @@ const MatchManagementPage: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit}>
+          <fieldset disabled={!activeSeason || isLoading} className="match-entry-fields">
           <MatchBasicInfo
             formData={formData}
             activeSeasons={activeSeasons}
@@ -117,6 +123,7 @@ const MatchManagementPage: React.FC = () => {
             handleAssistPlayerSelect={handleAssistPlayerSelect}
             isSuperAdmin={user?.role === 'super_admin'}
           />
+          </fieldset>
         </form>
       </main>
 
@@ -125,7 +132,7 @@ const MatchManagementPage: React.FC = () => {
           <button 
             onClick={handleSubmit} 
             className="save-btn"
-            disabled={isLoading}
+            disabled={isLoading || !activeSeason}
           >
             {isLoading ? (
               <>

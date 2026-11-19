@@ -28,6 +28,10 @@ const form = (overrides: Partial<MatchFormData> = {}): MatchFormData => ({
 });
 
 describe('matchForm', () => {
+  it.each(['1.5', '-1', '1abc', '1e2', 'Infinity', '9007199254740992'])('rejects invalid scores %s without truncating them', (score) => {
+    expect(validateMatchForm(form({ homeTeamScore: score, events: [] }))).toBe('主队得分必须是非负整数');
+    expect(validateMatchForm(form({ awayTeamScore: score, events: [] }))).toBe('客队得分必须是非负整数');
+  });
   it('allows an own goal without an associated player', () => {
     const ownGoalForm = form();
 

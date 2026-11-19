@@ -4,6 +4,7 @@ import { Team } from '../../../types';
 import { MatchDTO } from '../../../api/types';
 import { getErrorMessage } from '../../../utils/errors';
 import { uploadImageFile } from '../../../utils/imageUpload';
+import { ResilientImage, TeamLogo } from '../../../components/ResilientImage';
 
 interface TeamDetailPanelProps {
   selectedTeam: Team;
@@ -49,16 +50,14 @@ const ImageUploadField: React.FC<{
   isEditing: boolean;
   onUpload: (url: string) => void;
   alt: string;
-}> = ({ label, value, isEditing, onUpload, alt }) => (
+  teamName?: string;
+}> = ({ label, value, isEditing, onUpload, alt, teamName }) => (
   <div className="form-group" style={{ flex: 1 }}>
     <label>{label}</label>
     {isEditing ? (
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
-        {value ? (
-          <img src={value} alt={alt} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
-        ) : (
-          <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: '#f1f3f5', border: '1px dashed #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#868e96' }}>无</div>
-        )}
+        {teamName ? <TeamLogo src={value} name={teamName} size={60} /> :
+          <ResilientImage key={value || ''} src={value} alt={alt} style={{ width: 60, height: 60, objectFit: 'contain' }} fallback={<span>暂无可用图片</span>} />}
         <label className="add-btn small" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 12px', background: '#3b5bdb', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', border: 'none', fontWeight: 500 }}>
           上传{label}
           <input
@@ -80,11 +79,8 @@ const ImageUploadField: React.FC<{
       </div>
     ) : (
       <div style={{ marginTop: '5px' }}>
-        {value ? (
-          <img src={value} alt={alt} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e9ecef', padding: '4px', background: '#fff' }} />
-        ) : (
-          <div className="form-value">未上传{label}</div>
-        )}
+        {teamName ? <TeamLogo src={value} name={teamName} size={60} /> :
+          <ResilientImage key={value || ''} src={value} alt={alt} style={{ width: 60, height: 60, objectFit: 'contain' }} fallback={null} />}
       </div>
     )}
   </div>
@@ -167,6 +163,7 @@ export const TeamDetailPanel: React.FC<TeamDetailPanelProps> = ({
         <div className="form-row" style={{ gridColumn: 'span 3', display: 'flex', gap: '20px', marginTop: '15px' }}>
           <ImageUploadField
             label="队徽"
+            teamName={(isEditing ? editData?.teamName : selectedTeam.teamName) || '球队'}
             value={isEditing ? editData?.teamLogo : selectedTeam.teamLogo}
             isEditing={isEditing}
             onUpload={(url) => onFieldChange('teamLogo', url)}

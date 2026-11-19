@@ -37,6 +37,12 @@ describe('teamValidation', () => {
       expect(validateTeamData(validTeam)).toBeNull();
     });
 
+    it('blocks unnamed player rows but permits historical players without student IDs or numbers', () => {
+      const player = { ...validTeam.players![0], studentId: '', jerseyNumber: '' };
+      expect(validateTeamData({ ...validTeam, players: [player] })).toBeNull();
+      expect(validateTeamData({ ...validTeam, players: [{ ...player, name: ' ' }] })).toContain('缺少姓名');
+    });
+
     it('should allow saving team with empty teamName in zero-required mode', () => {
       expect(validateTeamData({ ...validTeam, teamName: '' })).toBeNull();
     });

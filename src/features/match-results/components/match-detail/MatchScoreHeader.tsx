@@ -60,7 +60,7 @@ export const MatchScoreHeader: React.FC<MatchScoreHeaderProps> = ({
                 type="number"
                 value={editData?.homeTeamScore || 0}
                 onChange={(e) => {
-                  const val = parseInt(e.target.value) || 0;
+                  const val = Number(e.target.value);
                   if (editData) onSetEditData({ ...editData, homeTeamScore: val, homeScore: val });
                 }}
                 className="form-input score-input"
@@ -115,7 +115,7 @@ export const MatchScoreHeader: React.FC<MatchScoreHeaderProps> = ({
                 type="number"
                 value={editData?.awayTeamScore || 0}
                 onChange={(e) => {
-                  const val = parseInt(e.target.value) || 0;
+                  const val = Number(e.target.value);
                   if (editData) onSetEditData({ ...editData, awayTeamScore: val, awayScore: val });
                 }}
                 className="form-input score-input"

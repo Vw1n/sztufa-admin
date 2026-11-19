@@ -124,8 +124,7 @@ export function useTeamEditor(
       } catch (patchErr: unknown) {
         const patchMessage = patchErr instanceof Error ? patchErr.message : '';
         if (patchMessage.includes('404') || patchMessage.includes('Cannot PATCH')) {
-          console.warn('后端尚未支持 with-players 批量更新接口，降级调用基本信息更新接口');
-          updatedTeam = await teamApi.update(editData.id, updatePayload);
+          throw new Error('球队和球员未保存：批量更新接口不可用，请刷新后重试或联系管理员', { cause: patchErr });
         } else {
           throw patchErr;
         }
@@ -139,7 +138,8 @@ export function useTeamEditor(
 
       const mappedTeam = mapTeamDtoToModel({
         ...updatedTeam,
-        id: updatedTeam.id || editData.id,
+        id: editData.id,
+        players: updatedTeam.players ?? currentPlayers,
       });
 
       setIsSaved(true);

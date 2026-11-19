@@ -1,6 +1,14 @@
 import React from 'react';
 import { Calendar, Edit2, Globe, Trash2 } from 'lucide-react';
 import { NewsDTO } from '../../../api/service';
+import { ResilientImage } from '../../../components/ResilientImage';
+
+const NewsCover = ({ src, mobile = false }: { src?: string | null; mobile?: boolean }) => (
+  <ResilientImage key={src || ''} src={src} alt="封面" className={mobile ? 'mobile-news-cover' : undefined}
+    style={mobile ? undefined : { width: 56, height: 38, objectFit: 'cover', borderRadius: 4 }}
+    fallback={<div className={mobile ? 'mobile-news-cover-placeholder' : undefined}
+      style={mobile ? undefined : { width: 56, height: 38, background: '#f1f3f5', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#687078' }}>无封面</div>} />
+);
 
 interface NewsTableProps {
   newsList: NewsDTO[];
@@ -32,11 +40,7 @@ export const NewsTable: React.FC<NewsTableProps> = ({
             {newsList.map((item) => (
               <tr key={item.id}>
                 <td>
-                  {item.coverImage ? (
-                    <img src={item.coverImage} alt="封面" style={{ width: '56px', height: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #eee' }} />
-                  ) : (
-                    <div style={{ width: '56px', height: '38px', background: '#f1f3f5', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#adb5bd' }}>无封面</div>
-                  )}
+                  <NewsCover src={item.coverImage} />
                 </td>
                 <td>
                   <div style={{ fontWeight: 600, color: '#212529', marginBottom: '4px' }}>{item.title}</div>
@@ -81,11 +85,7 @@ export const NewsTable: React.FC<NewsTableProps> = ({
         {newsList.map((item) => (
           <div key={item.id} className="mobile-news-card">
             <div className="mobile-news-card-header">
-              {item.coverImage ? (
-                <img src={item.coverImage} alt="封面" className="mobile-news-cover" />
-              ) : (
-                <div className="mobile-news-cover-placeholder">无封面</div>
-              )}
+              <NewsCover src={item.coverImage} mobile />
               <div className="mobile-news-card-title-area">
                 <div className="mobile-news-title">{item.title}</div>
                 <div className="mobile-news-meta">

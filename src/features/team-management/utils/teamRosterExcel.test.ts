@@ -1,6 +1,7 @@
 import { mergeImportedPlayers, exportPlayersToExcel } from './teamRosterExcel';
 import { Player } from '../../../types';
 import * as XLSX from 'xlsx';
+import { buildPlayerPayload } from './teamMapper';
 
 jest.mock('xlsx', () => {
   const original = jest.requireActual('xlsx');
@@ -32,6 +33,9 @@ describe('teamRosterExcel', () => {
       expect(result.jerseyNumDupCount).toBe(0);
       expect(result.mergedPlayers.length).toBe(2);
       expect(result.mergedPlayers[1].photo).toBe('https://example.com/p2.jpg');
+      const payload = buildPlayerPayload(result.mergedPlayers);
+      expect(payload[0].id).toBe('p1');
+      expect(payload[1].id).toBeUndefined();
     });
 
     it('should allow duplicate student IDs during merge', () => {

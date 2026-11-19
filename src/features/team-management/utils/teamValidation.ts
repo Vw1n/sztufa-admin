@@ -13,17 +13,18 @@ export function validateCommonTeamFields(team: Partial<Team | TeamFormData>): st
 }
 
 export function validatePlayerList(
-  _players?: Player[],
+  players?: Player[],
   _options: { requireAtLeastOne?: boolean } = {}
 ): string | null {
-  return null;
+  const unnamedIndex = (players || []).findIndex(player => !player.name?.trim());
+  return unnamedIndex >= 0 ? `第${unnamedIndex + 1}名球员缺少姓名，请填写姓名或删除空白行` : null;
 }
 
 /**
  * 校验球队编辑状态数据
  */
 export function validateTeamData(editData: Partial<Team>): string | null {
-  return validateCommonTeamFields(editData);
+  return validateCommonTeamFields(editData) || validatePlayerList(editData.players);
 }
 
 /**
@@ -31,7 +32,7 @@ export function validateTeamData(editData: Partial<Team>): string | null {
  */
 export function validateTeamCreation(
   team: TeamFormData,
-  _players: Player[]
+  players: Player[]
 ): string | null {
-  return validateCommonTeamFields(team);
+  return validateCommonTeamFields(team) || validatePlayerList(players);
 }

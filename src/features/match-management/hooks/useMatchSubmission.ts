@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MatchFormData, Match } from '../../../types';
 import { matchApi, teamApi } from '../../../api/service';
 import { formDraftApi } from '../../../api/form-draft.service';
-import { buildMatchDto, validateMatchForm, MatchLineup } from '../utils/matchForm';
+import { buildMatchDto, validateMatchForm, validateScoreInputs, MatchLineup } from '../utils/matchForm';
 
 export function useMatchSubmission() {
   const [isSaved, setIsSaved] = useState(false);
@@ -32,6 +32,17 @@ export function useMatchSubmission() {
   ) => {
     e.preventDefault();
     setError(null);
+
+    if (!formData.seasonId) {
+      setError('请先创建或激活赛季，再录入比赛');
+      return;
+    }
+    // 超管允许保存不完整草稿，但填写的比分也不能被静默截断。
+    const scoreError = validateScoreInputs(formData.homeTeamScore || '0', formData.awayTeamScore || '0');
+    if (scoreError) {
+      setError(scoreError);
+      return;
+    }
 
     const userStr = typeof localStorage !== 'undefined' ? localStorage.getItem('user') : null;
     let currentUserRole = 'super_admin';
@@ -75,9 +86,8 @@ export function useMatchSubmission() {
           setIsSaved(true);
           if (onSuccess) onSuccess();
         } else {
-          setIsSaved(true);
+          setIsSaved(false);
           setError(matRes.error || '信息不完整，已保存为草稿');
-          if (onSuccess) onSuccess();
         }
       } else {
         if (formData.homeTeamId.trim()) {

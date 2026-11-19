@@ -23,6 +23,19 @@ jest.mock('../../../api/service', () => ({
 }));
 
 describe('useMatchForm - 门面 Hook 完整集成测试', () => {
+  it('没有活跃赛季时不加载全部历史球队，也不提交比赛', async () => {
+    (seasonApi.getAll as jest.Mock).mockResolvedValue([]);
+    let result: ReturnType<typeof useMatchForm>;
+    const root = createRoot(document.createElement('div'));
+    function Harness() { result = useMatchForm(); return null; }
+    try {
+      await act(async () => root.render(React.createElement(Harness)));
+      expect(teamApi.getAll).not.toHaveBeenCalled();
+      expect(result!.availableTeams).toEqual([]);
+      await act(async () => { await result!.handleSubmit({ preventDefault() {} } as React.FormEvent); });
+      expect(result!.error).toContain('请先创建或激活赛季');
+    } finally { await act(async () => root.unmount()); }
+  });
   const mockTeams = [
     { id: 'team-1', teamName: 'A组球队1', homeJerseyColor: '红', awayJerseyColor: '白' },
     { id: 'team-2', teamName: 'A组球队2', homeJerseyColor: '蓝', awayJerseyColor: '白' },

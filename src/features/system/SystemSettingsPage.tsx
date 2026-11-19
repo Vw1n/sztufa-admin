@@ -216,7 +216,13 @@ const SystemDataSettings: React.FC<{ activeTab: DataSettingsTab }> = ({ activeTa
             onGenerateKnockout={cupGroups.handleGenerateKnockout}
           />
         )}
-        {activeTab === 'groups' && seasonBackup.activeSeason?.type !== 'CUP' && (
+        {activeTab === 'groups' && !seasonBackup.activeSeason && (
+          <div className="form-section" role="status">
+            <p>当前没有活跃赛季。</p>
+            <p>请先在“数据灾备与归档”中创建或激活杯赛赛季，再配置分组。</p>
+          </div>
+        )}
+        {activeTab === 'groups' && seasonBackup.activeSeason && seasonBackup.activeSeason.type !== 'CUP' && (
           <div className="form-section" style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
             <span style={{ fontSize: '48px' }}>🏆</span>
             <p style={{ marginTop: '16px', fontSize: '15px' }}>当前活跃赛季为<strong>联赛赛制</strong>，无需进行小组分配。</p>

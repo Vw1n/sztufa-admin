@@ -27,6 +27,16 @@ jest.mock('../accounts/MemberAccountsPage', () => ({ __esModule: true, default: 
 jest.mock('../accounts/StaffAccountsPage', () => ({ __esModule: true, default: () => <div>后台账号管理内容</div> }));
 
 describe('系统设置内账号管理', () => {
+  it('没有活跃赛季时不误报为联赛', async () => {
+    mockInitialSearch = 'tab=groups';
+    const host = document.createElement('div');
+    const root = createRoot(host);
+    try {
+      await act(async () => root.render(<SystemSettingsPage />));
+      expect(host.textContent).toContain('当前没有活跃赛季');
+      expect(host.textContent).not.toContain('当前活跃赛季为联赛');
+    } finally { await act(async () => root.unmount()); }
+  });
   beforeEach(() => { mockInitialSearch = ''; jest.clearAllMocks(); });
   it('在设置框架内切换两类账号，保留原有设置入口', async () => {
     const host = document.createElement('div');

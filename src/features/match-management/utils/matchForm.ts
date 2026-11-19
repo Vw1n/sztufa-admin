@@ -34,6 +34,15 @@ export const filterTeamsForGroup = (
 const parseEventTime = (time: string): number =>
   parseInt(time.replace(/'/g, ''), 10) || 0;
 
+export const validateScoreInputs = (home: string | number, away: string | number): string | null => {
+  for (const [label, value] of [['主队', home], ['客队', away]] as const) {
+    if (!/^\d+$/.test(String(value).trim()) || !Number.isSafeInteger(Number(value))) {
+      return `${label}得分必须是非负整数`;
+    }
+  }
+  return null;
+};
+
 export const validateMatchForm = (formData: MatchFormData): string | null => {
   if (!formData.matchName.trim()) return '请选择比赛名称';
   if (!formData.matchTime.trim()) return '请选择比赛时间';
@@ -44,10 +53,10 @@ export const validateMatchForm = (formData: MatchFormData): string | null => {
   if (!formData.homeTeamScore.trim()) return '请输入主队得分';
   if (!formData.awayTeamScore.trim()) return '请输入客队得分';
 
-  const homeScore = parseInt(formData.homeTeamScore, 10);
-  const awayScore = parseInt(formData.awayTeamScore, 10);
-  if (Number.isNaN(homeScore) || homeScore < 0) return '主队得分必须是非负整数';
-  if (Number.isNaN(awayScore) || awayScore < 0) return '客队得分必须是非负整数';
+  const scoreError = validateScoreInputs(formData.homeTeamScore, formData.awayTeamScore);
+  if (scoreError) return scoreError;
+  const homeScore = Number(formData.homeTeamScore);
+  const awayScore = Number(formData.awayTeamScore);
 
   if (formData.events.length === 0) return null;
 
@@ -161,8 +170,8 @@ export const buildMatchDto = (
   return {
     homeTeamId: formData.homeTeamId,
     awayTeamId: formData.awayTeamId,
-    homeScore: parseInt(formData.homeTeamScore, 10) || 0,
-    awayScore: parseInt(formData.awayTeamScore, 10) || 0,
+    homeScore: Number(formData.homeTeamScore),
+    awayScore: Number(formData.awayTeamScore),
     matchDate: new Date(formData.matchTime).toISOString(),
     location: formData.location,
     status: (formData.status as MatchDTO['status']) || 'finished',

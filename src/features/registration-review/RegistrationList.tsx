@@ -2,6 +2,7 @@ import React from 'react';
 import { RegistrationListItemDTO } from '../registration/registration.types';
 import { RegistrationStatusBadge } from '../registration/RegistrationStatus';
 import { Eye, Users } from 'lucide-react';
+import { TeamLogo } from '../../components/ResilientImage';
 
 interface RegistrationListProps {
   items: RegistrationListItemDTO[];
@@ -21,7 +22,7 @@ export const RegistrationList: React.FC<RegistrationListProps> = ({ items, onVie
   return (
     <>
       {/* 桌面端：表格布局 */}
-      <div className="player-table-wrapper registration-review-table" style={{ background: '#fff', borderRadius: '8px', overflow: 'hidden' }}>
+      <div className="player-table-wrapper registration-review-table" style={{ background: '#fff', borderRadius: '8px', overflowX: 'auto' }}>
         <table className="player-table">
           <thead>
             <tr>
@@ -38,13 +39,7 @@ export const RegistrationList: React.FC<RegistrationListProps> = ({ items, onVie
             {items.map((item) => (
               <tr key={item.id}>
                 <td style={{ fontWeight: 600 }}>
-                  {item.teamLogo && (
-                    <img
-                      src={item.teamLogo}
-                      alt=""
-                      style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8, verticalAlign: 'middle' }}
-                    />
-                  )}
+                  <TeamLogo src={item.teamLogo} name={item.teamName} size={24} />
                   {item.teamName}
                 </td>
                 <td>{item.seasonName}</td>
@@ -79,13 +74,7 @@ export const RegistrationList: React.FC<RegistrationListProps> = ({ items, onVie
             onClick={() => onViewDetail(item.id)}
           >
             <div className="reg-mobile-team-info">
-              {item.teamLogo && (
-                <img
-                  src={item.teamLogo}
-                  alt=""
-                  className="reg-mobile-team-logo"
-                />
-              )}
+              <TeamLogo src={item.teamLogo} name={item.teamName} />
               <span className="reg-mobile-team-name">{item.teamName}</span>
             </div>
             <div className="reg-mobile-status-row">

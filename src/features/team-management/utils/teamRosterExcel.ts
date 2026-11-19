@@ -26,7 +26,7 @@ export function mergeImportedPlayers(
       ...p,
       studentId: sId,
       jerseyNumber: jNum,
-      id: generateId(),
+      id: `temp_${generateId()}`,
       teamId: teamId,
     });
   }

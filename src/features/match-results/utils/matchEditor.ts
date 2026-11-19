@@ -1,6 +1,7 @@
 import { MatchDTO } from '../../../api/types';
 import { Match, MatchEvent } from '../../../types';
 import { generateId } from '../../../utils';
+import { validateScoreInputs } from '../../match-management/utils/matchForm';
 import {
   EVENT_DEFAULT_DESCRIPTIONS,
   isShootoutEventType,
@@ -54,6 +55,8 @@ export const isPlacementMatch = (match: Pick<Match, 'stage' | 'knockoutRound'>) 
   PLACEMENT_ROUNDS.has(match.knockoutRound || '');
 
 export const validateMatchEdit = (match: Match): string | null => {
+  const scoreError = validateScoreInputs(match.homeScore, match.awayScore);
+  if (scoreError) return scoreError;
   // Imported placement matches may only contain the final score, without a
   // complete event timeline or player references. They must remain editable.
   if (isPlacementMatch(match)) return null;
